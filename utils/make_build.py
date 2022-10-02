@@ -69,6 +69,7 @@ def _select_vs_generator():
     installations = [int(install['installationVersion'].split('.')[0]) for install in installations]
     _logger.debug('Installations are: %s', ','.join((str(inst) for inst in installations)))
     return ['-G', {
+        17: 'Visual Studio 17 2022',
         16: 'Visual Studio 16 2019',
         15: 'Visual Studio 15 2017'
     }.get(max(installations)), '-A', 'x64', '-T', 'host=x64']
