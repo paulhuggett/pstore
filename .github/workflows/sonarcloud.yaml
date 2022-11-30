@@ -1,99 +1,108 @@
 name: SonarCloud
 on:
-    workflow_dispatch:
+  workflow_dispatch:
 jobs:
-    sonar-cloud:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v2
-              with:
-                  # Disabling shallow clone is recommended for improving relevancy of reporting
-                  fetch-depth: 0
+  sonar-cloud:
+    runs-on: ubuntu-latest
+    env:
+      SONAR_SCANNER_VERSION: 4.7.0.2747 # Find the latest version on this page:
+                                        # https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
 
-            - name: Create the SonarCloud tools directory
-              env:
-                  TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
-              run: |
-                  mkdir "$TOOLS_PATH"
+      SONAR_SERVER_URL: "https://sonarcloud.io"
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
+      SONAR_CACHE_DIR: build_cache_dir
 
-            - name: Install Sonar Scanner CLI
-              env:
-                  TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
-              run: |
-                  cd "$TOOLS_PATH"
-                  curl --location     \
-                       -o scanner.zip \
-                       https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.4.0.2170-linux.zip
-                  unzip scanner.zip
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
 
-            - name: Install SonarCloud Build Wrapper
-              env:
-                  TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
-              run: |
-                  cd "$TOOLS_PATH"
-                  curl --location \
-                       -o build-wrapper-linux-x86.zip \
-                       https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
-                  unzip build-wrapper-linux-x86.zip
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: '11'
 
-            - name: Create Build Environment
-              env:
-                  BUILD_PATH: ${{ runner.workspace }}/build
-              run: cmake -E make_directory "$BUILD_PATH"
+      - name: Cache SonarCloud packages and analysis
+        uses: actions/cache@v3
+        with:
+          key: ${{ runner.os }}-sonar
+          path: |
+            ~/.sonar/cache
+            ${{ env.SONAR_CACHE_DIR }}
+          restore-keys: ${{ runner.os }}-sonar
 
-            - name: Configure
-              env:
-                  BUILD_PATH: ${{ runner.workspace }}/build
-              run: |
-                  cd "$BUILD_PATH"
-                  cmake -G "Unix Makefiles"    \
-                        -D PSTORE_COVERAGE=Yes \
-                        -D PSTORE_EXAMPLES=Yes \
-                        "$GITHUB_WORKSPACE"
 
-            - name: Build
-              env:
-                  BUILD_PATH: ${{ runner.workspace }}/build
-                  TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
-                  BW_PATH: ${{ runner.workspace }}/bw-output
-              run: |
-                  cd "$BUILD_PATH"
-                  "$TOOLS_PATH/build-wrapper-linux-x86/build-wrapper-linux-x86-64" \
-                       --out-dir "$BW_PATH" \
-                      make -j $(nproc) clean all pstore-system-tests
+      - name: Download and set up sonar-scanner
+        env:
+          SONAR_SCANNER_DOWNLOAD_URL: https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${{ env.SONAR_SCANNER_VERSION }}-linux.zip
+        run: |
+          mkdir -p "$HOME/.sonar"
+          curl -sSLo "$HOME/.sonar/sonar-scanner.zip" "${{ env.SONAR_SCANNER_DOWNLOAD_URL }}"
+          unzip -o "$HOME/.sonar/sonar-scanner.zip" -d "$HOME/.sonar/"
+          echo "$HOME/.sonar/sonar-scanner-${{ env.SONAR_SCANNER_VERSION }}-linux/bin" >> "$GITHUB_PATH"
 
-            - name: Gather Coverage
-              env:
-                  BUILD_PATH: ${{ runner.workspace }}/build
-                  TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
-              run: |
-                  cd "$BUILD_PATH"
-                  find . -name \*.gcno -exec gcov {} \;
+      - name: Download and set up build-wrapper
+        env:
+          BUILD_WRAPPER_DOWNLOAD_URL: ${{ env.SONAR_SERVER_URL }}/static/cpp/build-wrapper-linux-x86.zip
+        run: |
+          curl -sSLo "$HOME/.sonar/build-wrapper-linux-x86.zip" "${{ env.BUILD_WRAPPER_DOWNLOAD_URL }}"
+          unzip -o "$HOME/.sonar/build-wrapper-linux-x86.zip" -d "$HOME/.sonar/"
+          echo "$HOME/.sonar/build-wrapper-linux-x86" >> "$GITHUB_PATH"
 
-            - name: Run Sonar Scanner
-              env:
-                  BUILD_PATH: ${{ runner.workspace }}/build
-                  TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
-                  BW_PATH: ${{ runner.workspace }}/bw-output
-                  THREADS: 2
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Create Build Environment
+        env:
+          BUILD_PATH: ${{ runner.workspace }}/build
+        run: cmake -E make_directory "$BUILD_PATH"
 
-              run: |
-                  cd "$GITHUB_WORKSPACE"
-                  "$TOOLS_PATH/sonar-scanner-4.4.0.2170-linux/bin/sonar-scanner" -X \
-                      -Dsonar.branch.name=$(git rev-parse --abbrev-ref HEAD) \
-                      -Dsonar.cfamily.build-wrapper-output="$BW_PATH"        \
-                      -Dsonar.cfamily.cache.enabled=false                    \
-                      -Dsonar.cfamily.gcov.reportsPath="$BUILD_PATH"         \
-                      -Dsonar.cfamily.threads=$THREADS                       \
-                      -Dsonar.coverage.exclusions='system_tests/**/*'        \
-                      -Dsonar.cpd.exclusions='unittests/**/*,examples/**/*'  \
-                      -Dsonar.exclusions='build/**/*,3rd_party/**/*'         \
-                      -Dsonar.organization=paulhuggett-github                \
-                      -Dsonar.projectKey=paulhuggett_pstore                  \
-                      -Dsonar.projectName=pstore                             \
-                      -Dsonar.projectVersion=$GITHUB_SHA                     \
-                      -Dsonar.sourceEncoding=UTF-8                           \
-                      -Dsonar.sources=include,lib,examples                   \
-                      -Dsonar.tests=system_tests,unittests
+      - name: Configure
+        env:
+          BUILD_PATH: ${{ runner.workspace }}/build
+        run: |
+          cmake -G "Unix Makefiles"    \
+                -S . \
+                -B "$BUILD_PATH" \
+                -D PSTORE_COVERAGE=Yes \
+                -D PSTORE_EXAMPLES=Yes \
+                "$GITHUB_WORKSPACE"
+
+      - name: Build
+        env:
+          BUILD_PATH: ${{ runner.workspace }}/build
+          TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
+          BW_PATH: ${{ runner.workspace }}/bw-output
+        run: build-wrapper-linux-x86-64 --out-dir "$BW_PATH" make -j "$(nproc)" -C "$BUILD_PATH" clean all pstore-system-tests
+
+      - name: Gather Coverage
+        env:
+          BUILD_PATH: ${{ runner.workspace }}/build
+          TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
+        run: find "$BUILD_PATH" -name \*.gcno -exec gcov {} \;
+
+      - name: Run Sonar Scanner
+        env:
+          BUILD_PATH: ${{ runner.workspace }}/build
+          TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
+          BW_PATH: ${{ runner.workspace }}/bw-output
+          THREADS: 2
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner -X                                                              \
+                        --define sonar.host.url="${{ env.SONAR_SERVER_URL }}"           \
+                        --define sonar.branch.name="$(git rev-parse --abbrev-ref HEAD)" \
+                        --define sonar.cfamily.build-wrapper-output="$BW_PATH"          \
+                        --define sonar.cfamily.cache.enabled=false                      \
+                        --define sonar.cfamily.gcov.reportsPath="$BUILD_PATH"           \
+                        --define sonar.cfamily.threads="$THREADS"                       \
+                        --define sonar.coverage.exclusions='system_tests/**/*'          \
+                        --define sonar.cpd.exclusions='unittests/**/*,examples/**/*'    \
+                        --define sonar.exclusions='build/**/*,3rd_party/**/*'           \
+                        --define sonar.organization=paulhuggett-github                  \
+                        --define sonar.projectKey=paulhuggett_pstore                    \
+                        --define sonar.projectName=pstore                               \
+                        --define sonar.projectVersion="$GITHUB_SHA"                     \
+                        --define sonar.sourceEncoding=UTF-8                             \
+                        --define sonar.sources=include,lib,examples                     \
+                        --define sonar.tests=system_tests,unittests
