@@ -35,10 +35,9 @@
 
 namespace {
   template <typename T>
-  typename std::make_unsigned<T>::type as_unsigned (T x) {
-    using utype = typename std::make_unsigned<T>::type;
+  decltype (auto) as_unsigned (T x) {
     PSTORE_ASSERT (x >= 0);
-    return static_cast<utype> (x);
+    return static_cast<std::make_unsigned_t<T>> (x);
   }
 
   class ProcessFileName : public ::testing::Test {

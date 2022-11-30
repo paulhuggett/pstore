@@ -243,7 +243,7 @@ namespace {
       {section_kind::read_only, std::uint8_t{1}}, // section kind, alignment
       {section_kind::thread_data, std::uint8_t{2}},
     }};
-    using base_type = std::underlying_type<section_kind>::type;
+    using base_type = std::underlying_type_t<section_kind>;
     ASSERT_LT (static_cast<base_type> (c.at (0).kind), static_cast<base_type> (c.at (1).kind));
 
     section_content & rodata = c.at (0);

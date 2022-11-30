@@ -86,7 +86,7 @@ namespace pstore {
   std::error_category const & get_error_category ();
 
   inline std::error_code make_error_code (error_code const erc) {
-    static_assert (std::is_same<std::underlying_type<decltype (erc)>::type, int>::value,
+    static_assert (std::is_same_v<std::underlying_type_t<decltype (erc)>, int>,
                    "base type of pstore::error_code must be int to permit safe static cast");
     return {static_cast<int> (erc), get_error_category ()};
   }
@@ -144,8 +144,8 @@ namespace std {
 
 namespace pstore {
 
-  template <typename Exception, typename = typename std::enable_if<
-                                  std::is_base_of<std::exception, Exception>::value>::type>
+  template <typename Exception,
+            typename = typename std::enable_if_t<std::is_base_of_v<std::exception, Exception>>>
   PSTORE_NO_RETURN void raise_exception (Exception const & exc) {
 #ifdef PSTORE_EXCEPTIONS
     throw exc;

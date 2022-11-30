@@ -107,27 +107,22 @@ namespace pstore {
   template <typename T, typename R, typename RC = R const>
   struct inherit_const {
     /// If \p T is const, \p R const otherwise \p R.
-    using type =
-      typename std::conditional<std::is_const<typename std::remove_reference<T>::type>::value, RC,
-                                R>::type;
+    using type = typename std::conditional_t<std::is_const_v<std::remove_reference_t<T>>, RC, R>;
   };
 
-} // namespace pstore
+  template <typename T, typename R, typename RC = R const>
+  using inherit_const_t = typename inherit_const<T, R, RC>::type;
 
-static_assert (std::is_same<typename pstore::inherit_const<int, bool>::type, bool>::value,
-               "int -> bool");
-static_assert (
-  std::is_same<typename pstore::inherit_const<int const, bool>::type, bool const>::value,
-  "int const -> bool const");
-static_assert (std::is_same<typename pstore::inherit_const<int &, bool>::type, bool>::value,
-               "int& -> bool");
-static_assert (
-  std::is_same<typename pstore::inherit_const<int const &, bool>::type, bool const>::value,
-  "int const & -> bool const");
-static_assert (std::is_same<typename pstore::inherit_const<int &&, bool>::type, bool>::value,
-               "int && -> bool");
-static_assert (
-  std::is_same<typename pstore::inherit_const<int const &&, bool>::type, bool const>::value,
-  "int const && -> bool const");
+  static_assert (std::is_same_v<inherit_const_t<int, bool>, bool>, "int -> bool");
+  static_assert (std::is_same_v<inherit_const<int const, bool>::type, bool const>,
+                 "int const -> bool const");
+  static_assert (std::is_same_v<inherit_const_t<int &, bool>, bool>, "int& -> bool");
+  static_assert (std::is_same_v<inherit_const<int const &, bool>::type, bool const>,
+                 "int const & -> bool const");
+  static_assert (std::is_same_v<inherit_const_t<int &&, bool>, bool>, "int && -> bool");
+  static_assert (std::is_same_v<inherit_const_t<int const &&, bool>, bool const>,
+                 "int const && -> bool const");
+
+} // namespace pstore
 
 #endif // PSTORE_SUPPORT_INHERIT_CONST_HPP
