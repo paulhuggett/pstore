@@ -36,8 +36,8 @@ namespace pstore {
         ///   std::pair<> instance.
         template <typename Iterator, typename Accessor>
         class pair_field_iterator {
-            using return_type = typename std::result_of<Accessor (Iterator)>::type;
-            static_assert (std::is_reference<return_type>::value,
+            using return_type = std::invoke_result_t<Accessor, Iterator>;
+            static_assert (std::is_reference_v<return_type>,
                            "return type from Accessor must be a reference");
 
         public:

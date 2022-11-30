@@ -22,53 +22,12 @@
 #ifndef PSTORE_EXCHANGE_IMPORT_NON_TERMINALS_HPP
 #define PSTORE_EXCHANGE_IMPORT_NON_TERMINALS_HPP
 
+#include <tuple>
+
 #include "pstore/exchange/import_rule.hpp"
 
 namespace pstore {
     namespace exchange {
-
-        namespace cxx17shim {
-
-#if __cplusplus < 201703L
-            namespace details {
-
-                template <typename Fn, typename... Args,
-                          std::enable_if_t<std::is_member_pointer<std::decay_t<Fn>>{}, int> = 0>
-                constexpr decltype (auto) invoke (Fn && f, Args &&... args) noexcept (
-                    noexcept (std::mem_fn (f) (std::forward<Args> (args)...))) {
-                    return std::mem_fn (f) (std::forward<Args> (args)...);
-                }
-
-                template <typename Fn, typename... Args,
-                          std::enable_if_t<!std::is_member_pointer<std::decay_t<Fn>>{}, int> = 0>
-                constexpr decltype (auto) invoke (Fn && f, Args &&... args) noexcept (
-                    noexcept (std::forward<Fn> (f) (std::forward<Args> (args)...))) {
-                    return std::forward<Fn> (f) (std::forward<Args> (args)...);
-                }
-
-                template <typename F, typename Tuple, size_t... I>
-                constexpr decltype (auto) apply_impl (F && f, Tuple && t,
-                                                      std::index_sequence<I...>) {
-                    return details::invoke (std::forward<F> (f),
-                                            std::get<I> (std::forward<Tuple> (t))...);
-                }
-
-            } // end namespace details
-
-            template <typename F, typename Tuple>
-            constexpr decltype (auto) apply (F && f, Tuple && t) {
-                using indices =
-                    std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>::value>;
-                return details::apply_impl (std::forward<F> (f), std::forward<Tuple> (t),
-                                            indices{});
-            }
-
-#else
-            template <typename F, typename Tuple>
-            using apply = std::apply<F, Tuple>;
-#endif
-
-        } // end namespace cxx17shim
 
         namespace import_ns {
 
@@ -95,8 +54,8 @@ namespace pstore {
                 gsl::czstring name () const noexcept override { return "object rule"; }
 
                 std::error_code begin_object () override {
-                    cxx17shim::apply (&object_rule::replace_top<NextState, Args...>,
-                                      std::tuple_cat (std::make_tuple (this), args_));
+                    std::apply (&object_rule::replace_top<NextState, Args...>,
+                                std::tuple_cat (std::make_tuple (this), args_));
                     return {};
                 }
 
@@ -131,8 +90,8 @@ namespace pstore {
                 array_rule & operator= (array_rule &&) noexcept = delete;
 
                 std::error_code begin_array () override {
-                    cxx17shim::apply (&array_rule::replace_top<NextRule, Args...>,
-                                      std::tuple_cat (std::make_tuple (this), args_));
+                    std::apply (&array_rule::replace_top<NextRule, Args...>,
+                                std::tuple_cat (std::make_tuple (this), args_));
                     return {};
                 }
 

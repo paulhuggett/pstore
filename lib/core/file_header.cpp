@@ -34,8 +34,6 @@ namespace pstore {
     //* | ' \/ -_) _` / _` / -_) '_| *
     //* |_||_\___\__,_\__,_\___|_|   *
     //*                              *
-    std::uint16_t const header::major_version;
-    std::uint16_t const header::minor_version;
     std::array<std::uint8_t, 4> const header::file_signature1{{'p', 'S', 't', 'r'}};
     std::uint32_t const header::file_signature2;
 

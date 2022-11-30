@@ -59,9 +59,9 @@ namespace {
     // ~~~~~~~~~~~~~
     template <class Function, class... Args>
     auto create_thread (Function && f, Args &&... args)
-        -> std::future<typename std::result_of<Function (Args...)>::type> {
+        -> std::future<std::invoke_result_t<Function, Args...>> {
 
-        using return_type = typename std::result_of<Function (Args...)>::type;
+        using return_type = std::invoke_result_t<Function, Args...>;
 
         std::packaged_task<return_type (Args...)> task (f);
         auto fut = task.get_future ();
