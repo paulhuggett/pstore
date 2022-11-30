@@ -37,52 +37,52 @@
 
 namespace {
 
-    class DebugLineSection : public testing::Test {
-    public:
-        DebugLineSection ()
-                : db_{store_.file ()} {
-            db_.set_vacuum_mode (pstore::database::vacuum_mode::disabled);
-        }
+  class DebugLineSection : public testing::Test {
+  public:
+    DebugLineSection ()
+            : db_{store_.file ()} {
+      db_.set_vacuum_mode (pstore::database::vacuum_mode::disabled);
+    }
 
-    protected:
-        using lock_guard = std::unique_lock<mock_mutex>;
-        using transaction_type = pstore::transaction<lock_guard>;
+  protected:
+    using lock_guard = std::unique_lock<mock_mutex>;
+    using transaction_type = pstore::transaction<lock_guard>;
 
-        mock_mutex mutex_;
-        in_memory_store store_;
-        pstore::database db_;
-    };
+    mock_mutex mutex_;
+    in_memory_store store_;
+    pstore::database db_;
+  };
 
 } // end anonymous namespace
 
 TEST_F (DebugLineSection, RoundTrip) {
-    using pstore::repo::debug_line_section_creation_dispatcher;
+  using pstore::repo::debug_line_section_creation_dispatcher;
 
-    constexpr auto section_type = pstore::repo::section_kind::debug_line;
-    constexpr auto alignment = std::uint8_t{4};
-    constexpr auto header_digest = pstore::index::digest{0x01234567U, 0x89ABCDEF};
-    constexpr auto header_extent =
-        pstore::make_extent (pstore::typed_address<std::uint8_t>::make (5), 7);
+  constexpr auto section_type = pstore::repo::section_kind::debug_line;
+  constexpr auto alignment = std::uint8_t{4};
+  constexpr auto header_digest = pstore::index::digest{0x01234567U, 0x89ABCDEF};
+  constexpr auto header_extent =
+    pstore::make_extent (pstore::typed_address<std::uint8_t>::make (5), 7);
 
-    pstore::repo::section_content content{section_type, alignment};
-    content.data.emplace_back (std::uint8_t{11});
-    content.data.emplace_back (std::uint8_t{13});
+  pstore::repo::section_content content{section_type, alignment};
+  content.data.emplace_back (std::uint8_t{11});
+  content.data.emplace_back (std::uint8_t{13});
 
-    std::vector<std::unique_ptr<pstore::repo::section_creation_dispatcher>> dispatchers;
-    dispatchers.emplace_back (
-        new debug_line_section_creation_dispatcher (header_digest, header_extent, &content));
+  std::vector<std::unique_ptr<pstore::repo::section_creation_dispatcher>> dispatchers;
+  dispatchers.emplace_back (
+    new debug_line_section_creation_dispatcher (header_digest, header_extent, &content));
 
-    transaction_type transaction = begin (db_, lock_guard{mutex_});
-    auto fragment = pstore::repo::fragment::load (
-        db_, pstore::repo::fragment::alloc (transaction,
-                                            pstore::make_pointee_adaptor (dispatchers.begin ()),
-                                            pstore::make_pointee_adaptor (dispatchers.end ())));
-    transaction.commit ();
+  transaction_type transaction = begin (db_, lock_guard{mutex_});
+  auto fragment = pstore::repo::fragment::load (
+    db_,
+    pstore::repo::fragment::alloc (transaction, pstore::make_pointee_adaptor (dispatchers.begin ()),
+                                   pstore::make_pointee_adaptor (dispatchers.end ())));
+  transaction.commit ();
 
-    auto const * const dls = fragment->atp<section_type> ();
-    ASSERT_NE (dls, nullptr);
-    EXPECT_EQ (dls->align (), alignment);
-    EXPECT_EQ (dls->header_digest (), header_digest);
-    EXPECT_EQ (dls->header_extent (), header_extent);
-    EXPECT_THAT (dls->payload (), testing::ElementsAre (std::uint8_t{11}, std::uint8_t{13}));
+  auto const * const dls = fragment->atp<section_type> ();
+  ASSERT_NE (dls, nullptr);
+  EXPECT_EQ (dls->align (), alignment);
+  EXPECT_EQ (dls->header_digest (), header_digest);
+  EXPECT_EQ (dls->header_extent (), header_extent);
+  EXPECT_THAT (dls->payload (), testing::ElementsAre (std::uint8_t{11}, std::uint8_t{13}));
 }

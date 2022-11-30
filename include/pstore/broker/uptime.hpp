@@ -23,14 +23,14 @@
 #include "pstore/support/gsl.hpp"
 
 namespace pstore {
-    namespace broker {
+  namespace broker {
 
-        extern descriptor_condition_variable uptime_cv;
-        extern brokerface::channel<descriptor_condition_variable> uptime_channel;
+    extern descriptor_condition_variable uptime_cv;
+    extern brokerface::channel<descriptor_condition_variable> uptime_channel;
 
-        void uptime (gsl::not_null<std::atomic<bool> *> done);
+    void uptime (gsl::not_null<std::atomic<bool> *> done);
 
-    } // end namespace broker
+  } // end namespace broker
 } // end namespace pstore
 
 #endif // PSTORE_BROKER_UPTIME_HPP

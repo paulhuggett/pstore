@@ -17,22 +17,22 @@
 #include "transaction.hpp"
 
 auto transaction::allocate (std::size_t size, unsigned /*align*/) -> pstore::address {
-    auto ptr = std::shared_ptr<std::uint8_t> (new std::uint8_t[size],
-                                              [] (std::uint8_t * p) { delete[] p; });
-    storage_[ptr.get ()] = ptr;
+  auto ptr =
+    std::shared_ptr<std::uint8_t> (new std::uint8_t[size], [] (std::uint8_t * p) { delete[] p; });
+  storage_[ptr.get ()] = ptr;
 
-    static_assert (sizeof (std::uint8_t *) >= sizeof (pstore::address),
-                   "expected address to be no larger than a pointer");
-    return pstore::address{reinterpret_cast<std::uintptr_t> (ptr.get ())};
+  static_assert (sizeof (std::uint8_t *) >= sizeof (pstore::address),
+                 "expected address to be no larger than a pointer");
+  return pstore::address{reinterpret_cast<std::uintptr_t> (ptr.get ())};
 }
 
 auto transaction::getrw (pstore::address addr, std::size_t /* size*/) -> std::shared_ptr<void> {
-    return storage_.find (reinterpret_cast<std::uint8_t *> (addr.absolute ()))->second;
+  return storage_.find (reinterpret_cast<std::uint8_t *> (addr.absolute ()))->second;
 }
 
 auto transaction::alloc_rw (std::size_t size, unsigned align)
-    -> std::pair<std::shared_ptr<void>, pstore::address> {
-    auto addr = allocate (size, align);
-    auto ptr = getrw (addr, size);
-    return std::make_pair (ptr, addr);
+  -> std::pair<std::shared_ptr<void>, pstore::address> {
+  auto addr = allocate (size, align);
+  auto ptr = getrw (addr, size);
+  return std::make_pair (ptr, addr);
 }

@@ -28,77 +28,77 @@
 #include "pstore/support/maybe.hpp"
 
 namespace pstore {
-    namespace broker {
+  namespace broker {
 
-        class gc_watch_thread {
-            friend gc_watch_thread & getgc ();
+    class gc_watch_thread {
+      friend gc_watch_thread & getgc ();
 
-        public:
-            // The gc-watch thread is normally managed by makind calls to
-            // start_vacuum(). It is exposed here for unit testing.
-            gc_watch_thread () = default;
-            virtual ~gc_watch_thread () noexcept;
-            void watcher ();
+    public:
+      // The gc-watch thread is normally managed by makind calls to
+      // start_vacuum(). It is exposed here for unit testing.
+      gc_watch_thread () = default;
+      virtual ~gc_watch_thread () noexcept;
+      void watcher ();
 
-            void start_vacuum (std::string const & db_path);
+      void start_vacuum (std::string const & db_path);
 
-            /// If a GC process is running for \p path, it is killed and true returned otherwise
-            /// false.
-            ///
-            /// \param path  Path of a pstore file.
-            /// \returns True if a GC process is running for \p path otherwise false.
-            bool stop_vacuum (std::string const & path);
+      /// If a GC process is running for \p path, it is killed and true returned otherwise
+      /// false.
+      ///
+      /// \param path  Path of a pstore file.
+      /// \returns True if a GC process is running for \p path otherwise false.
+      bool stop_vacuum (std::string const & path);
 
-            /// Call when a shutdown request is received. This method wakes the watcher
-            /// thread and asks all child processes to exit.
-            ///
-            /// \param signum  The signal number that is the cause of the shutdown or -1 if
-            /// shutting down for any other reason.
-            void stop (int signum = -1);
+      /// Call when a shutdown request is received. This method wakes the watcher
+      /// thread and asks all child processes to exit.
+      ///
+      /// \param signum  The signal number that is the cause of the shutdown or -1 if
+      /// shutting down for any other reason.
+      void stop (int signum = -1);
 
-            std::size_t size () const;
-            static std::string vacuumd_path ();
-
-#ifdef _WIN32
-            static constexpr DWORD max_gc_processes = MAXIMUM_WAIT_OBJECTS - 1U;
-#else
-            static constexpr int max_gc_processes = 50;
-#endif
-
-        private:
-            virtual process_identifier spawn (std::initializer_list<gsl::czstring> argv);
-            virtual void kill (process_identifier const & pid);
-
-            /// \param path  The path of a pstore file.
-            /// \returns  The proccess-id for a GC runnning on a file at the path given by \p path.
-            maybe<process_identifier> get_pid (std::string const & path);
+      std::size_t size () const;
+      static std::string vacuumd_path ();
 
 #ifdef _WIN32
-            static constexpr auto vacuumd_name = PSTORE_VACUUM_TOOL_NAME ".exe";
-            using process_bimap = bimap<std::string, broker::process_identifier,
-                                        std::less<std::string>, broker::pointer_compare<HANDLE>>;
+      static constexpr DWORD max_gc_processes = MAXIMUM_WAIT_OBJECTS - 1U;
 #else
-            static constexpr auto vacuumd_name = PSTORE_VACUUM_TOOL_NAME;
-            using process_bimap = bimap<std::string, pid_t>;
-
-            /// POSIX signal handler.
-            static void child_signal (int sig);
+      static constexpr int max_gc_processes = 50;
 #endif
 
-            mutable std::mutex mut_;
-            signal_cv cv_;
-            process_bimap processes_;
-            bool done_ = false;
-        };
+    private:
+      virtual process_identifier spawn (std::initializer_list<gsl::czstring> argv);
+      virtual void kill (process_identifier const & pid);
 
-        gc_watch_thread & getgc ();
+      /// \param path  The path of a pstore file.
+      /// \returns  The proccess-id for a GC runnning on a file at the path given by \p path.
+      maybe<process_identifier> get_pid (std::string const & path);
 
-        void start_vacuum (std::string const & path);
-        void gc_sigint (int sig);
+#ifdef _WIN32
+      static constexpr auto vacuumd_name = PSTORE_VACUUM_TOOL_NAME ".exe";
+      using process_bimap = bimap<std::string, broker::process_identifier, std::less<std::string>,
+                                  broker::pointer_compare<HANDLE>>;
+#else
+      static constexpr auto vacuumd_name = PSTORE_VACUUM_TOOL_NAME;
+      using process_bimap = bimap<std::string, pid_t>;
 
-        void gc_process_watch_thread ();
+      /// POSIX signal handler.
+      static void child_signal (int sig);
+#endif
 
-    } // namespace broker
+      mutable std::mutex mut_;
+      signal_cv cv_;
+      process_bimap processes_;
+      bool done_ = false;
+    };
+
+    gc_watch_thread & getgc ();
+
+    void start_vacuum (std::string const & path);
+    void gc_sigint (int sig);
+
+    void gc_process_watch_thread ();
+
+  } // namespace broker
 } // namespace pstore
 
 #endif // PSTORE_BROKER_GC_HPP

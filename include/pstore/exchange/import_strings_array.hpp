@@ -25,33 +25,32 @@
 #include "pstore/exchange/import_strings.hpp"
 
 namespace pstore {
-    namespace exchange {
-        namespace import_ns {
+  namespace exchange {
+    namespace import_ns {
 
-            class strings_array_members final : public rule {
-            public:
-                strings_array_members (not_null<context *> ctxt,
-                                       not_null<transaction_base *> transaction,
-                                       not_null<string_mapping *> strings);
-                strings_array_members (strings_array_members const &) = delete;
-                strings_array_members (strings_array_members &&) noexcept = delete;
+      class strings_array_members final : public rule {
+      public:
+        strings_array_members (not_null<context *> ctxt, not_null<transaction_base *> transaction,
+                               not_null<string_mapping *> strings);
+        strings_array_members (strings_array_members const &) = delete;
+        strings_array_members (strings_array_members &&) noexcept = delete;
 
-                ~strings_array_members () noexcept override = default;
+        ~strings_array_members () noexcept override = default;
 
-                strings_array_members & operator= (strings_array_members const &) = delete;
-                strings_array_members & operator= (strings_array_members &&) noexcept = delete;
+        strings_array_members & operator= (strings_array_members const &) = delete;
+        strings_array_members & operator= (strings_array_members &&) noexcept = delete;
 
-            private:
-                std::error_code string_value (std::string const & str) override;
-                std::error_code end_array () override;
-                gsl::czstring name () const noexcept override;
+      private:
+        std::error_code string_value (std::string const & str) override;
+        std::error_code end_array () override;
+        gsl::czstring name () const noexcept override;
 
-                not_null<transaction_base *> const transaction_;
-                not_null<string_mapping *> const strings_;
-            };
+        not_null<transaction_base *> const transaction_;
+        not_null<string_mapping *> const strings_;
+      };
 
-        } // end namespace import_ns
-    }     // end namespace exchange
+    } // end namespace import_ns
+  }   // end namespace exchange
 } // end namespace pstore
 
 #endif // PSTORE_EXCHANGE_IMPORT_STRINGS_ARRAY_HPP

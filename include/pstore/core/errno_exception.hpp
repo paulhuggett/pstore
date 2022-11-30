@@ -25,19 +25,19 @@
 #include <system_error>
 
 namespace pstore {
-    /// Provides a wrapper for std::system error which provides additional context for the
-    /// associated error message.
-    class errno_exception final : public std::system_error {
-    public:
-        errno_exception (int errcode, char const * message);
-        errno_exception (int errcode, std::string const & message);
+  /// Provides a wrapper for std::system error which provides additional context for the
+  /// associated error message.
+  class errno_exception final : public std::system_error {
+  public:
+    errno_exception (int errcode, char const * message);
+    errno_exception (int errcode, std::string const & message);
 
-        errno_exception (errno_exception const &) = default;
-        errno_exception (errno_exception &&) = default;
-        errno_exception & operator= (errno_exception const &) = default;
-        errno_exception & operator= (errno_exception &&) = default;
+    errno_exception (errno_exception const &) = default;
+    errno_exception (errno_exception &&) = default;
+    errno_exception & operator= (errno_exception const &) = default;
+    errno_exception & operator= (errno_exception &&) = default;
 
-        ~errno_exception () override;
-    };
+    ~errno_exception () override;
+  };
 } // namespace pstore
 #endif // PSTORE_CORE_ERRNO_EXCEPTION_HPP

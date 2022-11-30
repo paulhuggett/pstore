@@ -19,12 +19,12 @@
 #include <cstdlib>
 
 namespace pstore {
-    namespace broker {
+  namespace broker {
 
-        std::atomic<bool> done;
-        std::atomic<int> exit_code (EXIT_SUCCESS);
+    std::atomic<bool> done;
+    std::atomic<int> exit_code (EXIT_SUCCESS);
 
-        std::mutex iomut;
+    std::mutex iomut;
 
-    } // namespace broker
+  } // namespace broker
 } // namespace pstore

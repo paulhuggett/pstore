@@ -22,9 +22,9 @@
 #include <cstdint>
 
 #ifdef _WIN32
-#    define NOMINMAX
-#    define WIN32_LEAN_AND_MEAN
-#    include <Windows.h>
+#  define NOMINMAX
+#  define WIN32_LEAN_AND_MEAN
+#  include <Windows.h>
 #endif
 
 #include "pstore/support/portab.hpp"
@@ -32,16 +32,16 @@
 namespace pstore {
 
 #ifdef _WIN32
-    PSTORE_STATIC_ASSERT (sizeof (DWORD) == sizeof (std::uint32_t));
-    PSTORE_STATIC_ASSERT (std::is_unsigned<DWORD>::value);
+  PSTORE_STATIC_ASSERT (sizeof (DWORD) == sizeof (std::uint32_t));
+  PSTORE_STATIC_ASSERT (std::is_unsigned<DWORD>::value);
 #endif
 
-    constexpr auto uint64_high4 (std::uint64_t const v) noexcept -> std::uint32_t {
-        return static_cast<std::uint32_t> (v >> 32U);
-    }
-    constexpr auto uint64_low4 (std::uint64_t const v) noexcept -> std::uint32_t {
-        return static_cast<std::uint32_t> (v & ((std::uint64_t{1} << 32U) - 1U));
-    }
+  constexpr auto uint64_high4 (std::uint64_t const v) noexcept -> std::uint32_t {
+    return static_cast<std::uint32_t> (v >> 32U);
+  }
+  constexpr auto uint64_low4 (std::uint64_t const v) noexcept -> std::uint32_t {
+    return static_cast<std::uint32_t> (v & ((std::uint64_t{1} << 32U) - 1U));
+  }
 
 } // end namespace pstore
 

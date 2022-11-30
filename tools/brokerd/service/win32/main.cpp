@@ -30,49 +30,49 @@
 
 namespace {
 
-    constexpr auto service_name = TEXT ("pstore_broker");
-    constexpr auto display_name = TEXT ("pstore broker");
-    constexpr auto start_type = SERVICE_DEMAND_START;
-    constexpr auto service_dependencies =
-        TEXT (""); // List of service dependencies - "dep1\0dep2\0\0"
-    constexpr auto account = TEXT ("NT AUTHORITY\\LocalService");
-    constexpr auto account_password = nullptr;
+  constexpr auto service_name = TEXT ("pstore_broker");
+  constexpr auto display_name = TEXT ("pstore broker");
+  constexpr auto start_type = SERVICE_DEMAND_START;
+  constexpr auto service_dependencies =
+    TEXT (""); // List of service dependencies - "dep1\0dep2\0\0"
+  constexpr auto account = TEXT ("NT AUTHORITY\\LocalService");
+  constexpr auto account_password = nullptr;
 
 
-    using namespace pstore::command_line;
+  using namespace pstore::command_line;
 
-    opt<bool> install_opt ("install", desc ("Install the service"));
-    opt<bool> remove_opt ("remove", desc ("Remove the service"));
+  opt<bool> install_opt ("install", desc ("Install the service"));
+  opt<bool> remove_opt ("remove", desc ("Remove the service"));
 
 } // end anonymous namespace
 
 
 int _tmain (int argc, TCHAR * argv[]) {
-    int exit_code = EXIT_SUCCESS;
-    try {
-        parse_command_line_options (argc, argv, "pstore broker server");
+  int exit_code = EXIT_SUCCESS;
+  try {
+    parse_command_line_options (argc, argv, "pstore broker server");
 
-        if (install_opt && remove_opt) {
-            std::wcerr << L"--install and --remove cannot be specified together!\n";
-            std::exit (EXIT_FAILURE);
-        }
-
-        if (install_opt) {
-            install_service (service_name, display_name, start_type, service_dependencies, account,
-                             account_password);
-        } else if (remove_opt) {
-            uninstall_service (service_name);
-        } else {
-            broker_service service{service_name};
-            broker_service::run (service);
-        }
-    } catch (std::exception const & ex) {
-        std::wcerr << L"Error: " << pstore::utf::to_native_string (ex.what ()) << std::endl;
-        exit_code = EXIT_FAILURE;
-    } catch (...) {
-        std::wcerr << L"Unknown error" << std::endl;
-        exit_code = EXIT_FAILURE;
+    if (install_opt && remove_opt) {
+      std::wcerr << L"--install and --remove cannot be specified together!\n";
+      std::exit (EXIT_FAILURE);
     }
 
-    return exit_code;
+    if (install_opt) {
+      install_service (service_name, display_name, start_type, service_dependencies, account,
+                       account_password);
+    } else if (remove_opt) {
+      uninstall_service (service_name);
+    } else {
+      broker_service service{service_name};
+      broker_service::run (service);
+    }
+  } catch (std::exception const & ex) {
+    std::wcerr << L"Error: " << pstore::utf::to_native_string (ex.what ()) << std::endl;
+    exit_code = EXIT_FAILURE;
+  } catch (...) {
+    std::wcerr << L"Unknown error" << std::endl;
+    exit_code = EXIT_FAILURE;
+  }
+
+  return exit_code;
 }

@@ -25,10 +25,10 @@
 #include "pstore/core/database.hpp"
 
 struct switches {
-    std::string db_path;
-    std::string key;
-    unsigned revision = pstore::head_revision;
-    bool string_mode = false;
+  std::string db_path;
+  std::string key;
+  unsigned revision = pstore::head_revision;
+  bool string_mode = false;
 };
 
 std::pair<switches, int> get_switches (int argc, pstore::command_line::tchar * argv[]);

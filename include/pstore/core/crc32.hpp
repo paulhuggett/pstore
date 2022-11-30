@@ -24,20 +24,20 @@
 
 namespace pstore {
 
-    namespace details {
-        extern std::array<std::uint32_t, 256> const crc32_tab;
-    } // end namespace details
+  namespace details {
+    extern std::array<std::uint32_t, 256> const crc32_tab;
+  } // end namespace details
 
-    template <typename SpanType>
-    std::uint32_t crc32 (SpanType buf) noexcept {
-        auto * p = reinterpret_cast<std::uint8_t const *> (buf.data ());
-        auto crc = std::uint32_t{0};
-        auto size = buf.size_bytes ();
-        while (size--) {
-            crc = details::crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
-        }
-        return crc ^ ~0U;
+  template <typename SpanType>
+  std::uint32_t crc32 (SpanType buf) noexcept {
+    auto * p = reinterpret_cast<std::uint8_t const *> (buf.data ());
+    auto crc = std::uint32_t{0};
+    auto size = buf.size_bytes ();
+    while (size--) {
+      crc = details::crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
     }
+    return crc ^ ~0U;
+  }
 
 } // end namespace pstore
 #endif // PSTORE_CORE_CRC32_HPP

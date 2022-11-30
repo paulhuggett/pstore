@@ -75,78 +75,77 @@
 
 namespace {
 
-    template <typename Ty>
-    class random_generator {
-    public:
-        random_generator ()
-                : device_ ()
-                , generator_ (device_ ())
-                , distribution_ () {}
+  template <typename Ty>
+  class random_generator {
+  public:
+    random_generator ()
+            : device_ ()
+            , generator_ (device_ ())
+            , distribution_ () {}
 
-        Ty get (Ty max) { return distribution_ (generator_) % max; }
-        Ty get () {
-            constexpr auto max = std::numeric_limits<Ty>::max ();
-            static_assert (max > Ty (0), "max must be > 0");
-            return distribution_ (generator_) % max;
-        }
+    Ty get (Ty max) { return distribution_ (generator_) % max; }
+    Ty get () {
+      constexpr auto max = std::numeric_limits<Ty>::max ();
+      static_assert (max > Ty (0), "max must be > 0");
+      return distribution_ (generator_) % max;
+    }
 
-    private:
-        std::random_device device_;
-        std::mt19937_64 generator_;
-        std::uniform_int_distribution<Ty> distribution_;
-    };
+  private:
+    std::random_device device_;
+    std::mt19937_64 generator_;
+    std::uniform_int_distribution<Ty> distribution_;
+  };
 
 } // end anonymous namespace
 
 int main (int argc, char ** argv) {
-    int exit_code = EXIT_SUCCESS;
+  int exit_code = EXIT_SUCCESS;
 
-    if (argc != 2) {
-        std::cout << "Usage: " << argv[0] << " path-name\n"
-                  << " \"Fuzzes\" the header and r0 footer of the given file.\n"
-                  << " Warning: The file is modified in-place.\n";
-        return EXIT_FAILURE;
+  if (argc != 2) {
+    std::cout << "Usage: " << argv[0] << " path-name\n"
+              << " \"Fuzzes\" the header and r0 footer of the given file.\n"
+              << " Warning: The file is modified in-place.\n";
+    return EXIT_FAILURE;
+  }
+
+  PSTORE_TRY {
+    random_generator<std::size_t> rand;
+
+    auto const header_size = pstore::leader_size + sizeof (pstore::trailer);
+
+    pstore::file::file_handle file{argv[1]};
+    file.open (pstore::file::file_handle::create_mode::open_existing,
+               pstore::file::file_handle::writable_mode::read_write);
+    pstore::memory_mapper mapper (file,
+                                  true,         // writable
+                                  0,            // offset
+                                  header_size); // length
+    auto data = std::static_pointer_cast<std::uint8_t> (mapper.data ());
+    auto ptr = data.get ();
+
+    std::size_t const num_to_hit = rand.get (header_size / 10);
+    for (std::size_t ctr = 0; ctr < num_to_hit; ctr++) {
+      std::size_t const offset = rand.get (header_size);
+      std::uint8_t new_value = rand.get () % std::numeric_limits<std::uint8_t>::max ();
+
+      // We want the highest bit set more often, in case of signedness issues.
+      if (rand.get () % 2) {
+        new_value |= 0x80;
+      }
+
+      ptr[offset] = new_value;
     }
-
-    PSTORE_TRY {
-        random_generator<std::size_t> rand;
-
-        auto const header_size = pstore::leader_size + sizeof (pstore::trailer);
-
-        pstore::file::file_handle file{argv[1]};
-        file.open (pstore::file::file_handle::create_mode::open_existing,
-                   pstore::file::file_handle::writable_mode::read_write);
-        pstore::memory_mapper mapper (file,
-                                      true,         // writable
-                                      0,            // offset
-                                      header_size); // length
-        auto data = std::static_pointer_cast<std::uint8_t> (mapper.data ());
-        auto ptr = data.get ();
-
-        std::size_t const num_to_hit = rand.get (header_size / 10);
-        for (std::size_t ctr = 0; ctr < num_to_hit; ctr++) {
-            std::size_t const offset = rand.get (header_size);
-            std::uint8_t new_value = rand.get () % std::numeric_limits<std::uint8_t>::max ();
-
-            // We want the highest bit set more often, in case of signedness issues.
-            if (rand.get () % 2) {
-                new_value |= 0x80;
-            }
-
-            ptr[offset] = new_value;
-        }
-    }
-    // clang-format on
-    PSTORE_CATCH (std::exception const & ex, {
-        std::cerr << "Error: " << ex.what () << std::endl;
-        exit_code = EXIT_FAILURE;
-    })
-    PSTORE_CATCH (..., {
-        std::cerr << "Unknown error" << std::endl;
-        exit_code = EXIT_FAILURE;
-    })
-    // clang-format off
-
-    std::cerr << "Mangle returning " << exit_code << '\n';
-    return exit_code;
+  }
+  // clang-format off
+  PSTORE_CATCH (std::exception const & ex, {
+    std::cerr << "Error: " << ex.what () << std::endl;
+    exit_code = EXIT_FAILURE;
+  })
+  PSTORE_CATCH (..., {
+    std::cerr << "Unknown error" << std::endl;
+    exit_code = EXIT_FAILURE;
+  })
+  // clang-format on
+  std::cerr << "Mangle returning " << exit_code << '\n';
+  return exit_code;
 }

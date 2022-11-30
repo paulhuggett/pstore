@@ -23,24 +23,24 @@
 
 namespace pstore {
 
-    template <typename Ty>
-    class random_generator {
-    public:
-        random_generator ()
-                : generator_ (device_ ()) {}
+  template <typename Ty>
+  class random_generator {
+  public:
+    random_generator ()
+            : generator_ (device_ ()) {}
 
-        Ty get (Ty max) { return distribution_ (generator_) % max; }
-        Ty get () {
-            auto const max = std::numeric_limits<Ty>::max ();
-            static_assert (max > Ty (0), "max must be > 0");
-            return get (max);
-        }
+    Ty get (Ty max) { return distribution_ (generator_) % max; }
+    Ty get () {
+      auto const max = std::numeric_limits<Ty>::max ();
+      static_assert (max > Ty (0), "max must be > 0");
+      return get (max);
+    }
 
-    private:
-        std::random_device device_;
-        std::mt19937_64 generator_;
-        std::uniform_int_distribution<Ty> distribution_;
-    };
+  private:
+    std::random_device device_;
+    std::mt19937_64 generator_;
+    std::uniform_int_distribution<Ty> distribution_;
+  };
 
 } // namespace pstore
 

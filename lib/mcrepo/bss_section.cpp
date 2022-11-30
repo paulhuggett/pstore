@@ -16,43 +16,40 @@
 #include "pstore/mcrepo/bss_section.hpp"
 
 namespace pstore {
-    namespace repo {
+  namespace repo {
 
-        //*                  _   _               _ _               _      _             *
-        //*  __ _ _ ___ __ _| |_(_)___ _ _    __| (_)____ __  __ _| |_ __| |_  ___ _ _  *
-        //* / _| '_/ -_) _` |  _| / _ \ ' \  / _` | (_-< '_ \/ _` |  _/ _| ' \/ -_) '_| *
-        //* \__|_| \___\__,_|\__|_\___/_||_| \__,_|_/__/ .__/\__,_|\__\__|_||_\___|_|   *
-        //*                                            |_|                              *
-        std::size_t bss_section_creation_dispatcher::size_bytes () const {
-            return sizeof (bss_section);
-        }
+    //*                  _   _               _ _               _      _             *
+    //*  __ _ _ ___ __ _| |_(_)___ _ _    __| (_)____ __  __ _| |_ __| |_  ___ _ _  *
+    //* / _| '_/ -_) _` |  _| / _ \ ' \  / _` | (_-< '_ \/ _` |  _/ _| ' \/ -_) '_| *
+    //* \__|_| \___\__,_|\__|_\___/_||_| \__,_|_/__/ .__/\__,_|\__\__|_||_\___|_|   *
+    //*                                            |_|                              *
+    std::size_t bss_section_creation_dispatcher::size_bytes () const {
+      return sizeof (bss_section);
+    }
 
-        std::uint8_t * bss_section_creation_dispatcher::write (std::uint8_t * const out) const {
-            PSTORE_ASSERT (section_ != nullptr &&
-                           "Must provide BSS section information before write");
-            PSTORE_ASSERT (this->aligned (out) == out &&
-                           "The target address must be properly aligned");
-            PSTORE_ASSERT (section_->data.size () <=
-                               std::numeric_limits<bss_section::size_type>::max () &&
-                           "The BSS section is too large");
+    std::uint8_t * bss_section_creation_dispatcher::write (std::uint8_t * const out) const {
+      PSTORE_ASSERT (section_ != nullptr && "Must provide BSS section information before write");
+      PSTORE_ASSERT (this->aligned (out) == out && "The target address must be properly aligned");
+      PSTORE_ASSERT (section_->data.size () <=
+                       std::numeric_limits<bss_section::size_type>::max () &&
+                     "The BSS section is too large");
 
-            new (out) bss_section (section_->align,
-                                   static_cast<bss_section::size_type> (section_->data.size ()));
-            return out + bss_section::size_bytes ();
-        }
+      new (out)
+        bss_section (section_->align, static_cast<bss_section::size_type> (section_->data.size ()));
+      return out + bss_section::size_bytes ();
+    }
 
-        std::uintptr_t
-        bss_section_creation_dispatcher::aligned_impl (std::uintptr_t const in) const {
-            return pstore::aligned<bss_section> (in);
-        }
+    std::uintptr_t bss_section_creation_dispatcher::aligned_impl (std::uintptr_t const in) const {
+      return pstore::aligned<bss_section> (in);
+    }
 
 
-        //*             _   _               _ _               _      _             *
-        //*  ___ ___ __| |_(_)___ _ _    __| (_)____ __  __ _| |_ __| |_  ___ _ _  *
-        //* (_-</ -_) _|  _| / _ \ ' \  / _` | (_-< '_ \/ _` |  _/ _| ' \/ -_) '_| *
-        //* /__/\___\__|\__|_\___/_||_| \__,_|_/__/ .__/\__,_|\__\__|_||_\___|_|   *
-        //*                                       |_|                              *
-        bss_section_dispatcher::~bss_section_dispatcher () noexcept = default;
+    //*             _   _               _ _               _      _             *
+    //*  ___ ___ __| |_(_)___ _ _    __| (_)____ __  __ _| |_ __| |_  ___ _ _  *
+    //* (_-</ -_) _|  _| / _ \ ' \  / _` | (_-< '_ \/ _` |  _/ _| ' \/ -_) '_| *
+    //* /__/\___\__|\__|_\___/_||_| \__,_|_/__/ .__/\__,_|\__\__|_||_\___|_|   *
+    //*                                       |_|                              *
+    bss_section_dispatcher::~bss_section_dispatcher () noexcept = default;
 
-    } // end namespace repo
+  } // end namespace repo
 } // end namespace pstore

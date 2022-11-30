@@ -21,20 +21,19 @@
 #include <string>
 
 namespace pstore {
-    namespace command_line {
+  namespace command_line {
 
-        std::list<std::string> csv (std::string const & s);
+    std::list<std::string> csv (std::string const & s);
 
-        template <typename Iterator>
-        std::list<std::string> csv (Iterator first, Iterator last) {
-            std::list<std::string> result;
-            std::for_each (first, last, [&result] (std::string const & s) {
-                result.splice (result.end (), csv (s));
-            });
-            return result;
-        }
+    template <typename Iterator>
+    std::list<std::string> csv (Iterator first, Iterator last) {
+      std::list<std::string> result;
+      std::for_each (first, last,
+                     [&result] (std::string const & s) { result.splice (result.end (), csv (s)); });
+      return result;
+    }
 
-    } // end namespace command_line
+  } // end namespace command_line
 } // end namespace pstore
 
 #endif // PSTORE_COMMAND_LINE_CSV_HPP

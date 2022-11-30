@@ -19,14 +19,14 @@
 #if defined(_WIN32) && defined(_MSC_VER)
 
 namespace pstore {
-    namespace details {
+  namespace details {
 
-        win32_pipe_descriptor_traits::type const win32_pipe_descriptor_traits::invalid =
-            INVALID_HANDLE_VALUE;
-        win32_pipe_descriptor_traits::type const win32_pipe_descriptor_traits::error =
-            INVALID_HANDLE_VALUE;
+    win32_pipe_descriptor_traits::type const win32_pipe_descriptor_traits::invalid =
+      INVALID_HANDLE_VALUE;
+    win32_pipe_descriptor_traits::type const win32_pipe_descriptor_traits::error =
+      INVALID_HANDLE_VALUE;
 
-    } // end namespace details
+  } // end namespace details
 } // end namespace pstore
 
 #endif // defined(_WIN32) && defined(_MSC_VER)

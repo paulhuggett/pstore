@@ -21,8 +21,8 @@
 
 namespace pstore {
 
-    struct std::tm local_time (std::time_t clock);
-    struct std::tm gm_time (std::time_t clock);
+  struct std::tm local_time (std::time_t clock);
+  struct std::tm gm_time (std::time_t clock);
 
 } // end namespace pstore
 

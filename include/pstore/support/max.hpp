@@ -24,59 +24,59 @@
 #include <cstdint>
 
 namespace pstore {
-    namespace details {
+  namespace details {
 
-        // size
-        // ~~~~
-        struct size {
-            template <typename T>
-            static constexpr std::size_t value () {
-                return sizeof (T);
-            }
-        };
+    // size
+    // ~~~~
+    struct size {
+      template <typename T>
+      static constexpr std::size_t value () {
+        return sizeof (T);
+      }
+    };
 
-        // align
-        // ~~~~~
-        struct align {
-            template <typename T>
-            static constexpr std::size_t value () {
-                return alignof (T);
-            }
-        };
-
-    } // end namespace details
-
-    // maxof
+    // align
     // ~~~~~
-    template <typename TypeValue, typename... T>
-    struct maxof;
-    template <typename TypeValue>
-    struct maxof<TypeValue> {
-        static constexpr auto value = std::size_t{1};
-    };
-    template <typename TypeValue, typename Head, typename... Tail>
-    struct maxof<TypeValue, Head, Tail...> {
-        static constexpr auto value =
-            std::max (TypeValue::template value<Head> (), maxof<TypeValue, Tail...>::value);
+    struct align {
+      template <typename T>
+      static constexpr std::size_t value () {
+        return alignof (T);
+      }
     };
 
-    // characteristics
-    // ~~~~~~~~~~~~~~~
-    /// Given a list of types, find the size of the largest and the alignment of the most aligned.
-    template <typename... T>
-    struct characteristics {
-        static constexpr std::size_t size = maxof<details::size, T...>::value;
-        static constexpr std::size_t align = maxof<details::align, T...>::value;
-    };
+  } // end namespace details
+
+  // maxof
+  // ~~~~~
+  template <typename TypeValue, typename... T>
+  struct maxof;
+  template <typename TypeValue>
+  struct maxof<TypeValue> {
+    static constexpr auto value = std::size_t{1};
+  };
+  template <typename TypeValue, typename Head, typename... Tail>
+  struct maxof<TypeValue, Head, Tail...> {
+    static constexpr auto value =
+      std::max (TypeValue::template value<Head> (), maxof<TypeValue, Tail...>::value);
+  };
+
+  // characteristics
+  // ~~~~~~~~~~~~~~~
+  /// Given a list of types, find the size of the largest and the alignment of the most aligned.
+  template <typename... T>
+  struct characteristics {
+    static constexpr std::size_t size = maxof<details::size, T...>::value;
+    static constexpr std::size_t align = maxof<details::align, T...>::value;
+  };
 
 } // end namespace pstore
 
 static_assert (pstore::maxof<pstore::details::size, std::uint_least8_t>::value ==
-                   sizeof (std::uint_least8_t),
+                 sizeof (std::uint_least8_t),
                "max(sizeof(1)) != sizeof(1)");
 static_assert (
-    pstore::maxof<pstore::details::size, std::uint_least8_t, std::uint_least16_t>::value >=
-        sizeof (std::uint_least16_t),
-    "max(sizeof(1),sizeof(2) != 2");
+  pstore::maxof<pstore::details::size, std::uint_least8_t, std::uint_least16_t>::value >=
+    sizeof (std::uint_least16_t),
+  "max(sizeof(1),sizeof(2) != 2");
 
 #endif // PSTORE_SUPPORT_MAX_HPP

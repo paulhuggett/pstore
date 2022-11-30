@@ -23,13 +23,12 @@
 #include <memory>
 
 namespace pstore {
-    class database;
+  class database;
 }
 namespace vacuum {
-    struct status;
-    struct user_options;
-    void copy (std::shared_ptr<pstore::database> source, status * const st,
-               user_options const & opt);
+  struct status;
+  struct user_options;
+  void copy (std::shared_ptr<pstore::database> source, status * const st, user_options const & opt);
 } // namespace vacuum
 
 #endif // VACUUM_COPY_HPP

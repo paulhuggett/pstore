@@ -24,14 +24,14 @@
 #include "pstore/serialize/types.hpp"
 
 int main () {
-    // Create the archive. This will be the sink for the data that we're about
-    // to write.
-    std::vector<std::uint8_t> bytes;
-    pstore::serialize::archive::vector_writer writer{bytes};
+  // Create the archive. This will be the sink for the data that we're about
+  // to write.
+  std::vector<std::uint8_t> bytes;
+  pstore::serialize::archive::vector_writer writer{bytes};
 
-    // Write two integers to the archive.
-    pstore::serialize::write (writer, 10, 20);
+  // Write two integers to the archive.
+  pstore::serialize::write (writer, 10, 20);
 
-    // Dump the raw contents of the archive.
-    std::cout << "Wrote these bytes:\n" << writer << '\n';
+  // Dump the raw contents of the archive.
+  std::cout << "Wrote these bytes:\n" << writer << '\n';
 }

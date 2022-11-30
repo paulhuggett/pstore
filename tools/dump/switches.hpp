@@ -28,40 +28,40 @@
 #include "pstore/core/index_types.hpp"
 
 struct switches {
-    bool show_all = false;
+  bool show_all = false;
 
-    /// A list of the individual fragment digests from the command-line.
-    std::list<pstore::index::digest> fragments;
-    /// True if --all-fragments was specified on the command-line.
-    bool show_all_fragments = false;
-    /// A list containing compilations digests from the command-line.
-    std::list<pstore::index::digest> compilations;
-    /// True is --all-compilations was specified on the command-line.
-    bool show_all_compilations = false;
-    /// A list of the individual debug line header digests from the command-line.
-    std::list<pstore::index::digest> debug_line_headers;
-    /// True if --all-debug-line-headers was specified on the command-line.
-    bool show_all_debug_line_headers = false;
-    /// The target-triple to use for disassembly if one is not known.
-    std::string triple;
+  /// A list of the individual fragment digests from the command-line.
+  std::list<pstore::index::digest> fragments;
+  /// True if --all-fragments was specified on the command-line.
+  bool show_all_fragments = false;
+  /// A list containing compilations digests from the command-line.
+  std::list<pstore::index::digest> compilations;
+  /// True is --all-compilations was specified on the command-line.
+  bool show_all_compilations = false;
+  /// A list of the individual debug line header digests from the command-line.
+  std::list<pstore::index::digest> debug_line_headers;
+  /// True if --all-debug-line-headers was specified on the command-line.
+  bool show_all_debug_line_headers = false;
+  /// The target-triple to use for disassembly if one is not known.
+  std::string triple;
 
-    bool show_header = false;
-    bool show_indices = false;
-    bool show_log = false;
+  bool show_header = false;
+  bool show_indices = false;
+  bool show_log = false;
 
-    /// True if --names was specified.
-    bool show_names = false;
-    /// True if --paths was specified.
-    bool show_paths = false;
+  /// True if --names was specified.
+  bool show_names = false;
+  /// True if --paths was specified.
+  bool show_paths = false;
 
-    unsigned revision = pstore::head_revision;
+  unsigned revision = pstore::head_revision;
 
-    bool hex = false;
-    bool expanded_addresses = false;
-    bool no_times = false;
-    bool no_disassembly = false;
+  bool hex = false;
+  bool expanded_addresses = false;
+  bool no_times = false;
+  bool no_disassembly = false;
 
-    std::list<std::string> paths;
+  std::list<std::string> paths;
 };
 
 std::pair<switches, int> get_switches (int argc, pstore::command_line::tchar * argv[]);

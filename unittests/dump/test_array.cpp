@@ -26,17 +26,17 @@
 
 namespace {
 
-    template <typename CharType>
-    class Array : public ::testing::Test {
-    public:
-        void SetUp () final {}
-        void TearDown () final {}
+  template <typename CharType>
+  class Array : public ::testing::Test {
+  public:
+    void SetUp () final {}
+    void TearDown () final {}
 
-    protected:
-        std::basic_ostringstream<CharType> out;
-    };
+  protected:
+    std::basic_ostringstream<CharType> out;
+  };
 
-    using CharacterTypes = ::testing::Types<char, wchar_t>;
+  using CharacterTypes = ::testing::Types<char, wchar_t>;
 
 } // end anonymous namespace
 
@@ -48,33 +48,33 @@ TYPED_TEST_SUITE (Array, CharacterTypes, );
 
 
 TYPED_TEST (Array, Empty) {
-    pstore::dump::array arr;
-    arr.write (this->out);
-    auto const actual = this->out.str ();
-    auto const & expected = convert<TypeParam> ("[ ]");
-    EXPECT_EQ (expected, actual);
+  pstore::dump::array arr;
+  arr.write (this->out);
+  auto const actual = this->out.str ();
+  auto const & expected = convert<TypeParam> ("[ ]");
+  EXPECT_EQ (expected, actual);
 }
 
 TYPED_TEST (Array, TwoNumbers) {
-    using namespace ::pstore::dump;
-    array arr ({make_number (3), make_number (5)});
-    arr.write (this->out);
-    auto const & actual = this->out.str ();
-    auto const & expected = convert<TypeParam> ("[ 0x3, 0x5 ]");
-    EXPECT_EQ (expected, actual);
+  using namespace ::pstore::dump;
+  array arr ({make_number (3), make_number (5)});
+  arr.write (this->out);
+  auto const & actual = this->out.str ();
+  auto const & expected = convert<TypeParam> ("[ 0x3, 0x5 ]");
+  EXPECT_EQ (expected, actual);
 }
 
 TYPED_TEST (Array, TwoStrings) {
-    using namespace ::pstore::dump;
-    array arr ({
-        make_value ("Hello"),
-        make_value ("World"),
-    });
-    arr.write (this->out);
-    auto const & actual = this->out.str ();
-    auto const & expected = convert<TypeParam> ("\n"
-                                                "- Hello\n"
-                                                "- World");
+  using namespace ::pstore::dump;
+  array arr ({
+    make_value ("Hello"),
+    make_value ("World"),
+  });
+  arr.write (this->out);
+  auto const & actual = this->out.str ();
+  auto const & expected = convert<TypeParam> ("\n"
+                                              "- Hello\n"
+                                              "- World");
 
-    EXPECT_EQ (expected, actual);
+  EXPECT_EQ (expected, actual);
 }

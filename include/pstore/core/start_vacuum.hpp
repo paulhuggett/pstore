@@ -20,8 +20,8 @@
 
 namespace pstore {
 
-    class database;
-    void start_vacuum (database const & db);
+  class database;
+  void start_vacuum (database const & db);
 
 } // namespace pstore
 

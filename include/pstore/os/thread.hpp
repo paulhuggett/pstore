@@ -23,22 +23,22 @@
 #include <string>
 
 #ifdef _WIN32
-#    define NOMINMAX
-#    define WIN32_LEAN_AND_MEAN
-#    include <Windows.h>
+#  define NOMINMAX
+#  define WIN32_LEAN_AND_MEAN
+#  include <Windows.h>
 #endif // _WIN32
 
 #include "pstore/support/gsl.hpp"
 
 namespace pstore {
-    namespace threads {
+  namespace threads {
 
-        constexpr std::size_t name_size = 16;
-        void set_name (gsl::not_null<gsl::czstring> name);
-        gsl::czstring get_name (gsl::span<char, name_size> name /*out*/);
-        std::string get_name ();
+    constexpr std::size_t name_size = 16;
+    void set_name (gsl::not_null<gsl::czstring> name);
+    gsl::czstring get_name (gsl::span<char, name_size> name /*out*/);
+    std::string get_name ();
 
-    } // end namespace threads
+  } // end namespace threads
 } // end namespace pstore
 
 #endif // PSTORE_OS_THREAD_HPP

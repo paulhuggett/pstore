@@ -18,13 +18,13 @@
 #include "pstore/support/assert.hpp"
 
 std::list<std::string> pstore::command_line::csv (std::string const & s) {
-    std::list<std::string> result;
-    auto spos = std::string::size_type{0};
-    while (spos != std::string::npos) {
-        auto const epos = s.find (',', spos);
-        PSTORE_ASSERT (epos >= spos);
-        result.emplace_back (s.substr (spos, epos - spos));
-        spos = (epos == std::string::npos) ? epos : epos + 1;
-    }
-    return result;
+  std::list<std::string> result;
+  auto spos = std::string::size_type{0};
+  while (spos != std::string::npos) {
+    auto const epos = s.find (',', spos);
+    PSTORE_ASSERT (epos >= spos);
+    result.emplace_back (s.substr (spos, epos - spos));
+    spos = (epos == std::string::npos) ? epos : epos + 1;
+  }
+  return result;
 }

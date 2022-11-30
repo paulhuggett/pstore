@@ -26,36 +26,40 @@
 #include "pstore/core/database.hpp"
 
 namespace pstore {
-    // ***********************
-    // * generation iterator *
-    // ***********************
-    // (pre-increment)
-    // ~~~~~~~~~~~~~~~
-    generation_iterator & generation_iterator::operator++ () {
-        pos_ = db_->getro<pstore::trailer> (pos_)->a.prev_generation;
-        this->validate ();
-        return *this;
-    }
+  // ***********************
+  // * generation iterator *
+  // ***********************
+  // (pre-increment)
+  // ~~~~~~~~~~~~~~~
+  generation_iterator & generation_iterator::operator++ () {
+    pos_ = db_->getro<pstore::trailer> (pos_)->a.prev_generation;
+    this->validate ();
+    return *this;
+  }
 
-    // (post-increment)
-    // ~~~~~~~~~~~~~~~~
-    generation_iterator generation_iterator::operator++ (int) {
-        generation_iterator prev = *this;
-        ++(*this);
-        return prev;
-    }
+  // (post-increment)
+  // ~~~~~~~~~~~~~~~~
+  generation_iterator generation_iterator::operator++ (int) {
+    generation_iterator prev = *this;
+    ++(*this);
+    return prev;
+  }
 
-    // validate
-    // ~~~~~~~~
-    bool generation_iterator::validate () const { return trailer::validate (*db_, pos_); }
+  // validate
+  // ~~~~~~~~
+  bool generation_iterator::validate () const {
+    return trailer::validate (*db_, pos_);
+  }
 
 
-    // ************************
-    // * generation container *
-    // ************************
-    generation_iterator generation_container::begin () { return {&db_, db_.footer_pos ()}; }
-    generation_iterator generation_container::end () {
-        return {&db_, pstore::typed_address<pstore::trailer>::null ()};
-    }
+  // ************************
+  // * generation container *
+  // ************************
+  generation_iterator generation_container::begin () {
+    return {&db_, db_.footer_pos ()};
+  }
+  generation_iterator generation_container::end () {
+    return {&db_, pstore::typed_address<pstore::trailer>::null ()};
+  }
 
 } // namespace pstore

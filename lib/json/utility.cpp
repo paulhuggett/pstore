@@ -19,14 +19,14 @@
 #include "pstore/json/json.hpp"
 
 namespace pstore {
-    namespace json {
+  namespace json {
 
-        bool is_valid (std::string const & str) {
-            pstore::json::parser<pstore::json::null_output> p;
-            p.input (pstore::gsl::make_span (str));
-            p.eof ();
-            return !p.has_error ();
-        }
+    bool is_valid (std::string const & str) {
+      pstore::json::parser<pstore::json::null_output> p;
+      p.input (pstore::gsl::make_span (str));
+      p.eof ();
+      return !p.has_error ();
+    }
 
-    } // end namespace json
+  } // end namespace json
 } // end namespace pstore

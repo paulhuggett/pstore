@@ -19,29 +19,29 @@
 #include <iostream>
 
 #ifdef _WIN32
-#    include <tchar.h>
+#  include <tchar.h>
 #endif
 
 namespace pstore {
-    namespace command_line {
+  namespace command_line {
 
 #ifdef _WIN32
-#    define PSTORE_NATIVE_TEXT(str) _TEXT (str)
-        using tchar = TCHAR;
+#  define PSTORE_NATIVE_TEXT(str) _TEXT (str)
+    using tchar = TCHAR;
 #else
-        using tchar = char;
-#    define PSTORE_NATIVE_TEXT(str) str
+    using tchar = char;
+#  define PSTORE_NATIVE_TEXT(str) str
 #endif
 
 #if defined(_WIN32) && defined(_UNICODE)
-        extern std::wostream & error_stream;
-        extern std::wostream & out_stream;
+    extern std::wostream & error_stream;
+    extern std::wostream & out_stream;
 #else
-        extern std::ostream & error_stream;
-        extern std::ostream & out_stream;
+    extern std::ostream & error_stream;
+    extern std::ostream & out_stream;
 #endif
 
-    } // end namespace command_line
+  } // end namespace command_line
 
 } // end namespace pstore
 

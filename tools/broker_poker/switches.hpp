@@ -26,14 +26,14 @@
 #include "pstore/support/maybe.hpp"
 
 struct switches {
-    std::string verb;
-    std::string path;
-    std::chrono::milliseconds retry_timeout = std::chrono::milliseconds (500);
+  std::string verb;
+  std::string path;
+  std::chrono::milliseconds retry_timeout = std::chrono::milliseconds (500);
 
-    pstore::maybe<std::string> pipe_path;
+  pstore::maybe<std::string> pipe_path;
 
-    unsigned flood = 0;
-    bool kill = false;
+  unsigned flood = 0;
+  bool kill = false;
 };
 
 std::pair<switches, int> get_switches (int argc, pstore::command_line::tchar * argv[]);

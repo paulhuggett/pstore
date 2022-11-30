@@ -24,10 +24,10 @@
 
 namespace pstore {
 
-    void start_vacuum (database const & db) {
-        brokerface::fifo_path const fifo (nullptr);
-        brokerface::writer wr (fifo);
-        brokerface::send_message (wr, false /*error on timeout*/, "GC", db.path ().c_str ());
-    }
+  void start_vacuum (database const & db) {
+    brokerface::fifo_path const fifo (nullptr);
+    brokerface::writer wr (fifo);
+    brokerface::send_message (wr, false /*error on timeout*/, "GC", db.path ().c_str ());
+  }
 
 } // end namespace pstore

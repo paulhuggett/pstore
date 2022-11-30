@@ -60,13 +60,13 @@
 
 namespace pstore {
 
-    std::uint64_t fnv_64a_str (gsl::czstring const str, std::uint64_t const hval) noexcept {
-        // FNV-1a hash each octet of the string
-        auto result = hval;
-        for (auto const * s = reinterpret_cast<uint8_t const *> (str); *s != '\0'; ++s) {
-            result = fnv_details::append (*s, result);
-        }
-        return result;
+  std::uint64_t fnv_64a_str (gsl::czstring const str, std::uint64_t const hval) noexcept {
+    // FNV-1a hash each octet of the string
+    auto result = hval;
+    for (auto const * s = reinterpret_cast<uint8_t const *> (str); *s != '\0'; ++s) {
+      result = fnv_details::append (*s, result);
     }
+    return result;
+  }
 
 } // end namespace pstore

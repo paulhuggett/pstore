@@ -24,24 +24,24 @@
 
 namespace pstore {
 
-    // A simple RAII class which preserves the value of errno. It's needed in the signal handler to
-    // ensure that we don't splat the value that the in-flight code may depend upon.
-    class errno_saver {
-    public:
-        errno_saver () noexcept
-                : old_{errno} {
-            errno = 0;
-        }
-        errno_saver (errno_saver const &) = delete;
-        ~errno_saver () noexcept { errno = old_; }
-        errno_saver & operator= (errno_saver const &) = delete;
+  // A simple RAII class which preserves the value of errno. It's needed in the signal handler to
+  // ensure that we don't splat the value that the in-flight code may depend upon.
+  class errno_saver {
+  public:
+    errno_saver () noexcept
+            : old_{errno} {
+      errno = 0;
+    }
+    errno_saver (errno_saver const &) = delete;
+    ~errno_saver () noexcept { errno = old_; }
+    errno_saver & operator= (errno_saver const &) = delete;
 
-    private:
-        int const old_;
-    };
+  private:
+    int const old_;
+  };
 
-    using signal_function = void (*) (int);
-    signal_function register_signal_handler (int signo, signal_function func);
+  using signal_function = void (*) (int);
+  signal_function register_signal_handler (int signo, signal_function func);
 
 } // namespace pstore
 

@@ -25,14 +25,14 @@
 
 namespace vacuum {
 
-    struct status {
-        std::atomic<bool> modified{false};
-        std::atomic<bool> done{false};
-        std::atomic<bool> watch_running{false};
-    };
+  struct status {
+    std::atomic<bool> modified{false};
+    std::atomic<bool> done{false};
+    std::atomic<bool> watch_running{false};
+  };
 
-    auto constexpr initial_delay = std::chrono::seconds (10);
-    auto constexpr watch_interval = std::chrono::milliseconds (500);
+  auto constexpr initial_delay = std::chrono::seconds (10);
+  auto constexpr watch_interval = std::chrono::milliseconds (500);
 
 } // namespace vacuum
 #endif // VACUUM_STATUS_HPP

@@ -25,7 +25,7 @@
 std::pair<std::string, std::string> to_value_pair (char const * option);
 
 inline std::pair<std::string, std::string> to_value_pair (std::string const & option) {
-    return to_value_pair (option.c_str ());
+  return to_value_pair (option.c_str ());
 }
 
 #endif // TO_VALUE_PAIR_HPP

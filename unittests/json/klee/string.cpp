@@ -18,7 +18,7 @@
 #include <cstdio>
 
 #ifdef PSTORE_KLEE_RUN
-#    include <iostream>
+#  include <iostream>
 #endif
 
 #include <klee/klee.h>
@@ -26,15 +26,15 @@
 #include "pstore/json/utility.hpp"
 
 int main (int argc, char * argv[]) {
-    constexpr auto buffer_size = 7U;
-    char buffer[buffer_size];
-    klee_make_symbolic (&buffer, sizeof (buffer), "buffer");
-    klee_assume (buffer[0] == '"');
-    klee_assume (buffer[buffer_size - 1U] == '\0');
+  constexpr auto buffer_size = 7U;
+  char buffer[buffer_size];
+  klee_make_symbolic (&buffer, sizeof (buffer), "buffer");
+  klee_assume (buffer[0] == '"');
+  klee_assume (buffer[buffer_size - 1U] == '\0');
 
 #ifdef PSTORE_KLEE_RUN
-    std::cout << buffer << '\n';
+  std::cout << buffer << '\n';
 #endif
 
-    pstore::json::is_valid (buffer);
+  pstore::json::is_valid (buffer);
 }

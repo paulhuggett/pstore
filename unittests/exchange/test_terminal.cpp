@@ -29,134 +29,133 @@ using namespace pstore::exchange::import_ns;
 
 namespace {
 
-    class RuleTest : public testing::Test {
-    public:
-        RuleTest ()
-                : db_storage_{}
-                , db_{db_storage_.file ()} {
-            db_.set_vacuum_mode (pstore::database::vacuum_mode::disabled);
-        }
+  class RuleTest : public testing::Test {
+  public:
+    RuleTest ()
+            : db_storage_{}
+            , db_{db_storage_.file ()} {
+      db_.set_vacuum_mode (pstore::database::vacuum_mode::disabled);
+    }
 
-    private:
-        in_memory_store db_storage_;
+  private:
+    in_memory_store db_storage_;
 
-    protected:
-        pstore::database db_;
-    };
+  protected:
+    pstore::database db_;
+  };
 
-    class ImportBool : public RuleTest {
-    public:
-        ImportBool () = default;
+  class ImportBool : public RuleTest {
+  public:
+    ImportBool () = default;
 
-        decltype (auto) make_json_bool_parser (pstore::gsl::not_null<bool *> v) {
-            return pstore::json::make_parser (callbacks::make<bool_rule> (&db_, v));
-        }
-    };
+    decltype (auto) make_json_bool_parser (pstore::gsl::not_null<bool *> v) {
+      return pstore::json::make_parser (callbacks::make<bool_rule> (&db_, v));
+    }
+  };
 
 } // end anonymous namespace
 
 TEST_F (ImportBool, True) {
-    bool v = false;
-    auto parser = make_json_bool_parser (&v);
-    parser.input ("true");
-    parser.eof ();
+  bool v = false;
+  auto parser = make_json_bool_parser (&v);
+  parser.input ("true");
+  parser.eof ();
 
-    // Check the result.
-    ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
-    EXPECT_EQ (v, true);
+  // Check the result.
+  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  EXPECT_EQ (v, true);
 }
 
 TEST_F (ImportBool, False) {
-    bool v = true;
-    auto parser = make_json_bool_parser (&v);
-    parser.input ("false");
-    parser.eof ();
+  bool v = true;
+  auto parser = make_json_bool_parser (&v);
+  parser.input ("false");
+  parser.eof ();
 
-    // Check the result.
-    ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
-    EXPECT_EQ (v, false);
+  // Check the result.
+  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  EXPECT_EQ (v, false);
 }
 
 namespace {
 
-    class ImportInt64 : public RuleTest {
-    public:
-        ImportInt64 () = default;
-        decltype (auto) make_json_int64_parser (pstore::gsl::not_null<std::int64_t *> v) {
-            return pstore::json::make_parser (callbacks::make<int64_rule> (&db_, v));
-        }
-    };
+  class ImportInt64 : public RuleTest {
+  public:
+    ImportInt64 () = default;
+    decltype (auto) make_json_int64_parser (pstore::gsl::not_null<std::int64_t *> v) {
+      return pstore::json::make_parser (callbacks::make<int64_rule> (&db_, v));
+    }
+  };
 
 } // end anonymous namespace
 
 TEST_F (ImportInt64, Zero) {
-    auto v = std::int64_t{0};
-    auto parser = make_json_int64_parser (&v);
-    parser.input ("0");
-    parser.eof ();
+  auto v = std::int64_t{0};
+  auto parser = make_json_int64_parser (&v);
+  parser.input ("0");
+  parser.eof ();
 
-    // Check the result.
-    ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
-    EXPECT_EQ (v, std::int64_t{0});
+  // Check the result.
+  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  EXPECT_EQ (v, std::int64_t{0});
 }
 
 TEST_F (ImportInt64, One) {
-    auto v = std::int64_t{0};
-    auto parser = make_json_int64_parser (&v);
-    parser.input ("1");
-    parser.eof ();
+  auto v = std::int64_t{0};
+  auto parser = make_json_int64_parser (&v);
+  parser.input ("1");
+  parser.eof ();
 
-    // Check the result.
-    ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
-    EXPECT_EQ (v, std::int64_t{1});
+  // Check the result.
+  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  EXPECT_EQ (v, std::int64_t{1});
 }
 
 TEST_F (ImportInt64, NegativeOne) {
-    auto v = std::int64_t{0};
-    auto parser = make_json_int64_parser (&v);
-    parser.input ("-1");
-    parser.eof ();
+  auto v = std::int64_t{0};
+  auto parser = make_json_int64_parser (&v);
+  parser.input ("-1");
+  parser.eof ();
 
-    // Check the result.
-    ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
-    EXPECT_EQ (v, std::int64_t{-1});
+  // Check the result.
+  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  EXPECT_EQ (v, std::int64_t{-1});
 }
 
 TEST_F (ImportInt64, Min) {
-    auto v = std::int64_t{0};
-    auto parser = make_json_int64_parser (&v);
-    auto const expected = std::numeric_limits<std::int64_t>::min ();
-    parser.input (std::to_string (expected));
-    parser.eof ();
+  auto v = std::int64_t{0};
+  auto parser = make_json_int64_parser (&v);
+  auto const expected = std::numeric_limits<std::int64_t>::min ();
+  parser.input (std::to_string (expected));
+  parser.eof ();
 
-    // Check the result.
-    ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
-    EXPECT_EQ (v, expected);
+  // Check the result.
+  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  EXPECT_EQ (v, expected);
 }
 
 TEST_F (ImportInt64, Max) {
-    auto v = std::int64_t{0};
-    auto parser = make_json_int64_parser (&v);
-    auto const expected = std::numeric_limits<std::int64_t>::max ();
-    parser.input (std::to_string (expected));
-    parser.eof ();
+  auto v = std::int64_t{0};
+  auto parser = make_json_int64_parser (&v);
+  auto const expected = std::numeric_limits<std::int64_t>::max ();
+  parser.input (std::to_string (expected));
+  parser.eof ();
 
-    // Check the result.
-    ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
-    EXPECT_EQ (v, expected);
+  // Check the result.
+  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  EXPECT_EQ (v, expected);
 }
 
 // Test for max int64+1. Note that we're not trying to test the JSON parser itself here which should
 // independently reject values < min int64.
 TEST_F (ImportInt64, ErrorOnMaxPlus1) {
-    auto v = std::int64_t{0};
-    auto parser = make_json_int64_parser (&v);
-    auto const expected =
-        static_cast<std::uint64_t> (std::numeric_limits<std::int64_t>::max ()) + 1U;
-    parser.input (std::to_string (expected));
-    parser.eof ();
+  auto v = std::int64_t{0};
+  auto parser = make_json_int64_parser (&v);
+  auto const expected = static_cast<std::uint64_t> (std::numeric_limits<std::int64_t>::max ()) + 1U;
+  parser.input (std::to_string (expected));
+  parser.eof ();
 
-    // Check the result.
-    EXPECT_TRUE (parser.has_error ());
-    EXPECT_EQ (parser.last_error (), make_error_code (error::number_too_large));
+  // Check the result.
+  EXPECT_TRUE (parser.has_error ());
+  EXPECT_EQ (parser.last_error (), make_error_code (error::number_too_large));
 }

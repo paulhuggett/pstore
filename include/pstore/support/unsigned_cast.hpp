@@ -23,27 +23,27 @@
 
 namespace pstore {
 
-    template <typename SrcT, typename DestT = std::make_unsigned_t<typename std::remove_cv_t<SrcT>>,
-              typename = typename std::enable_if<std::is_integral<SrcT>::value &&
-                                                 std::is_unsigned<DestT>::value>::type>
-    constexpr DestT unsigned_cast (SrcT const value) noexcept {
-        static_assert (
-            std::numeric_limits<DestT>::max () >=
-                std::numeric_limits<std::make_unsigned_t<typename std::remove_cv_t<SrcT>>>::max (),
-            "DestT cannot hold all of the values of SrcT");
-        PSTORE_ASSERT (value >= SrcT{0});
-        return static_cast<DestT> (value);
-    }
+  template <typename SrcT, typename DestT = std::make_unsigned_t<typename std::remove_cv_t<SrcT>>,
+            typename = typename std::enable_if<std::is_integral<SrcT>::value &&
+                                               std::is_unsigned<DestT>::value>::type>
+  constexpr DestT unsigned_cast (SrcT const value) noexcept {
+    static_assert (
+      std::numeric_limits<DestT>::max () >=
+        std::numeric_limits<std::make_unsigned_t<typename std::remove_cv_t<SrcT>>>::max (),
+      "DestT cannot hold all of the values of SrcT");
+    PSTORE_ASSERT (value >= SrcT{0});
+    return static_cast<DestT> (value);
+  }
 
-    template <typename SrcT, typename DestT = std::make_unsigned_t<typename std::remove_cv_t<SrcT>>,
-              typename = typename std::enable_if<std::is_integral<SrcT>::value &&
-                                                 std::is_unsigned<DestT>::value>::type>
-    constexpr DestT checked_unsigned_cast (SrcT const value) {
-        if (value < SrcT{0}) {
-            raise (std::errc::invalid_argument, "bad cast to unsigned");
-        }
-        return unsigned_cast<SrcT, DestT> (value);
+  template <typename SrcT, typename DestT = std::make_unsigned_t<typename std::remove_cv_t<SrcT>>,
+            typename = typename std::enable_if<std::is_integral<SrcT>::value &&
+                                               std::is_unsigned<DestT>::value>::type>
+  constexpr DestT checked_unsigned_cast (SrcT const value) {
+    if (value < SrcT{0}) {
+      raise (std::errc::invalid_argument, "bad cast to unsigned");
     }
+    return unsigned_cast<SrcT, DestT> (value);
+  }
 
 } // end namespace pstore
 

@@ -29,7 +29,7 @@ constexpr std::size_t in_memory_store::page_size_;
 in_memory_store::in_memory_store ()
         : buffer_{pstore::aligned_valloc (file_size, page_size_)}
         , file_{std::make_shared<pstore::file::in_memory> (buffer_, file_size)} {
-    pstore::database::build_new_store (*file_);
+  pstore::database::build_new_store (*file_);
 }
 
 // (dtor)

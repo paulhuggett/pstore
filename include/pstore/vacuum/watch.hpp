@@ -27,21 +27,21 @@
 #include "pstore/os/file.hpp"
 
 namespace pstore {
-    class database;
+  class database;
 }
 
 namespace vacuum {
-    struct watch_state {
-        bool start_watch = false;
-        std::mutex start_watch_mutex;
-        std::condition_variable start_watch_cv;
-    };
-    // TODO: this shouldn't be a global variable.
-    extern watch_state wst;
+  struct watch_state {
+    bool start_watch = false;
+    std::mutex start_watch_mutex;
+    std::condition_variable start_watch_cv;
+  };
+  // TODO: this shouldn't be a global variable.
+  extern watch_state wst;
 
-    struct status;
-    void watch (std::shared_ptr<pstore::database> from,
-                std::unique_lock<pstore::file::range_lock> & lock, status * const st);
+  struct status;
+  void watch (std::shared_ptr<pstore::database> from,
+              std::unique_lock<pstore::file::range_lock> & lock, status * const st);
 } // namespace vacuum
 
 #endif // PSTORE_VACUUM_WATCH_HPP

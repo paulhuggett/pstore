@@ -18,22 +18,22 @@
 #include <ostream>
 
 namespace pstore {
-    namespace repo {
+  namespace repo {
 
-        std::ostream & operator<< (std::ostream & os, section_kind const kind) {
-            auto str = "unknown section_kind";
+    std::ostream & operator<< (std::ostream & os, section_kind const kind) {
+      auto str = "unknown section_kind";
 #define X(a)                                                                                       \
-    case section_kind::a: str = #a; break;
-            switch (kind) {
-                PSTORE_MCREPO_SECTION_KINDS
-            case section_kind::last: break;
-            }
-            return os << str;
+  case section_kind::a: str = #a; break;
+      switch (kind) {
+        PSTORE_MCREPO_SECTION_KINDS
+      case section_kind::last: break;
+      }
+      return os << str;
 #undef X
-        }
+    }
 
-        section_creation_dispatcher::~section_creation_dispatcher () noexcept = default;
-        dispatcher::~dispatcher () noexcept = default;
+    section_creation_dispatcher::~section_creation_dispatcher () noexcept = default;
+    dispatcher::~dispatcher () noexcept = default;
 
-    } // end namespace repo
+  } // end namespace repo
 } // end namespace pstore

@@ -30,28 +30,28 @@
 #include "pstore/support/gsl.hpp"
 
 TEST (ServeDynamicContent, BadRequest) {
-    std::vector<std::uint8_t> output;
-    auto sender = [&output] (int io, pstore::gsl::span<std::uint8_t const> const & s) {
-        std::copy (std::begin (s), std::end (s), std::back_inserter (output));
-        return pstore::error_or<int>{io};
-    };
+  std::vector<std::uint8_t> output;
+  auto sender = [&output] (int io, pstore::gsl::span<std::uint8_t const> const & s) {
+    std::copy (std::begin (s), std::end (s), std::back_inserter (output));
+    return pstore::error_or<int>{io};
+  };
 
-    int io = 0;
-    pstore::error_or<int> const err = pstore::http::serve_dynamic_content (
-        sender, io, std::string{pstore::http::dynamic_path} + "bad_request");
-    EXPECT_EQ (err.get_error (), make_error_code (pstore::http::error_code::bad_request));
+  int io = 0;
+  pstore::error_or<int> const err = pstore::http::serve_dynamic_content (
+    sender, io, std::string{pstore::http::dynamic_path} + "bad_request");
+  EXPECT_EQ (err.get_error (), make_error_code (pstore::http::error_code::bad_request));
 }
 
 TEST (ServeDynamicContent, Version) {
-    std::string output;
-    auto sender = [&output] (int io, pstore::gsl::span<std::uint8_t const> const & s) {
-        std::transform (std::begin (s), std::end (s), std::back_inserter (output),
-                        [] (std::uint8_t v) { return static_cast<char> (v); });
-        return pstore::error_or<int>{io};
-    };
+  std::string output;
+  auto sender = [&output] (int io, pstore::gsl::span<std::uint8_t const> const & s) {
+    std::transform (std::begin (s), std::end (s), std::back_inserter (output),
+                    [] (std::uint8_t v) { return static_cast<char> (v); });
+    return pstore::error_or<int>{io};
+  };
 
-    pstore::error_or<int> const r = pstore::http::serve_dynamic_content (
-        sender, 0, std::string{pstore::http::dynamic_path} + "version");
-    EXPECT_TRUE (r);
-    EXPECT_THAT (output, ::testing::ContainsRegex ("\r\n\r\n\\{ *\"version\" *:"));
+  pstore::error_or<int> const r = pstore::http::serve_dynamic_content (
+    sender, 0, std::string{pstore::http::dynamic_path} + "version");
+  EXPECT_TRUE (r);
+  EXPECT_THAT (output, ::testing::ContainsRegex ("\r\n\r\n\\{ *\"version\" *:"));
 }

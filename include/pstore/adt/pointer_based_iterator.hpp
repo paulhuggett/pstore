@@ -49,143 +49,143 @@
 
 namespace pstore {
 
-    template <typename T>
-    class pointer_based_iterator {
-    public:
-        using value_type = T;
-        using difference_type = std::ptrdiff_t;
-        using pointer = value_type *;
-        using reference = value_type &;
-        using iterator_category = std::random_access_iterator_tag;
+  template <typename T>
+  class pointer_based_iterator {
+  public:
+    using value_type = T;
+    using difference_type = std::ptrdiff_t;
+    using pointer = value_type *;
+    using reference = value_type &;
+    using iterator_category = std::random_access_iterator_tag;
 
-        explicit constexpr pointer_based_iterator (std::nullptr_t) noexcept
-                : pos_{nullptr} {}
+    explicit constexpr pointer_based_iterator (std::nullptr_t) noexcept
+            : pos_{nullptr} {}
 
-        template <typename Other, typename = typename std::enable_if_t<
-                                      std::is_const<T>::value && !std::is_const<Other>::value>>
-        explicit constexpr pointer_based_iterator (Other const * const pos) noexcept
-                : pos_{pos} {}
+    template <typename Other, typename = typename std::enable_if_t<std::is_const<T>::value &&
+                                                                   !std::is_const<Other>::value>>
+    explicit constexpr pointer_based_iterator (Other const * const pos) noexcept
+            : pos_{pos} {}
 
-        template <typename Other, typename = typename std::enable_if_t<std::is_const<T>::value ==
-                                                                       std::is_const<Other>::value>>
-        explicit constexpr pointer_based_iterator (Other * const pos) noexcept
-                : pos_{pos} {}
+    template <typename Other, typename = typename std::enable_if_t<std::is_const<T>::value ==
+                                                                   std::is_const<Other>::value>>
+    explicit constexpr pointer_based_iterator (Other * const pos) noexcept
+            : pos_{pos} {}
 
-        template <typename Other>
-        constexpr bool operator== (pointer_based_iterator<Other> const & other) const noexcept {
-            return pos_ == &*other;
-        }
-        template <typename Other>
-        constexpr bool operator!= (pointer_based_iterator<Other> const & other) const noexcept {
-            return pos_ != &*other;
-        }
-
-        template <typename Other>
-        constexpr pointer_based_iterator &
-        operator= (pointer_based_iterator<Other> const & other) noexcept {
-            pos_ = &*other;
-            return *this;
-        }
-
-        constexpr value_type * operator-> () noexcept { return pos_; }
-        constexpr value_type const * operator-> () const noexcept { return pos_; }
-        constexpr value_type & operator* () noexcept { return *pos_; }
-        constexpr value_type const & operator* () const noexcept { return *pos_; }
-
-        constexpr value_type & operator[] (std::size_t const n) noexcept { return *(pos_ + n); }
-        constexpr value_type const & operator[] (std::size_t const n) const noexcept {
-            return *(pos_ + n);
-        }
-
-        pointer_based_iterator & operator++ () noexcept {
-            ++pos_;
-            return *this;
-        }
-        pointer_based_iterator operator++ (int) noexcept {
-            auto const prev = *this;
-            ++*this;
-            return prev;
-        }
-        pointer_based_iterator & operator-- () noexcept {
-            --pos_;
-            return *this;
-        }
-        pointer_based_iterator operator-- (int) noexcept {
-            auto const prev = *this;
-            --*this;
-            return prev;
-        }
-
-        pointer_based_iterator & operator+= (difference_type const n) noexcept {
-            pos_ += n;
-            return *this;
-        }
-        pointer_based_iterator & operator-= (difference_type const n) noexcept {
-            pos_ -= n;
-            return *this;
-        }
-
-        template <typename Other>
-        constexpr bool operator< (pointer_based_iterator<Other> const & other) const noexcept {
-            return pos_ < &*other;
-        }
-        template <typename Other>
-        constexpr bool operator> (pointer_based_iterator<Other> const & other) const noexcept {
-            return pos_ > &*other;
-        }
-        template <typename Other>
-        constexpr bool operator<= (pointer_based_iterator<Other> const & other) const noexcept {
-            return pos_ <= &*other;
-        }
-        template <typename Other>
-        constexpr bool operator>= (pointer_based_iterator<Other> const & other) const noexcept {
-            return pos_ >= &*other;
-        }
-
-    private:
-        pointer pos_;
-    };
-
-    /// Move an iterator \p i forwards by distance \p n. \p n can be both positive or negative.
-    /// \param i  The iterator to be moved.
-    /// \param n  The distance by which iterator \p i should be moved.
-    /// \returns  The new iterator.
-    template <typename T>
-    inline pointer_based_iterator<T>
-    operator+ (pointer_based_iterator<T> const i,
-               typename pointer_based_iterator<T>::difference_type const n) noexcept {
-        auto temp = i;
-        return temp += n;
+    template <typename Other>
+    constexpr bool operator== (pointer_based_iterator<Other> const & other) const noexcept {
+      return pos_ == &*other;
     }
-    /// Move an iterator \p i forwards by distance \p n. \p n can be both positive or negative.
-    /// \param i  The iterator to be moved.
-    /// \param n  The distance by which iterator \p i should be moved.
-    /// \returns  The new iterator.
-    template <typename T>
-    inline pointer_based_iterator<T>
-    operator+ (typename pointer_based_iterator<T>::difference_type const n,
-               pointer_based_iterator<T> const i) noexcept {
-        auto temp = i;
-        return temp += n;
+    template <typename Other>
+    constexpr bool operator!= (pointer_based_iterator<Other> const & other) const noexcept {
+      return pos_ != &*other;
     }
 
-    /// Move an iterator \p i backwards by distance \p n. \p n can be both positive or negative.
-    /// \param i  The iterator to be moved.
-    /// \param n  The distance by which iterator \p i should be moved.
-    /// \returns  The new iterator.
-    template <typename T>
-    inline pointer_based_iterator<T>
-    operator- (pointer_based_iterator<T> const i,
-               typename pointer_based_iterator<T>::difference_type const n) noexcept {
-        auto temp = i;
-        return temp -= n;
+    template <typename Other>
+    constexpr pointer_based_iterator &
+    operator= (pointer_based_iterator<Other> const & other) noexcept {
+      pos_ = &*other;
+      return *this;
     }
 
-    template <typename T>
-    inline typename pointer_based_iterator<T>::difference_type
-    operator- (pointer_based_iterator<T> b, pointer_based_iterator<T> a) noexcept {
-        return &*b - &*a;
+    constexpr value_type * operator->() noexcept { return pos_; }
+    constexpr value_type const * operator->() const noexcept { return pos_; }
+    constexpr value_type & operator* () noexcept { return *pos_; }
+    constexpr value_type const & operator* () const noexcept { return *pos_; }
+
+    constexpr value_type & operator[] (std::size_t const n) noexcept { return *(pos_ + n); }
+    constexpr value_type const & operator[] (std::size_t const n) const noexcept {
+      return *(pos_ + n);
     }
+
+    pointer_based_iterator & operator++ () noexcept {
+      ++pos_;
+      return *this;
+    }
+    pointer_based_iterator operator++ (int) noexcept {
+      auto const prev = *this;
+      ++*this;
+      return prev;
+    }
+    pointer_based_iterator & operator-- () noexcept {
+      --pos_;
+      return *this;
+    }
+    pointer_based_iterator operator-- (int) noexcept {
+      auto const prev = *this;
+      --*this;
+      return prev;
+    }
+
+    pointer_based_iterator & operator+= (difference_type const n) noexcept {
+      pos_ += n;
+      return *this;
+    }
+    pointer_based_iterator & operator-= (difference_type const n) noexcept {
+      pos_ -= n;
+      return *this;
+    }
+
+    template <typename Other>
+    constexpr bool operator<(pointer_based_iterator<Other> const & other) const noexcept {
+      return pos_ < &*other;
+    }
+    template <typename Other>
+    constexpr bool operator> (pointer_based_iterator<Other> const & other) const noexcept {
+      return pos_ > &*other;
+    }
+    template <typename Other>
+    constexpr bool operator<= (pointer_based_iterator<Other> const & other) const noexcept {
+      return pos_ <= &*other;
+    }
+    template <typename Other>
+    constexpr bool operator>= (pointer_based_iterator<Other> const & other) const noexcept {
+      return pos_ >= &*other;
+    }
+
+  private:
+    pointer pos_;
+  };
+
+  /// Move an iterator \p i forwards by distance \p n. \p n can be both positive or negative.
+  /// \param i  The iterator to be moved.
+  /// \param n  The distance by which iterator \p i should be moved.
+  /// \returns  The new iterator.
+  template <typename T>
+  inline pointer_based_iterator<T>
+  operator+ (pointer_based_iterator<T> const i,
+             typename pointer_based_iterator<T>::difference_type const n) noexcept {
+    auto temp = i;
+    return temp += n;
+  }
+  /// Move an iterator \p i forwards by distance \p n. \p n can be both positive or negative.
+  /// \param i  The iterator to be moved.
+  /// \param n  The distance by which iterator \p i should be moved.
+  /// \returns  The new iterator.
+  template <typename T>
+  inline pointer_based_iterator<T>
+  operator+ (typename pointer_based_iterator<T>::difference_type const n,
+             pointer_based_iterator<T> const i) noexcept {
+    auto temp = i;
+    return temp += n;
+  }
+
+  /// Move an iterator \p i backwards by distance \p n. \p n can be both positive or negative.
+  /// \param i  The iterator to be moved.
+  /// \param n  The distance by which iterator \p i should be moved.
+  /// \returns  The new iterator.
+  template <typename T>
+  inline pointer_based_iterator<T>
+  operator- (pointer_based_iterator<T> const i,
+             typename pointer_based_iterator<T>::difference_type const n) noexcept {
+    auto temp = i;
+    return temp -= n;
+  }
+
+  template <typename T>
+  inline typename pointer_based_iterator<T>::difference_type
+  operator- (pointer_based_iterator<T> b, pointer_based_iterator<T> a) noexcept {
+    return &*b - &*a;
+  }
 
 } // end namespace pstore
 

@@ -28,23 +28,23 @@ int _tmain (int argc, TCHAR * argv[]) {
 #else
 int main (int argc, char * argv[]) {
 #endif
-    switches opt;
-    std::tie (opt, broker::exit_code) = get_switches (argc, argv);
+  switches opt;
+  std::tie (opt, broker::exit_code) = get_switches (argc, argv);
 
-    if (broker::exit_code != EXIT_SUCCESS) {
-        log (priority::error, "unable to parse commandline arguments");
-        return broker::exit_code;
-    }
-
-    try {
-        broker::exit_code = run_broker (opt);
-    } catch (std::exception const & ex) {
-        log (priority::error, "error: ", ex.what ());
-        broker::exit_code = EXIT_FAILURE;
-    } catch (...) {
-        log (priority::error, "unknown error");
-        broker::exit_code = EXIT_FAILURE;
-    }
-
+  if (broker::exit_code != EXIT_SUCCESS) {
+    log (priority::error, "unable to parse commandline arguments");
     return broker::exit_code;
+  }
+
+  try {
+    broker::exit_code = run_broker (opt);
+  } catch (std::exception const & ex) {
+    log (priority::error, "error: ", ex.what ());
+    broker::exit_code = EXIT_FAILURE;
+  } catch (...) {
+    log (priority::error, "unknown error");
+    broker::exit_code = EXIT_FAILURE;
+  }
+
+  return broker::exit_code;
 }

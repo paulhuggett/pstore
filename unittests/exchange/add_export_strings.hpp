@@ -53,26 +53,25 @@
 template <pstore::trailer::indices Index, typename InputIterator, typename OutputIterator>
 void add_export_strings (pstore::database & db, InputIterator first, InputIterator last,
                          OutputIterator out) {
-    mock_mutex mutex;
-    auto transaction = begin (db, std::unique_lock<mock_mutex>{mutex});
-    auto const name_index = pstore::index::get_index<Index> (db);
+  mock_mutex mutex;
+  auto transaction = begin (db, std::unique_lock<mock_mutex>{mutex});
+  auto const name_index = pstore::index::get_index<Index> (db);
 
-    std::vector<pstore::raw_sstring_view> views;
-    std::transform (first, last, std::back_inserter (views),
-                    [] (pstore::gsl::czstring str) { return pstore::make_sstring_view (str); });
+  std::vector<pstore::raw_sstring_view> views;
+  std::transform (first, last, std::back_inserter (views),
+                  [] (pstore::gsl::czstring str) { return pstore::make_sstring_view (str); });
 
-    using string_address = pstore::typed_address<pstore::indirect_string>;
-    pstore::indirect_string_adder adder;
-    std::transform (std::begin (views), std::end (views), out,
-                    [&] (pstore::raw_sstring_view const & view) {
-                        std::pair<pstore::index::name_index::iterator, bool> const res1 =
-                            adder.add (transaction, name_index, &view);
-                        return std::make_pair (view.to_string (),
-                                               string_address::make (res1.first.get_address ()));
-                    });
+  using string_address = pstore::typed_address<pstore::indirect_string>;
+  pstore::indirect_string_adder adder;
+  std::transform (
+    std::begin (views), std::end (views), out, [&] (pstore::raw_sstring_view const & view) {
+      std::pair<pstore::index::name_index::iterator, bool> const res1 =
+        adder.add (transaction, name_index, &view);
+      return std::make_pair (view.to_string (), string_address::make (res1.first.get_address ()));
+    });
 
-    adder.flush (transaction);
-    transaction.commit ();
+  adder.flush (transaction);
+  transaction.commit ();
 }
 
 #endif // PSTORE_UNITTESTS_EXCHANGE_ADD_EXPORT_STRINGS_HPP

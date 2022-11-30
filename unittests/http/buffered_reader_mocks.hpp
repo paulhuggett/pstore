@@ -37,20 +37,20 @@ using gets_result_type = pstore::error_or_n<int, pstore::maybe<std::string>>;
 
 using refiller_result_type = pstore::error_or_n<int, pstore::gsl::span<std::uint8_t>::iterator>;
 using refiller_function =
-    std::function<refiller_result_type (int, pstore::gsl::span<std::uint8_t> const &)>;
+  std::function<refiller_result_type (int, pstore::gsl::span<std::uint8_t> const &)>;
 
 class mock_refiller {
 public:
-    virtual ~mock_refiller () noexcept;
-    virtual refiller_result_type fill (int c, pstore::gsl::span<std::uint8_t> const &) const = 0;
+  virtual ~mock_refiller () noexcept;
+  virtual refiller_result_type fill (int c, pstore::gsl::span<std::uint8_t> const &) const = 0;
 };
 
 class refiller : public mock_refiller {
 public:
-    ~refiller () noexcept override;
+  ~refiller () noexcept override;
 
-    MOCK_CONST_METHOD2 (fill, refiller_result_type (int, pstore::gsl::span<std::uint8_t> const &));
-    refiller_function refill_function () const;
+  MOCK_CONST_METHOD2 (fill, refiller_result_type (int, pstore::gsl::span<std::uint8_t> const &));
+  refiller_function refill_function () const;
 };
 
 /// Returns a function which which simply returns end-of-stream when invoked.

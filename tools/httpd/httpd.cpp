@@ -19,7 +19,7 @@
 #include <thread>
 
 #ifndef _WIN32
-#    include <signal.h>
+#  include <signal.h>
 #endif
 
 #include "pstore/command_line/command_line.hpp"
@@ -40,10 +40,10 @@ using namespace pstore::command_line;
 
 namespace {
 
-    opt<in_port_t> http_port ("port", desc ("The port number on which the server will listen"),
-                              init (in_port_t{8080}));
+  opt<in_port_t> http_port ("port", desc ("The port number on which the server will listen"),
+                            init (in_port_t{8080}));
 
-    alias http_port2 ("p", desc ("Alias for --port"), aliasopt (http_port));
+  alias http_port2 ("p", desc ("Alias for --port"), aliasopt (http_port));
 
 } // end anonymous namespace
 
@@ -52,49 +52,48 @@ int _tmain (int argc, TCHAR * argv[]) {
 #else
 int main (int argc, char * argv[]) {
 #endif
-    int exit_code = EXIT_SUCCESS;
+  int exit_code = EXIT_SUCCESS;
 
 #ifdef _WIN32
-    pstore::wsa_startup startup;
-    if (!startup.started ()) {
-        std::cerr << "WSAStartup() failed\n";
-        return EXIT_FAILURE;
-    }
+  pstore::wsa_startup startup;
+  if (!startup.started ()) {
+    std::cerr << "WSAStartup() failed\n";
+    return EXIT_FAILURE;
+  }
 #else
-    signal (SIGPIPE, SIG_IGN);
+  signal (SIGPIPE, SIG_IGN);
 #endif // _WIN32
 
-    PSTORE_TRY {
-        parse_command_line_options (
-            argc, argv,
-            "pstore httpd: A basic HTTP/WS server for testing the pstore-http library.\n");
+  PSTORE_TRY {
+    parse_command_line_options (
+      argc, argv, "pstore httpd: A basic HTTP/WS server for testing the pstore-http library.\n");
 
-        static constexpr auto ident = "main";
-        pstore::threads::set_name (ident);
-        pstore::create_log_stream (ident);
+    static constexpr auto ident = "main";
+    pstore::threads::set_name (ident);
+    pstore::create_log_stream (ident);
 
-        pstore::http::server_status status{http_port.get ()};
-        std::thread ([&status] () {
-            static constexpr auto * const name = "http";
-            pstore::threads::set_name (name);
-            pstore::create_log_stream (name);
-            pstore::http::server (
-                fs, &status, pstore::http::channel_container{}, [] (in_port_t const port) {
-                    out_stream << PSTORE_NATIVE_TEXT ("Listening on port ") << port << std::endl;
-                });
-        }).join ();
-    }
-    // clang-format off
-    PSTORE_CATCH (std::exception const & ex, { // clang-format on
-        error_stream << PSTORE_NATIVE_TEXT ("Error: ") << pstore::utf::to_native_string (ex.what ())
-                     << PSTORE_NATIVE_TEXT ('\n');
-        exit_code = EXIT_FAILURE;
-    })
-    // clang-format off
-    PSTORE_CATCH (..., { // clang-format on
-        error_stream << PSTORE_NATIVE_TEXT ("Unknown exception.\n");
-        exit_code = EXIT_FAILURE;
-    })
-    // clang-format on
-    return exit_code;
+    pstore::http::server_status status{http_port.get ()};
+    std::thread ([&status] () {
+      static constexpr auto * const name = "http";
+      pstore::threads::set_name (name);
+      pstore::create_log_stream (name);
+      pstore::http::server (
+        fs, &status, pstore::http::channel_container{}, [] (in_port_t const port) {
+          out_stream << PSTORE_NATIVE_TEXT ("Listening on port ") << port << std::endl;
+        });
+    }).join ();
+  }
+  // clang-format off
+  PSTORE_CATCH (std::exception const & ex, { // clang-format on
+    error_stream << PSTORE_NATIVE_TEXT ("Error: ") << pstore::utf::to_native_string (ex.what ())
+                 << PSTORE_NATIVE_TEXT ('\n');
+    exit_code = EXIT_FAILURE;
+  })
+  // clang-format off
+  PSTORE_CATCH (..., { // clang-format on
+    error_stream << PSTORE_NATIVE_TEXT ("Unknown exception.\n");
+    exit_code = EXIT_FAILURE;
+  })
+  // clang-format on
+  return exit_code;
 }

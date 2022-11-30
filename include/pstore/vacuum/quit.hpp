@@ -24,10 +24,10 @@
 #include <thread>
 
 namespace pstore {
-    class database;
+  class database;
 }
 namespace vacuum {
-    struct status;
+  struct status;
 }
 
 void notify_quit_thread ();

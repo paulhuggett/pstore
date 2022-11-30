@@ -25,11 +25,11 @@
 #include "pstore/core/database.hpp"
 
 struct switches {
-    std::string db_path;
-    pstore::database::vacuum_mode vmode = pstore::database::vacuum_mode::disabled;
-    std::list<std::pair<std::string, std::string>> add;
-    std::list<std::string> strings;
-    std::list<std::pair<std::string, std::string>> files;
+  std::string db_path;
+  pstore::database::vacuum_mode vmode = pstore::database::vacuum_mode::disabled;
+  std::list<std::pair<std::string, std::string>> add;
+  std::list<std::string> strings;
+  std::list<std::pair<std::string, std::string>> files;
 };
 
 std::pair<switches, int> get_switches (int argc, pstore::command_line::tchar * argv[]);

@@ -22,13 +22,13 @@
 #include "pstore/support/maybe.hpp"
 
 namespace pstore {
-    namespace diff_dump {
+  namespace diff_dump {
 
-        using revisions_type = std::pair<revision_number, maybe<revision_number>>;
-        revisions_type update_revisions (revisions_type const & revisions,
-                                         revision_number const actual_head);
+    using revisions_type = std::pair<revision_number, maybe<revision_number>>;
+    revisions_type update_revisions (revisions_type const & revisions,
+                                     revision_number const actual_head);
 
-    } // end namespace diff_dump
+  } // end namespace diff_dump
 } // end namespace pstore
 
 #endif // PSTORE_DIFF_DUMP_REVISION_HPP

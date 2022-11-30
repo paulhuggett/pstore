@@ -25,61 +25,61 @@
 
 namespace {
 
-    auto make_pipe () -> pstore::brokerface::fifo_path::client_pipe {
-        return pstore::brokerface::fifo_path::client_pipe{};
-    }
+  auto make_pipe () -> pstore::brokerface::fifo_path::client_pipe {
+    return pstore::brokerface::fifo_path::client_pipe{};
+  }
 
-    class mock_writer : public pstore::brokerface::writer {
-    public:
-        mock_writer ()
-                : pstore::brokerface::writer (make_pipe ()) {}
-        MOCK_METHOD1 (write_impl, bool (pstore::brokerface::message_type const &));
-    };
+  class mock_writer : public pstore::brokerface::writer {
+  public:
+    mock_writer ()
+            : pstore::brokerface::writer (make_pipe ()) {}
+    MOCK_METHOD1 (write_impl, bool (pstore::brokerface::message_type const &));
+  };
 
-    class BrokerSendMessage : public ::testing::Test {
-    public:
-        BrokerSendMessage ()
-                : message_id_{pstore::brokerface::next_message_id ()} {}
+  class BrokerSendMessage : public ::testing::Test {
+  public:
+    BrokerSendMessage ()
+            : message_id_{pstore::brokerface::next_message_id ()} {}
 
-    protected:
-        std::uint32_t const message_id_;
-    };
+  protected:
+    std::uint32_t const message_id_;
+  };
 
 } // end anonymous namespace
 
 
 TEST_F (BrokerSendMessage, SinglePart) {
-    using ::testing::Eq;
-    using ::testing::Return;
+  using ::testing::Eq;
+  using ::testing::Return;
 
-    mock_writer wr;
-    pstore::brokerface::message_type const expected{message_id_, 0, 1, "hello world"};
-    EXPECT_CALL (wr, write_impl (Eq (expected))).WillOnce (Return (true));
+  mock_writer wr;
+  pstore::brokerface::message_type const expected{message_id_, 0, 1, "hello world"};
+  EXPECT_CALL (wr, write_impl (Eq (expected))).WillOnce (Return (true));
 
-    pstore::brokerface::send_message (wr, true /*error on timeout*/, "hello", "world");
+  pstore::brokerface::send_message (wr, true /*error on timeout*/, "hello", "world");
 }
 
 TEST_F (BrokerSendMessage, TwoParts) {
-    using ::testing::Eq;
-    using ::testing::Return;
+  using ::testing::Eq;
+  using ::testing::Return;
 
-    std::string const verb = "verb";
-    auto const part1_chars = pstore::brokerface::message_type::payload_chars - verb.length () - 1U;
+  std::string const verb = "verb";
+  auto const part1_chars = pstore::brokerface::message_type::payload_chars - verb.length () - 1U;
 
-    // Increase the length by 1 to cause the payload to overflow into a second message.
-    std::string::size_type const payload_length = part1_chars + 1U;
-    std::string const path (payload_length, 'p');
+  // Increase the length by 1 to cause the payload to overflow into a second message.
+  std::string::size_type const payload_length = part1_chars + 1U;
+  std::string const path (payload_length, 'p');
 
-    auto const part2_chars = payload_length - part1_chars;
+  auto const part2_chars = payload_length - part1_chars;
 
-    mock_writer wr;
+  mock_writer wr;
 
-    pstore::brokerface::message_type const expected1 (message_id_, 0, 2,
-                                                      verb + ' ' + std::string (part1_chars, 'p'));
-    pstore::brokerface::message_type const expected2 (message_id_, 1, 2,
-                                                      std::string (part2_chars, 'p'));
-    EXPECT_CALL (wr, write_impl (Eq (expected1))).WillOnce (Return (true));
-    EXPECT_CALL (wr, write_impl (Eq (expected2))).WillOnce (Return (true));
+  pstore::brokerface::message_type const expected1 (message_id_, 0, 2,
+                                                    verb + ' ' + std::string (part1_chars, 'p'));
+  pstore::brokerface::message_type const expected2 (message_id_, 1, 2,
+                                                    std::string (part2_chars, 'p'));
+  EXPECT_CALL (wr, write_impl (Eq (expected1))).WillOnce (Return (true));
+  EXPECT_CALL (wr, write_impl (Eq (expected2))).WillOnce (Return (true));
 
-    pstore::brokerface::send_message (wr, true /*error on timeout*/, verb.c_str (), path.c_str ());
+  pstore::brokerface::send_message (wr, true /*error on timeout*/, verb.c_str (), path.c_str ());
 }

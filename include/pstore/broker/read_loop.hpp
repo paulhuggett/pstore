@@ -23,20 +23,20 @@
 #include "pstore/brokerface/fifo_path.hpp"
 
 namespace pstore {
-    namespace broker {
-        class command_processor;
-        class recorder;
+  namespace broker {
+    class command_processor;
+    class recorder;
 
-        namespace details {
+    namespace details {
 
-            constexpr unsigned timeout_seconds = 60U;
+      constexpr unsigned timeout_seconds = 60U;
 
-        } // end namespace details
+    } // end namespace details
 
-        void read_loop (brokerface::fifo_path & path, std::shared_ptr<recorder> & record_file,
-                        std::shared_ptr<command_processor> cp);
+    void read_loop (brokerface::fifo_path & path, std::shared_ptr<recorder> & record_file,
+                    std::shared_ptr<command_processor> cp);
 
-    } // end namespace broker
+  } // end namespace broker
 } // end namespace pstore
 
 #endif // PSTORE_BROKER_READ_LOOP_HPP

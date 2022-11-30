@@ -18,30 +18,32 @@
 #include <algorithm>
 
 namespace pstore {
-    namespace command_line {
+  namespace command_line {
 
-            details::values::values (std::initializer_list<literal> options)
-                    : values_{std::move (options)} {}
+    details::values::values (std::initializer_list<literal> options)
+            : values_{std::move (options)} {}
 
-            name::name (std::string name)
-                    : name_{std::move (name)} {}
+    name::name (std::string name)
+            : name_{std::move (name)} {}
 
-            usage::usage (std::string str)
-                    : desc_{std::move (str)} {}
+    usage::usage (std::string str)
+            : desc_{std::move (str)} {}
 
-            desc::desc (std::string str)
-                    : desc_{std::move (str)} {}
+    desc::desc (std::string str)
+            : desc_{std::move (str)} {}
 
-            aliasopt::aliasopt (option & o)
-                    : original_ (o) {}
-            void aliasopt::apply (alias & o) const { o.set_original (&original_); }
+    aliasopt::aliasopt (option & o)
+            : original_ (o) {}
+    void aliasopt::apply (alias & o) const {
+      o.set_original (&original_);
+    }
 
-            details::comma_separated const comma_separated;
+    details::comma_separated const comma_separated;
 
-            details::one_or_more const one_or_more;
-            details::optional const optional;
-            details::positional const positional;
-            details::required const required;
+    details::one_or_more const one_or_more;
+    details::optional const optional;
+    details::positional const positional;
+    details::required const required;
 
-    } // end namespace command_line
+  } // end namespace command_line
 } // end namespace pstore

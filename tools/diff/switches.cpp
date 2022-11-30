@@ -24,34 +24,34 @@ using namespace pstore::command_line;
 
 namespace {
 
-    opt<std::string> db_path (positional, usage ("repository"),
-                              desc ("Path of the pstore repository to be read."), required);
+  opt<std::string> db_path (positional, usage ("repository"),
+                            desc ("Path of the pstore repository to be read."), required);
 
-    opt<pstore::command_line::revision_opt, parser<std::string>>
-        first_revision (positional, usage ("[1st-revision]"),
-                        desc ("The first revision number (or 'HEAD')"), optional);
+  opt<pstore::command_line::revision_opt, parser<std::string>>
+    first_revision (positional, usage ("[1st-revision]"),
+                    desc ("The first revision number (or 'HEAD')"), optional);
 
-    opt<pstore::command_line::revision_opt, parser<std::string>>
-        second_revision (positional, usage ("[2nd-revision]"),
-                         desc ("The second revision number (or 'HEAD')"), optional);
+  opt<pstore::command_line::revision_opt, parser<std::string>>
+    second_revision (positional, usage ("[2nd-revision]"),
+                     desc ("The second revision number (or 'HEAD')"), optional);
 
-    option_category how_cat ("Options controlling how fields are emitted");
+  option_category how_cat ("Options controlling how fields are emitted");
 
-    opt<bool> hex ("hex", desc ("Emit number values in hexadecimal notation"), cat (how_cat));
-    alias hex2 ("x", desc ("Alias for --hex"), aliasopt (hex));
+  opt<bool> hex ("hex", desc ("Emit number values in hexadecimal notation"), cat (how_cat));
+  alias hex2 ("x", desc ("Alias for --hex"), aliasopt (hex));
 
 } // end anonymous namespace
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-    using namespace pstore;
-    parse_command_line_options (argc, argv, "pstore diff utility\n");
+  using namespace pstore;
+  parse_command_line_options (argc, argv, "pstore diff utility\n");
 
-    switches result;
-    result.db_path = db_path.get ();
-    result.first_revision = static_cast<unsigned> (first_revision.get ());
-    result.second_revision = second_revision.get_num_occurrences () > 0
-                                 ? just (static_cast<unsigned> (second_revision.get ()))
-                                 : nothing<revision_number> ();
-    result.hex = hex.get ();
-    return {result, EXIT_SUCCESS};
+  switches result;
+  result.db_path = db_path.get ();
+  result.first_revision = static_cast<unsigned> (first_revision.get ());
+  result.second_revision = second_revision.get_num_occurrences () > 0
+                             ? just (static_cast<unsigned> (second_revision.get ()))
+                             : nothing<revision_number> ();
+  result.hex = hex.get ();
+  return {result, EXIT_SUCCESS};
 }

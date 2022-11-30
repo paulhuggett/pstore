@@ -21,39 +21,39 @@
 
 #if !defined(_WIN32)
 
-#    include <unistd.h>
+#  include <unistd.h>
 
 namespace pstore {
-    namespace file {
+  namespace file {
 
-        /// \brief A namespace to hold POSIX-specific file interfaces.
-        namespace posix {
-            class deleter final : public deleter_base {
-            public:
-                explicit deleter (std::string const & path)
-                        : deleter_base (path, &platform_unlink) {}
-                // No copying, moving, or assignment
-                deleter (deleter const &) = delete;
-                deleter (deleter &&) noexcept = delete;
-                deleter & operator= (deleter const &) = delete;
-                deleter & operator= (deleter &&) noexcept = delete;
+    /// \brief A namespace to hold POSIX-specific file interfaces.
+    namespace posix {
+      class deleter final : public deleter_base {
+      public:
+        explicit deleter (std::string const & path)
+                : deleter_base (path, &platform_unlink) {}
+        // No copying, moving, or assignment
+        deleter (deleter const &) = delete;
+        deleter (deleter &&) noexcept = delete;
+        deleter & operator= (deleter const &) = delete;
+        deleter & operator= (deleter &&) noexcept = delete;
 
-                ~deleter () noexcept override;
+        ~deleter () noexcept override;
 
-            private:
-                /// The platform-specific file deletion function. file_deleter_base will
-                /// call this function when it wants to delete a file.
-                /// \param path The UTF-8 encoded path to the file to be deleted.
+      private:
+        /// The platform-specific file deletion function. file_deleter_base will
+        /// call this function when it wants to delete a file.
+        /// \param path The UTF-8 encoded path to the file to be deleted.
 
-                static void platform_unlink (std::string const & path);
-            };
-        } // namespace posix
+        static void platform_unlink (std::string const & path);
+      };
+    } // namespace posix
 
-        /// \brief The cross-platform name for the deleter class.
-        /// This should always be preferred to the platform-specific variation.
-        using deleter = posix::deleter;
+    /// \brief The cross-platform name for the deleter class.
+    /// This should always be preferred to the platform-specific variation.
+    using deleter = posix::deleter;
 
-    } // namespace file
+  } // namespace file
 } // namespace pstore
 #endif //! defined (_WIN32)
 

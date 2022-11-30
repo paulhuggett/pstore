@@ -16,23 +16,23 @@
 #include "error.hpp"
 
 char const * write_error_category::name () const noexcept {
-    return "pstore_write category";
+  return "pstore_write category";
 }
 
 std::string write_error_category::message (int error) const {
-    auto * result = "unknown error";
-    switch (static_cast<write_error_code> (error)) {
-    case write_error_code::unrecognized_compaction_mode:
-        result = "unrecognized compaction mode";
-        break;
-    }
-    return result;
+  auto * result = "unknown error";
+  switch (static_cast<write_error_code> (error)) {
+  case write_error_code::unrecognized_compaction_mode:
+    result = "unrecognized compaction mode";
+    break;
+  }
+  return result;
 }
 
 std::error_code make_error_code (write_error_code e) {
-    static_assert (std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
-                   "base type of error_code must be int to permit safe static cast");
+  static_assert (std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
+                 "base type of error_code must be int to permit safe static cast");
 
-    static write_error_category const cat;
-    return {static_cast<int> (e), cat};
+  static write_error_category const cat;
+  return {static_cast<int> (e), cat};
 }

@@ -18,9 +18,9 @@
 #include "pstore/broker/message_pool.hpp"
 
 namespace pstore {
-    namespace broker {
+  namespace broker {
 
-        message_pool pool;
+    message_pool pool;
 
-    } // namespace broker
+  } // namespace broker
 } // namespace pstore

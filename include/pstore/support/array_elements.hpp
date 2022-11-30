@@ -20,10 +20,10 @@
 
 namespace pstore {
 
-    template <typename T, std::size_t Size>
-    constexpr std::size_t array_elements (T (&)[Size]) noexcept {
-        return Size;
-    }
+  template <typename T, std::size_t Size>
+  constexpr std::size_t array_elements (T (&)[Size]) noexcept {
+    return Size;
+  }
 
 } // namespace pstore
 

@@ -23,25 +23,25 @@
 /// be called when it goes out of scope, but the release of memory is a no-op.
 template <typename T>
 struct placement_delete {
-    constexpr void operator() (T *) const noexcept {}
+  constexpr void operator() (T *) const noexcept {}
 };
 
 template <pstore::repo::section_kind Kind, typename Dispatcher>
 decltype (auto)
 dispatch_new_section (Dispatcher const & dispatcher,
                       pstore::gsl::not_null<std::vector<std::uint8_t> *> const buffer) {
-    buffer->resize (dispatcher.size_bytes ());
-    auto * const data = buffer->data ();
-    PSTORE_ASSERT (data != nullptr);
-    dispatcher.write (data);
+  buffer->resize (dispatcher.size_bytes ());
+  auto * const data = buffer->data ();
+  PSTORE_ASSERT (data != nullptr);
+  dispatcher.write (data);
 
-    using section_type = typename pstore::repo::enum_to_section_t<Kind>;
+  using section_type = typename pstore::repo::enum_to_section_t<Kind>;
 
-    // Use unique_ptr<> to ensure that the section_type object's destructor is called. Since
-    // the memory is not owned by this object (it belongs to 'buffer'), the delete operation
-    // will do nothing thanks to placement_delete<>.
-    return std::unique_ptr<section_type const, placement_delete<section_type const>>{
-        reinterpret_cast<section_type const *> (data), placement_delete<section_type const>{}};
+  // Use unique_ptr<> to ensure that the section_type object's destructor is called. Since
+  // the memory is not owned by this object (it belongs to 'buffer'), the delete operation
+  // will do nothing thanks to placement_delete<>.
+  return std::unique_ptr<section_type const, placement_delete<section_type const>>{
+    reinterpret_cast<section_type const *> (data), placement_delete<section_type const>{}};
 }
 
 
@@ -53,11 +53,11 @@ dispatch_new_section (Dispatcher const & dispatcher,
 template <pstore::repo::section_kind Kind,
           typename SectionType = typename pstore::repo::enum_to_section_t<Kind>,
           typename CreationDispatcher =
-              typename pstore::repo::section_to_creation_dispatcher<SectionType>::type>
+            typename pstore::repo::section_to_creation_dispatcher<SectionType>::type>
 decltype (auto) build_section (pstore::gsl::not_null<std::vector<std::uint8_t> *> const buffer,
                                pstore::repo::section_content const & content) {
-    CreationDispatcher dispatcher{Kind, &content};
-    return dispatch_new_section<Kind> (dispatcher, buffer);
+  CreationDispatcher dispatcher{Kind, &content};
+  return dispatch_new_section<Kind> (dispatcher, buffer);
 }
 
 
@@ -66,15 +66,15 @@ template <pstore::repo::section_kind Kind>
 std::string export_section (pstore::database const & db,
                             pstore::exchange::export_ns::string_mapping const & exported_strings,
                             pstore::repo::section_content const & content, bool comments) {
-    // First build the section that we want to export.
-    std::vector<std::uint8_t> buffer;
-    auto const section = build_section<Kind> (&buffer, content);
+  // First build the section that we want to export.
+  std::vector<std::uint8_t> buffer;
+  auto const section = build_section<Kind> (&buffer, content);
 
-    // Now export it.
-    using namespace pstore::exchange::export_ns;
-    ostringstream os;
-    emit_section<Kind> (os, indent{}, db, exported_strings, *section, comments);
-    return os.str ();
+  // Now export it.
+  using namespace pstore::exchange::export_ns;
+  ostringstream os;
+  emit_section<Kind> (os, indent{}, db, exported_strings, *section, comments);
+  return os.str ();
 }
 
 #endif // PSTORE_UNITTESTS_EXCHANGE_SECTION_HELPER_HPP

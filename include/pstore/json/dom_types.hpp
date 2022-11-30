@@ -22,30 +22,30 @@
 #include <system_error>
 
 namespace pstore {
-    namespace json {
+  namespace json {
 
-        class null_output {
-        public:
-            using result_type = void;
+    class null_output {
+    public:
+      using result_type = void;
 
-            std::error_code string_value (std::string const &) const noexcept { return {}; }
-            std::error_code int64_value (std::int64_t const) const noexcept { return {}; }
-            std::error_code uint64_value (std::uint64_t const) const noexcept { return {}; }
-            std::error_code double_value (double const) const noexcept { return {}; }
-            std::error_code boolean_value (bool const) const noexcept { return {}; }
-            std::error_code null_value () const noexcept { return {}; }
+      std::error_code string_value (std::string const &) const noexcept { return {}; }
+      std::error_code int64_value (std::int64_t const) const noexcept { return {}; }
+      std::error_code uint64_value (std::uint64_t const) const noexcept { return {}; }
+      std::error_code double_value (double const) const noexcept { return {}; }
+      std::error_code boolean_value (bool const) const noexcept { return {}; }
+      std::error_code null_value () const noexcept { return {}; }
 
-            std::error_code begin_array () const noexcept { return {}; }
-            std::error_code end_array () const noexcept { return {}; }
+      std::error_code begin_array () const noexcept { return {}; }
+      std::error_code end_array () const noexcept { return {}; }
 
-            std::error_code begin_object () const noexcept { return {}; }
-            std::error_code key (std::string const &) const noexcept { return {}; }
-            std::error_code end_object () const noexcept { return {}; }
+      std::error_code begin_object () const noexcept { return {}; }
+      std::error_code key (std::string const &) const noexcept { return {}; }
+      std::error_code end_object () const noexcept { return {}; }
 
-            result_type result () const noexcept {}
-        };
+      result_type result () const noexcept {}
+    };
 
-    } // end namespace json
+  } // end namespace json
 } // end namespace pstore
 
 #endif // PSTORE_JSON_DOM_TYPES_HPP

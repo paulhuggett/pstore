@@ -25,16 +25,16 @@
 #include "pstore/support/gsl.hpp"
 
 TEST (Crc32, Empty) {
-    char empty;
-    EXPECT_EQ (pstore::crc32 (pstore::gsl::make_span (&empty, &empty)), ~0U);
+  char empty;
+  EXPECT_EQ (pstore::crc32 (pstore::gsl::make_span (&empty, &empty)), ~0U);
 }
 TEST (Crc32, SingleChar) {
-    char one_char[]{'a'};
-    EXPECT_EQ (pstore::crc32 (pstore::gsl::make_span (one_char)), 0xc54aae31U);
+  char one_char[]{'a'};
+  EXPECT_EQ (pstore::crc32 (pstore::gsl::make_span (one_char)), 0xc54aae31U);
 }
 TEST (Crc32, Sequence) {
-    char const str[] = "hello";
-    auto const length = static_cast<int> (std::strlen (str));
-    auto span = pstore::gsl::make_span (str, length);
-    EXPECT_EQ (pstore::crc32 (span), 0x0fcdae64U);
+  char const str[] = "hello";
+  auto const length = static_cast<int> (std::strlen (str));
+  auto span = pstore::gsl::make_span (str, length);
+  EXPECT_EQ (pstore::crc32 (span), 0x0fcdae64U);
 }

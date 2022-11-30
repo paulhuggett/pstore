@@ -25,43 +25,42 @@ using namespace pstore::command_line;
 
 namespace {
 
-    opt<std::string> pipe_path ("pipe-path",
-                                desc ("Overrides the FIFO path to which messages are written."),
-                                init (""));
+  opt<std::string> pipe_path ("pipe-path",
+                              desc ("Overrides the FIFO path to which messages are written."),
+                              init (""));
 
-    opt<unsigned> flood ("flood", desc ("Flood the broker with a number of ECHO messages."),
-                         init (0U));
-    alias flood2 ("m", desc ("Alias for --flood"), aliasopt (flood));
+  opt<unsigned> flood ("flood", desc ("Flood the broker with a number of ECHO messages."),
+                       init (0U));
+  alias flood2 ("m", desc ("Alias for --flood"), aliasopt (flood));
 
-    opt<std::chrono::milliseconds::rep>
-        retry_timeout ("retry-timeout",
-                       desc ("The timeout for connection retries to the broker (ms)."),
-                       init (switches{}.retry_timeout.count ()));
+  opt<std::chrono::milliseconds::rep>
+    retry_timeout ("retry-timeout", desc ("The timeout for connection retries to the broker (ms)."),
+                   init (switches{}.retry_timeout.count ()));
 
-    opt<bool> kill ("kill", desc ("Ask the broker to quit after commands have been processed."));
-    alias kill2 ("k", desc ("Alias for --kill"), aliasopt (kill));
+  opt<bool> kill ("kill", desc ("Ask the broker to quit after commands have been processed."));
+  alias kill2 ("k", desc ("Alias for --kill"), aliasopt (kill));
 
-    opt<std::string> verb (positional, optional, usage ("[verb]"));
-    opt<std::string> path (positional, optional, usage ("[path]"));
+  opt<std::string> verb (positional, optional, usage ("[verb]"));
+  opt<std::string> path (positional, optional, usage ("[path]"));
 
-    pstore::maybe<std::string> path_option (std::string const & p) {
-        if (p.length () > 0) {
-            return pstore::just (p);
-        }
-        return pstore::nothing<std::string> ();
+  pstore::maybe<std::string> path_option (std::string const & p) {
+    if (p.length () > 0) {
+      return pstore::just (p);
     }
+    return pstore::nothing<std::string> ();
+  }
 
 } // end anonymous namespace
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-    parse_command_line_options (argc, argv, "pstore broker poker\n");
+  parse_command_line_options (argc, argv, "pstore broker poker\n");
 
-    switches result;
-    result.verb = verb.get ();
-    result.path = path.get ();
-    result.retry_timeout = std::chrono::milliseconds (retry_timeout.get ());
-    result.flood = flood.get ();
-    result.kill = kill.get ();
-    result.pipe_path = path_option (pipe_path.get ());
-    return {result, EXIT_SUCCESS};
+  switches result;
+  result.verb = verb.get ();
+  result.path = path.get ();
+  result.retry_timeout = std::chrono::milliseconds (retry_timeout.get ());
+  result.flood = flood.get ();
+  result.kill = kill.get ();
+  result.pipe_path = path_option (pipe_path.get ());
+  return {result, EXIT_SUCCESS};
 }

@@ -21,7 +21,7 @@
 #include <cstdint>
 
 namespace pstore {
-    std::uint64_t milliseconds_since_epoch ();
+  std::uint64_t milliseconds_since_epoch ();
 } // namespace pstore
 
 #endif // PSTORE_CORE_TIME_HPP

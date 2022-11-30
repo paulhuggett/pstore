@@ -23,17 +23,17 @@
 #include "pstore/romfs/romfs.hpp"
 
 namespace pstore {
-    namespace http {
+  namespace http {
 
-        class server_status;
+    class server_status;
 
-        int server (romfs::romfs & file_system, gsl::not_null<server_status *> status,
-                    channel_container const & channels,
-                    std::function<void (in_port_t)> notify_listening);
+    int server (romfs::romfs & file_system, gsl::not_null<server_status *> status,
+                channel_container const & channels,
+                std::function<void (in_port_t)> notify_listening);
 
-        void quit (in_port_t port_number);
+    void quit (in_port_t port_number);
 
-    } // end namespace http
+  } // end namespace http
 } // end namespace pstore
 
 #endif // PSTORE_HTTP_SERVER_HPP

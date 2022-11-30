@@ -18,8 +18,8 @@
 #include <gmock/gmock.h>
 
 TEST (BssSection, Ctor) {
-    pstore::repo::bss_section bss{2, 16};
-    EXPECT_EQ (bss.align (), 2U);
-    EXPECT_EQ (bss.size (), 16U);
-    EXPECT_EQ (bss.ifixups ().size (), 0U);
+  pstore::repo::bss_section bss{2, 16};
+  EXPECT_EQ (bss.align (), 2U);
+  EXPECT_EQ (bss.size (), 16U);
+  EXPECT_EQ (bss.ifixups ().size (), 0U);
 }

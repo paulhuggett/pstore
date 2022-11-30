@@ -26,21 +26,21 @@ struct directory_entry;
 using directory_container = std::vector<directory_entry>;
 
 struct directory_entry {
-    directory_entry (std::string name_, unsigned dirno,
-                     std::unique_ptr<directory_container> && children_)
-            : name (std::move (name_))
-            , contents (dirno)
-            , modtime{0}
-            , children (std::move (children_)) {}
-    directory_entry (std::string name_, unsigned fileno, std::time_t modtime_)
-            : name (std::move (name_))
-            , contents (fileno)
-            , modtime{modtime_} {}
+  directory_entry (std::string name_, unsigned dirno,
+                   std::unique_ptr<directory_container> && children_)
+          : name (std::move (name_))
+          , contents (dirno)
+          , modtime{0}
+          , children (std::move (children_)) {}
+  directory_entry (std::string name_, unsigned fileno, std::time_t modtime_)
+          : name (std::move (name_))
+          , contents (fileno)
+          , modtime{modtime_} {}
 
-    std::string name;
-    unsigned contents;
-    std::time_t modtime;
-    std::unique_ptr<directory_container> children;
+  std::string name;
+  unsigned contents;
+  std::time_t modtime;
+  std::unique_ptr<directory_container> children;
 };
 
 

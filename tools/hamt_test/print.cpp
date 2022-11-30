@@ -16,6 +16,6 @@
 
 #include "print.hpp"
 namespace details {
-    ios_printer cout{std::cout};
-    ios_printer cerr{std::cerr};
+  ios_printer cout{std::cout};
+  ios_printer cerr{std::cerr};
 } // namespace details

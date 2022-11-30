@@ -17,11 +17,11 @@
 #include "base32.hpp"
 
 namespace pstore {
-    namespace base32 {
-        // I've chosen the basic set of 32 characters from RFC4648 to guarantee that the names I've
-        // chosen are safe for any operating system.
-        std::array<char const, 32> const alphabet{
-            {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
-             'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '2', '3', '4', '5', '6', '7'}};
-    } // namespace base32
+  namespace base32 {
+    // I've chosen the basic set of 32 characters from RFC4648 to guarantee that the names I've
+    // chosen are safe for any operating system.
+    std::array<char const, 32> const alphabet{
+      {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p',
+       'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '2', '3', '4', '5', '6', '7'}};
+  } // namespace base32
 } // namespace pstore

@@ -29,467 +29,468 @@ using namespace pstore::command_line;
 
 namespace {
 
-    class ClCommandLine : public ::testing::Test {
-    public:
-        ClCommandLine ();
-        ~ClCommandLine () override;
+  class ClCommandLine : public ::testing::Test {
+  public:
+    ClCommandLine ();
+    ~ClCommandLine () override;
 
-    protected:
+  protected:
 #if defined(_WIN32) && defined(_UNICODE)
-        using string_stream = std::wostringstream;
+    using string_stream = std::wostringstream;
 #else
-        using string_stream = std::ostringstream;
+    using string_stream = std::ostringstream;
 #endif
 
-        void add () {}
-        template <typename... Strs>
-        void add (std::string const & s, Strs... strs) {
-            strings_.push_back (s);
-            this->add (strs...);
-        }
-
-        bool parse_command_line_options (string_stream & output, string_stream & errors) {
-            return details::parse_command_line_options (std::begin (strings_), std::end (strings_),
-                                                        "overview", output, errors);
-        }
-
-    private:
-        std::list<std::string> strings_;
-    };
-
-    ClCommandLine::ClCommandLine () { option::reset_container (); }
-    ClCommandLine::~ClCommandLine () {
-        option::reset_container ();
-        strings_.clear ();
+    void add () {}
+    template <typename... Strs>
+    void add (std::string const & s, Strs... strs) {
+      strings_.push_back (s);
+      this->add (strs...);
     }
+
+    bool parse_command_line_options (string_stream & output, string_stream & errors) {
+      return details::parse_command_line_options (std::begin (strings_), std::end (strings_),
+                                                  "overview", output, errors);
+    }
+
+  private:
+    std::list<std::string> strings_;
+  };
+
+  ClCommandLine::ClCommandLine () {
+    option::reset_container ();
+  }
+  ClCommandLine::~ClCommandLine () {
+    option::reset_container ();
+    strings_.clear ();
+  }
 
 } // end anonymous namespace
 
 
 TEST_F (ClCommandLine, SingleLetterStringOption) {
-    opt<std::string> option ("S");
-    this->add ("progname", "-Svalue");
+  opt<std::string> option ("S");
+  this->add ("progname", "-Svalue");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (option.get (), "value");
-    EXPECT_EQ (option.get_num_occurrences (), 1U);
+  EXPECT_EQ (option.get (), "value");
+  EXPECT_EQ (option.get_num_occurrences (), 1U);
 }
 
 TEST_F (ClCommandLine, SingleLetterStringOptionSeparateValue) {
-    opt<std::string> option ("S");
-    this->add ("progname", "-S", "value");
+  opt<std::string> option ("S");
+  this->add ("progname", "-S", "value");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (option.get (), "value");
-    EXPECT_EQ (option.get_num_occurrences (), 1U);
+  EXPECT_EQ (option.get (), "value");
+  EXPECT_EQ (option.get_num_occurrences (), 1U);
 }
 
 TEST_F (ClCommandLine, BooleanOption) {
-    opt<bool> option ("arg");
-    EXPECT_EQ (option.get (), false);
+  opt<bool> option ("arg");
+  EXPECT_EQ (option.get (), false);
 
-    this->add ("progname", "--arg");
+  this->add ("progname", "--arg");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (option.get (), true);
-    EXPECT_EQ (option.get_num_occurrences (), 1U);
+  EXPECT_EQ (option.get (), true);
+  EXPECT_EQ (option.get_num_occurrences (), 1U);
 }
 
 TEST_F (ClCommandLine, SingleLetterBooleanOptions) {
-    opt<bool> opt_a ("a");
-    opt<bool> opt_b ("b");
-    opt<bool> opt_c ("c");
-    EXPECT_EQ (opt_a.get (), false);
-    EXPECT_EQ (opt_b.get (), false);
-    EXPECT_EQ (opt_c.get (), false);
+  opt<bool> opt_a ("a");
+  opt<bool> opt_b ("b");
+  opt<bool> opt_c ("c");
+  EXPECT_EQ (opt_a.get (), false);
+  EXPECT_EQ (opt_b.get (), false);
+  EXPECT_EQ (opt_c.get (), false);
 
-    this->add ("progname", "-ab");
+  this->add ("progname", "-ab");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (opt_a.get (), true);
-    EXPECT_EQ (opt_a.get_num_occurrences (), 1U);
+  EXPECT_EQ (opt_a.get (), true);
+  EXPECT_EQ (opt_a.get_num_occurrences (), 1U);
 
-    EXPECT_EQ (opt_b.get (), true);
-    EXPECT_EQ (opt_b.get_num_occurrences (), 1U);
+  EXPECT_EQ (opt_b.get (), true);
+  EXPECT_EQ (opt_b.get_num_occurrences (), 1U);
 
-    EXPECT_EQ (opt_c.get (), false);
-    EXPECT_EQ (opt_c.get_num_occurrences (), 0U);
+  EXPECT_EQ (opt_c.get (), false);
+  EXPECT_EQ (opt_c.get_num_occurrences (), 0U);
 }
 
 TEST_F (ClCommandLine, DoubleDashStringOption) {
-    opt<std::string> option ("arg");
-    this->add ("progname", "--arg", "value");
+  opt<std::string> option ("arg");
+  this->add ("progname", "--arg", "value");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (option.get (), "value");
-    EXPECT_EQ (option.get_num_occurrences (), 1U);
+  EXPECT_EQ (option.get (), "value");
+  EXPECT_EQ (option.get_num_occurrences (), 1U);
 }
 
 TEST_F (ClCommandLine, DoubleDashStringOptionWithSingleDash) {
-    opt<bool> option ("arg");
-    this->add ("progname", "-arg");
+  opt<bool> option ("arg");
+  this->add ("progname", "-arg");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_FALSE (res);
-    EXPECT_THAT (errors.str (),
-                 testing::HasSubstr (PSTORE_NATIVE_TEXT ("Unknown command line argument")));
-    EXPECT_THAT (errors.str (), testing::HasSubstr (PSTORE_NATIVE_TEXT ("'--arg'")));
-    EXPECT_EQ (output.str ().length (), 0U);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_FALSE (res);
+  EXPECT_THAT (errors.str (),
+               testing::HasSubstr (PSTORE_NATIVE_TEXT ("Unknown command line argument")));
+  EXPECT_THAT (errors.str (), testing::HasSubstr (PSTORE_NATIVE_TEXT ("'--arg'")));
+  EXPECT_EQ (output.str ().length (), 0U);
 }
 
 TEST_F (ClCommandLine, StringOptionEquals) {
-    opt<std::string> option ("arg");
-    this->add ("progname", "--arg=value");
+  opt<std::string> option ("arg");
+  this->add ("progname", "--arg=value");
 
-    string_stream output;
-    string_stream errors;
-    EXPECT_TRUE (this->parse_command_line_options (output, errors));
+  string_stream output;
+  string_stream errors;
+  EXPECT_TRUE (this->parse_command_line_options (output, errors));
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (option.get (), "value");
-    EXPECT_EQ (option.get_num_occurrences (), 1U);
+  EXPECT_EQ (option.get (), "value");
+  EXPECT_EQ (option.get_num_occurrences (), 1U);
 }
 
 TEST_F (ClCommandLine, UnknownArgument) {
-    this->add ("progname", "--arg");
+  this->add ("progname", "--arg");
 
-    string_stream output;
-    string_stream errors;
-    EXPECT_FALSE (this->parse_command_line_options (output, errors));
-    EXPECT_THAT (errors.str (),
-                 testing::HasSubstr (PSTORE_NATIVE_TEXT ("Unknown command line argument")));
-    EXPECT_EQ (output.str ().length (), 0U);
+  string_stream output;
+  string_stream errors;
+  EXPECT_FALSE (this->parse_command_line_options (output, errors));
+  EXPECT_THAT (errors.str (),
+               testing::HasSubstr (PSTORE_NATIVE_TEXT ("Unknown command line argument")));
+  EXPECT_EQ (output.str ().length (), 0U);
 }
 
 TEST_F (ClCommandLine, NearestName) {
-    opt<std::string> option1 ("aa");
-    opt<std::string> option2 ("xx");
-    opt<std::string> option3 ("yy");
-    this->add ("progname", "--xxx=value");
+  opt<std::string> option1 ("aa");
+  opt<std::string> option2 ("xx");
+  opt<std::string> option3 ("yy");
+  this->add ("progname", "--xxx=value");
 
-    string_stream output;
-    string_stream errors;
-    EXPECT_FALSE (this->parse_command_line_options (output, errors));
-    EXPECT_THAT (errors.str (),
-                 testing::HasSubstr (PSTORE_NATIVE_TEXT ("Did you mean '--xx=value'")));
-    EXPECT_EQ (output.str ().length (), 0U);
+  string_stream output;
+  string_stream errors;
+  EXPECT_FALSE (this->parse_command_line_options (output, errors));
+  EXPECT_THAT (errors.str (),
+               testing::HasSubstr (PSTORE_NATIVE_TEXT ("Did you mean '--xx=value'")));
+  EXPECT_EQ (output.str ().length (), 0U);
 }
 
 TEST_F (ClCommandLine, MissingOptionName) {
-    this->add ("progname", "--=a");
+  this->add ("progname", "--=a");
 
-    string_stream output;
-    string_stream errors;
-    EXPECT_FALSE (this->parse_command_line_options (output, errors));
-    EXPECT_THAT (errors.str (),
-                 testing::HasSubstr (PSTORE_NATIVE_TEXT ("Unknown command line argument")));
-    EXPECT_EQ (output.str ().length (), 0U);
+  string_stream output;
+  string_stream errors;
+  EXPECT_FALSE (this->parse_command_line_options (output, errors));
+  EXPECT_THAT (errors.str (),
+               testing::HasSubstr (PSTORE_NATIVE_TEXT ("Unknown command line argument")));
+  EXPECT_EQ (output.str ().length (), 0U);
 }
 
 TEST_F (ClCommandLine, StringPositional) {
-    opt<std::string> option ("arg", positional);
-    EXPECT_EQ (option.get (), "") << "Expected inital string value to be empty";
+  opt<std::string> option ("arg", positional);
+  EXPECT_EQ (option.get (), "") << "Expected inital string value to be empty";
 
-    this->add ("progname", "hello");
+  this->add ("progname", "hello");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (option.get (), "hello");
+  EXPECT_EQ (option.get (), "hello");
 }
 
 TEST_F (ClCommandLine, RequiredStringPositional) {
-    opt<std::string> option ("arg", positional, required);
+  opt<std::string> option ("arg", positional, required);
 
-    this->add ("progname");
+  this->add ("progname");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_FALSE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_FALSE (res);
 
-    EXPECT_THAT (errors.str (),
-                 testing::HasSubstr (PSTORE_NATIVE_TEXT ("a positional argument was missing")));
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_THAT (errors.str (),
+               testing::HasSubstr (PSTORE_NATIVE_TEXT ("a positional argument was missing")));
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (option.get (), "");
+  EXPECT_EQ (option.get (), "");
 }
 
 TEST_F (ClCommandLine, TwoPositionals) {
-    opt<std::string> opt1 ("opt1", positional);
-    opt<std::string> opt2 ("opt2", positional);
+  opt<std::string> opt1 ("opt1", positional);
+  opt<std::string> opt2 ("opt2", positional);
 
-    this->add ("progname", "arg1", "arg2");
+  this->add ("progname", "arg1", "arg2");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (opt1.get (), "arg1");
-    EXPECT_EQ (opt2.get (), "arg2");
+  EXPECT_EQ (opt1.get (), "arg1");
+  EXPECT_EQ (opt2.get (), "arg2");
 }
 
 TEST_F (ClCommandLine, List) {
-    list<std::string> opt{"opt"};
+  list<std::string> opt{"opt"};
 
-    this->add ("progname", "--opt", "foo", "--opt", "bar");
+  this->add ("progname", "--opt", "foo", "--opt", "bar");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_THAT (opt, ::testing::ElementsAre ("foo", "bar"));
+  EXPECT_THAT (opt, ::testing::ElementsAre ("foo", "bar"));
 }
 
 namespace {
 
-    enum class enumeration { a, b, c };
+  enum class enumeration { a, b, c };
 
-    std::ostream & operator<< (std::ostream & os, enumeration e) {
-        auto str = "";
-        switch (e) {
-        case enumeration::a: str = "a"; break;
-        case enumeration::b: str = "b"; break;
-        case enumeration::c: str = "c"; break;
-        }
-        return os << str;
+  std::ostream & operator<< (std::ostream & os, enumeration e) {
+    auto str = "";
+    switch (e) {
+    case enumeration::a: str = "a"; break;
+    case enumeration::b: str = "b"; break;
+    case enumeration::c: str = "c"; break;
     }
+    return os << str;
+  }
 
 } // namespace
 
 TEST_F (ClCommandLine, ListOfEnums) {
-    list<enumeration> opt{
-        "opt", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                       literal{"b", static_cast<int> (enumeration::b), "b description"},
-                       literal{"c", static_cast<int> (enumeration::c), "c description"})};
-    this->add ("progname", "--opt", "a", "--opt", "b");
+  list<enumeration> opt{"opt",
+                        values (literal{"a", static_cast<int> (enumeration::a), "a description"},
+                                literal{"b", static_cast<int> (enumeration::b), "b description"},
+                                literal{"c", static_cast<int> (enumeration::c), "c description"})};
+  this->add ("progname", "--opt", "a", "--opt", "b");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_THAT (opt, ::testing::ElementsAre (enumeration::a, enumeration::b));
+  EXPECT_THAT (opt, ::testing::ElementsAre (enumeration::a, enumeration::b));
 }
 
 TEST_F (ClCommandLine, ListSingleDash) {
-    list<std::string> opt{"o"};
+  list<std::string> opt{"o"};
 
-    this->add ("progname", "-oa", "-o", "b", "-oc");
+  this->add ("progname", "-oa", "-o", "b", "-oc");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_THAT (opt, testing::ElementsAre ("a", "b", "c"));
+  EXPECT_THAT (opt, testing::ElementsAre ("a", "b", "c"));
 }
 
 TEST_F (ClCommandLine, ListPositional) {
-    list<std::string> opt ("opt", positional);
+  list<std::string> opt ("opt", positional);
 
-    this->add ("progname", "foo", "bar");
+  this->add ("progname", "foo", "bar");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_THAT (opt, ::testing::ElementsAre ("foo", "bar"));
+  EXPECT_THAT (opt, ::testing::ElementsAre ("foo", "bar"));
 }
 
 TEST_F (ClCommandLine, ListCsvEnabled) {
-    list<std::string> opt ("opt", positional, comma_separated);
+  list<std::string> opt ("opt", positional, comma_separated);
 
-    this->add ("progname", "a,b", "c,d");
+  this->add ("progname", "a,b", "c,d");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_THAT (opt, ::testing::ElementsAre ("a", "b", "c", "d"));
+  EXPECT_THAT (opt, ::testing::ElementsAre ("a", "b", "c", "d"));
 }
 
 TEST_F (ClCommandLine, ListCsvDisabled) {
-    list<std::string> opt{"opt", positional};
+  list<std::string> opt{"opt", positional};
 
-    this->add ("progname", "a,b");
+  this->add ("progname", "a,b");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_THAT (opt, ::testing::ElementsAre ("a,b"));
+  EXPECT_THAT (opt, ::testing::ElementsAre ("a,b"));
 }
 
 
 TEST_F (ClCommandLine, MissingRequired) {
-    opt<std::string> opt{"opt", required};
+  opt<std::string> opt{"opt", required};
 
-    this->add ("progname");
+  this->add ("progname");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_FALSE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_FALSE (res);
 
-    EXPECT_THAT (errors.str (),
-                 testing::HasSubstr (PSTORE_NATIVE_TEXT ("must be specified at least once")));
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_THAT (errors.str (),
+               testing::HasSubstr (PSTORE_NATIVE_TEXT ("must be specified at least once")));
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (opt.get_num_occurrences (), 0U);
-    EXPECT_EQ (opt.get (), "");
+  EXPECT_EQ (opt.get_num_occurrences (), 0U);
+  EXPECT_EQ (opt.get (), "");
 }
 
 TEST_F (ClCommandLine, MissingValue) {
-    opt<std::string> opt{"opt", required};
+  opt<std::string> opt{"opt", required};
 
-    this->add ("progname", "--opt");
+  this->add ("progname", "--opt");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_FALSE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_FALSE (res);
 
-    EXPECT_THAT (errors.str (), testing::HasSubstr (PSTORE_NATIVE_TEXT ("requires a value")));
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_THAT (errors.str (), testing::HasSubstr (PSTORE_NATIVE_TEXT ("requires a value")));
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (opt.get (), "");
+  EXPECT_EQ (opt.get (), "");
 }
 
 TEST_F (ClCommandLine, UnwantedValue) {
-    opt<bool> opt{"opt"};
+  opt<bool> opt{"opt"};
 
-    this->add ("progname", "--opt=true");
+  this->add ("progname", "--opt=true");
 
-    string_stream output;
-    string_stream errors;
-    EXPECT_FALSE (this->parse_command_line_options (output, errors));
-    EXPECT_THAT (errors.str (),
-                 ::testing::HasSubstr (PSTORE_NATIVE_TEXT ("does not take a value")));
-    EXPECT_EQ (output.str ().length (), 0U);
-    EXPECT_FALSE (opt.get ());
+  string_stream output;
+  string_stream errors;
+  EXPECT_FALSE (this->parse_command_line_options (output, errors));
+  EXPECT_THAT (errors.str (), ::testing::HasSubstr (PSTORE_NATIVE_TEXT ("does not take a value")));
+  EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_FALSE (opt.get ());
 }
 
 TEST_F (ClCommandLine, DoubleDashSwitchToPositional) {
-    opt<std::string> opt{"opt"};
-    list<std::string> p{"names", positional};
+  opt<std::string> opt{"opt"};
+  list<std::string> p{"names", positional};
 
-    this->add ("progname", "--", "-opt", "foo");
+  this->add ("progname", "--", "-opt", "foo");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (opt.get_num_occurrences (), 0U);
-    EXPECT_EQ (opt.get (), "");
-    EXPECT_THAT (p, ::testing::ElementsAre ("-opt", "foo"));
+  EXPECT_EQ (opt.get_num_occurrences (), 0U);
+  EXPECT_EQ (opt.get (), "");
+  EXPECT_THAT (p, ::testing::ElementsAre ("-opt", "foo"));
 }
 
 TEST_F (ClCommandLine, AliasBool) {
-    opt<bool> opt{"opt"};
-    alias opt2{"o", aliasopt{opt}};
+  opt<bool> opt{"opt"};
+  alias opt2{"o", aliasopt{opt}};
 
-    this->add ("progname", "-o");
+  this->add ("progname", "-o");
 
-    string_stream output;
-    string_stream errors;
-    bool const res = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res);
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  string_stream output;
+  string_stream errors;
+  bool const res = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (opt.get_num_occurrences (), 1U);
-    EXPECT_EQ (opt.get (), true);
-    EXPECT_EQ (opt2.get_num_occurrences (), 1U);
+  EXPECT_EQ (opt.get_num_occurrences (), 1U);
+  EXPECT_EQ (opt.get (), true);
+  EXPECT_EQ (opt2.get_num_occurrences (), 1U);
 }
 
 TEST_F (ClCommandLine, TwoCallsToParser) {
-    opt<std::string> option ("S");
-    this->add ("progname", "-Svalue");
+  opt<std::string> option ("S");
+  this->add ("progname", "-Svalue");
 
-    string_stream output;
-    string_stream errors;
-    bool const res1 = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res1);
-    bool const res2 = this->parse_command_line_options (output, errors);
-    EXPECT_TRUE (res2);
+  string_stream output;
+  string_stream errors;
+  bool const res1 = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res1);
+  bool const res2 = this->parse_command_line_options (output, errors);
+  EXPECT_TRUE (res2);
 
-    EXPECT_EQ (errors.str ().length (), 0U);
-    EXPECT_EQ (output.str ().length (), 0U);
+  EXPECT_EQ (errors.str ().length (), 0U);
+  EXPECT_EQ (output.str ().length (), 0U);
 
-    EXPECT_EQ (option.get (), "value");
-    // We saw the -S switch twice because the arguments were parsed twice.
-    EXPECT_EQ (option.get_num_occurrences (), 2U);
+  EXPECT_EQ (option.get (), "value");
+  // We saw the -S switch twice because the arguments were parsed twice.
+  EXPECT_EQ (option.get_num_occurrences (), 2U);
 }

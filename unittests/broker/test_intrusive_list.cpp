@@ -17,51 +17,51 @@
 #include <gtest/gtest.h>
 
 namespace {
-    struct value {
-        value ()
-                : v{0} {}
-        explicit value (int v_)
-                : v{v_} {}
-        pstore::broker::list_member<value> & get_list_member () noexcept { return list_memb; }
+  struct value {
+    value ()
+            : v{0} {}
+    explicit value (int v_)
+            : v{v_} {}
+    pstore::broker::list_member<value> & get_list_member () noexcept { return list_memb; }
 
-        int const v;
-        pstore::broker::list_member<value> list_memb;
-    };
+    int const v;
+    pstore::broker::list_member<value> list_memb;
+  };
 } // namespace
 
 TEST (IntrusiveList, Empty) {
-    pstore::broker::intrusive_list<value> v;
-    EXPECT_EQ (0, std::distance (v.begin (), v.end ()));
+  pstore::broker::intrusive_list<value> v;
+  EXPECT_EQ (0, std::distance (v.begin (), v.end ()));
 }
 
 TEST (IntrusiveList, OneElement) {
-    value member{47};
+  value member{47};
 
-    pstore::broker::intrusive_list<value> v;
-    v.insert_before (&member, v.tail ());
+  pstore::broker::intrusive_list<value> v;
+  v.insert_before (&member, v.tail ());
 
-    ASSERT_EQ (1, std::distance (v.begin (), v.end ()));
-    EXPECT_EQ (v.begin ()->v, 47);
+  ASSERT_EQ (1, std::distance (v.begin (), v.end ()));
+  EXPECT_EQ (v.begin ()->v, 47);
 
-    v.erase (&member);
-    EXPECT_EQ (0, std::distance (v.begin (), v.end ()));
-    EXPECT_EQ (v.begin (), v.end ());
+  v.erase (&member);
+  EXPECT_EQ (0, std::distance (v.begin (), v.end ()));
+  EXPECT_EQ (v.begin (), v.end ());
 }
 
 TEST (IntrusiveList, IteratorIncrement) {
-    value member{7};
-    pstore::broker::intrusive_list<value> v;
-    v.insert_before (&member, v.tail ());
+  value member{7};
+  pstore::broker::intrusive_list<value> v;
+  v.insert_before (&member, v.tail ());
 
-    pstore::broker::intrusive_list<value>::iterator begin = v.begin ();
-    pstore::broker::intrusive_list<value>::iterator it = begin;
-    ++it;
-    pstore::broker::intrusive_list<value>::iterator it2 = begin;
-    it2++;
-    EXPECT_EQ (it, it2);
+  pstore::broker::intrusive_list<value>::iterator begin = v.begin ();
+  pstore::broker::intrusive_list<value>::iterator it = begin;
+  ++it;
+  pstore::broker::intrusive_list<value>::iterator it2 = begin;
+  it2++;
+  EXPECT_EQ (it, it2);
 
-    --it;
-    it2--;
-    EXPECT_EQ (it, it2);
-    EXPECT_EQ (it, begin);
+  --it;
+  it2--;
+  EXPECT_EQ (it, it2);
+  EXPECT_EQ (it, begin);
 }

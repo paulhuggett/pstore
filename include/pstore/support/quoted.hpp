@@ -25,17 +25,21 @@
 
 namespace pstore {
 
-    /// Wraps quotation marks around a string for presentation to the user. Intended for use
-    /// as an io-manipulator.
-    ///
-    /// \param str The string to be wrapped in quotation marks.
-    inline auto quoted (gsl::czstring const str) { return std::quoted (str, '"', '\0'); }
+  /// Wraps quotation marks around a string for presentation to the user. Intended for use
+  /// as an io-manipulator.
+  ///
+  /// \param str The string to be wrapped in quotation marks.
+  inline auto quoted (gsl::czstring const str) {
+    return std::quoted (str, '"', '\0');
+  }
 
-    /// Wraps quotation marks around a string for presentation to the user. Intended for use
-    /// as an io-manipulator.
-    ///
-    /// \param str The string to be wrapped in quotation marks.
-    inline auto quoted (std::string const & str) { return std::quoted (str, '"', '\0'); }
+  /// Wraps quotation marks around a string for presentation to the user. Intended for use
+  /// as an io-manipulator.
+  ///
+  /// \param str The string to be wrapped in quotation marks.
+  inline auto quoted (std::string const & str) {
+    return std::quoted (str, '"', '\0');
+  }
 
 } // end namespace pstore
 

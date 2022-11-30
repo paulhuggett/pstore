@@ -33,33 +33,33 @@
 using namespace pstore;
 
 int main () {
-    int exit_code = EXIT_SUCCESS;
+  int exit_code = EXIT_SUCCESS;
 
-    PSTORE_TRY {
-        auto const key = std::string{"key"};
-        auto const value = std::string{"hello world\n"};
+  PSTORE_TRY {
+    auto const key = std::string{"key"};
+    auto const value = std::string{"hello world\n"};
 
-        database db ("./write_using_serializer.db", pstore::database::access_mode::writable);
-        auto t = begin (db); // Start a transaction
+    database db ("./write_using_serializer.db", pstore::database::access_mode::writable);
+    auto t = begin (db); // Start a transaction
 
-        {
-            auto archive = serialize::archive::make_writer (t);
-            auto const addr = typed_address<char> (serialize::write (archive, value));
-            std::uint64_t const size = db.size () - addr.absolute ();
+    {
+      auto archive = serialize::archive::make_writer (t);
+      auto const addr = typed_address<char> (serialize::write (archive, value));
+      std::uint64_t const size = db.size () - addr.absolute ();
 
-            auto index = pstore::index::get_index<pstore::trailer::indices::write> (db);
-            index->insert_or_assign (t, key, make_extent (addr, size));
-        }
-
-        t.commit (); // Finalize the transaction.
+      auto index = pstore::index::get_index<pstore::trailer::indices::write> (db);
+      index->insert_or_assign (t, key, make_extent (addr, size));
     }
-    PSTORE_CATCH (std::exception const & ex, {
-        std::cerr << "Error: " << ex.what () << '\n';
-        exit_code = EXIT_FAILURE;
-    })
-    PSTORE_CATCH (..., {
-        std::cerr << "An unknown error occurred\n";
-        exit_code = EXIT_FAILURE;
-    })
-    return exit_code;
+
+    t.commit (); // Finalize the transaction.
+  }
+  PSTORE_CATCH (std::exception const & ex, {
+    std::cerr << "Error: " << ex.what () << '\n';
+    exit_code = EXIT_FAILURE;
+  })
+  PSTORE_CATCH (..., {
+    std::cerr << "An unknown error occurred\n";
+    exit_code = EXIT_FAILURE;
+  })
+  return exit_code;
 }

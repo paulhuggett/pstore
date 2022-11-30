@@ -21,33 +21,33 @@
 #include "pstore/serialize/types.hpp"
 
 namespace {
-    class istream_reader {
-    public:
-        explicit istream_reader (std::istream & os)
-                : os_ (os) {}
+  class istream_reader {
+  public:
+    explicit istream_reader (std::istream & os)
+            : os_ (os) {}
 
-        // Reads a single instance of a standard-layout type T from the input stream and returns
-        // the value extracted.
-        template <typename T>
-        void get (T & t) {
-            static_assert (std::is_standard_layout<T>::value,
-                           "istream_reader::get(T&) can only read standard-layout types");
-            new (&t) T;
-            os_ >> t;
-        }
+    // Reads a single instance of a standard-layout type T from the input stream and returns
+    // the value extracted.
+    template <typename T>
+    void get (T & t) {
+      static_assert (std::is_standard_layout<T>::value,
+                     "istream_reader::get(T&) can only read standard-layout types");
+      new (&t) T;
+      os_ >> t;
+    }
 
-    private:
-        std::istream & os_;
-    };
+  private:
+    std::istream & os_;
+  };
 } // namespace
 
 int main () {
-    std::istringstream iss{"3 73 127 179"};
-    istream_reader reader{iss};
+  std::istringstream iss{"3 73 127 179"};
+  istream_reader reader{iss};
 
-    for (auto count = 0U; count < 4U; ++count) {
-        // Read a single integer from the istream_reader.
-        auto value = pstore::serialize::read<int> (reader);
-        std::cout << value << '\n';
-    }
+  for (auto count = 0U; count < 4U; ++count) {
+    // Read a single integer from the istream_reader.
+    auto value = pstore::serialize::read<int> (reader);
+    std::cout << value << '\n';
+  }
 }

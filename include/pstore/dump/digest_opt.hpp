@@ -21,20 +21,20 @@
 #include "pstore/support/maybe.hpp"
 
 namespace pstore {
-    namespace dump {
+  namespace dump {
 
-        class digest_opt {
-        public:
-            constexpr digest_opt () noexcept = default;
-            explicit constexpr digest_opt (index::digest const & d) noexcept
-                    : d_{d} {}
-            explicit constexpr operator index::digest () const noexcept { return d_; }
+    class digest_opt {
+    public:
+      constexpr digest_opt () noexcept = default;
+      explicit constexpr digest_opt (index::digest const & d) noexcept
+              : d_{d} {}
+      explicit constexpr operator index::digest () const noexcept { return d_; }
 
-        private:
-            index::digest d_;
-        };
+    private:
+      index::digest d_;
+    };
 
-    } // end namespace dump
+  } // end namespace dump
 } // end namespace pstore
 
 #endif // PSTORE_DUMP_DIGEST_OPT_HPP

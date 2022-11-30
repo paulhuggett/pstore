@@ -21,65 +21,73 @@
 #include "pstore/exchange/import_error.hpp"
 
 namespace pstore {
-    namespace exchange {
-        namespace import_ns {
+  namespace exchange {
+    namespace import_ns {
 
-            //*  _              _            _      *
-            //* | |__  ___  ___| |  _ _ _  _| |___  *
-            //* | '_ \/ _ \/ _ \ | | '_| || | / -_) *
-            //* |_.__/\___/\___/_| |_|  \_,_|_\___| *
-            //*                                     *
-            std::error_code bool_rule::boolean_value (bool const v) {
-                *v_ = v;
-                return pop ();
-            }
+      //*  _              _            _      *
+      //* | |__  ___  ___| |  _ _ _  _| |___  *
+      //* | '_ \/ _ \/ _ \ | | '_| || | / -_) *
+      //* |_.__/\___/\___/_| |_|  \_,_|_\___| *
+      //*                                     *
+      std::error_code bool_rule::boolean_value (bool const v) {
+        *v_ = v;
+        return pop ();
+      }
 
-            gsl::czstring bool_rule::name () const noexcept { return "bool"; }
+      gsl::czstring bool_rule::name () const noexcept {
+        return "bool";
+      }
 
-            //*  _     _    __ _ _             _      *
-            //* (_)_ _| |_ / /| | |   _ _ _  _| |___  *
-            //* | | ' \  _/ _ \_  _| | '_| || | / -_) *
-            //* |_|_||_\__\___/ |_|  |_|  \_,_|_\___| *
-            //*                                       *
-            std::error_code int64_rule::int64_value (std::int64_t const v) {
-                *v_ = v;
-                return pop ();
-            }
+      //*  _     _    __ _ _             _      *
+      //* (_)_ _| |_ / /| | |   _ _ _  _| |___  *
+      //* | | ' \  _/ _ \_  _| | '_| || | / -_) *
+      //* |_|_||_\__\___/ |_|  |_|  \_,_|_\___| *
+      //*                                       *
+      std::error_code int64_rule::int64_value (std::int64_t const v) {
+        *v_ = v;
+        return pop ();
+      }
 
-            std::error_code int64_rule::uint64_value (std::uint64_t const v) {
-                if (v > static_cast<std::uint64_t> (std::numeric_limits<std::int64_t>::max ())) {
-                    return error::number_too_large;
-                }
-                *v_ = static_cast<std::int64_t> (v);
-                return pop ();
-            }
+      std::error_code int64_rule::uint64_value (std::uint64_t const v) {
+        if (v > static_cast<std::uint64_t> (std::numeric_limits<std::int64_t>::max ())) {
+          return error::number_too_large;
+        }
+        *v_ = static_cast<std::int64_t> (v);
+        return pop ();
+      }
 
-            gsl::czstring int64_rule::name () const noexcept { return "int64"; }
+      gsl::czstring int64_rule::name () const noexcept {
+        return "int64";
+      }
 
-            //*       _     _    __ _ _             _      *
-            //*  _  _(_)_ _| |_ / /| | |   _ _ _  _| |___  *
-            //* | || | | ' \  _/ _ \_  _| | '_| || | / -_) *
-            //*  \_,_|_|_||_\__\___/ |_|  |_|  \_,_|_\___| *
-            //*                                            *
-            std::error_code uint64_rule::uint64_value (std::uint64_t const v) {
-                *v_ = v;
-                return pop ();
-            }
+      //*       _     _    __ _ _             _      *
+      //*  _  _(_)_ _| |_ / /| | |   _ _ _  _| |___  *
+      //* | || | | ' \  _/ _ \_  _| | '_| || | / -_) *
+      //*  \_,_|_|_||_\__\___/ |_|  |_|  \_,_|_\___| *
+      //*                                            *
+      std::error_code uint64_rule::uint64_value (std::uint64_t const v) {
+        *v_ = v;
+        return pop ();
+      }
 
-            gsl::czstring uint64_rule::name () const noexcept { return "uint64"; }
+      gsl::czstring uint64_rule::name () const noexcept {
+        return "uint64";
+      }
 
-            //*     _       _                      _      *
-            //*  __| |_ _ _(_)_ _  __ _   _ _ _  _| |___  *
-            //* (_-<  _| '_| | ' \/ _` | | '_| || | / -_) *
-            //* /__/\__|_| |_|_||_\__, | |_|  \_,_|_\___| *
-            //*                   |___/                   *
-            std::error_code string_rule::string_value (std::string const & v) {
-                *v_ = v;
-                return pop ();
-            }
+      //*     _       _                      _      *
+      //*  __| |_ _ _(_)_ _  __ _   _ _ _  _| |___  *
+      //* (_-<  _| '_| | ' \/ _` | | '_| || | / -_) *
+      //* /__/\__|_| |_|_||_\__, | |_|  \_,_|_\___| *
+      //*                   |___/                   *
+      std::error_code string_rule::string_value (std::string const & v) {
+        *v_ = v;
+        return pop ();
+      }
 
-            gsl::czstring string_rule::name () const noexcept { return "string"; }
+      gsl::czstring string_rule::name () const noexcept {
+        return "string";
+      }
 
-        } // end namespace import_ns
-    }     // end namespace exchange
+    } // end namespace import_ns
+  }   // end namespace exchange
 } // end namespace pstore

@@ -24,15 +24,15 @@
 
 namespace pstore {
 
-    // register_signal_handler
-    // ~~~~~~~~~~~~~~~~~~~~~~~
-    signal_function register_signal_handler (int const signo, signal_function const func) {
-        auto res = signal (signo, func);
-        if (signal (signo, func) == SIG_ERR) {
-            raise (std::errc::invalid_argument, "sigaction error");
-        }
-        return res;
+  // register_signal_handler
+  // ~~~~~~~~~~~~~~~~~~~~~~~
+  signal_function register_signal_handler (int const signo, signal_function const func) {
+    auto res = signal (signo, func);
+    if (signal (signo, func) == SIG_ERR) {
+      raise (std::errc::invalid_argument, "sigaction error");
     }
+    return res;
+  }
 
 } // end namespace pstore
 
@@ -40,22 +40,22 @@ namespace pstore {
 
 namespace pstore {
 
-    // register_signal_handler
-    // ~~~~~~~~~~~~~~~~~~~~~~~
-    signal_function register_signal_handler (int const signo, signal_function const func) {
-        struct sigaction act;
-        act.sa_handler = func;
-        sigemptyset (&act.sa_mask);
-        act.sa_flags = 0;
-#    ifdef SA_INTERRUPT
-        act.sa_flags |= SA_INTERRUPT;
-#    endif
-        struct sigaction oact;
-        if (sigaction (signo, &act, &oact) < 0) {
-            raise (std::errc::invalid_argument, "sigaction error");
-        }
-        return oact.sa_handler;
+  // register_signal_handler
+  // ~~~~~~~~~~~~~~~~~~~~~~~
+  signal_function register_signal_handler (int const signo, signal_function const func) {
+    struct sigaction act;
+    act.sa_handler = func;
+    sigemptyset (&act.sa_mask);
+    act.sa_flags = 0;
+#  ifdef SA_INTERRUPT
+    act.sa_flags |= SA_INTERRUPT;
+#  endif
+    struct sigaction oact;
+    if (sigaction (signo, &act, &oact) < 0) {
+      raise (std::errc::invalid_argument, "sigaction error");
     }
+    return oact.sa_handler;
+  }
 
 } // end namespace pstore
 

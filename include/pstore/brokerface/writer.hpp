@@ -25,52 +25,52 @@
 #include "pstore/brokerface/fifo_path.hpp"
 
 namespace pstore {
-    namespace brokerface {
+  namespace brokerface {
 
-        class message_type;
+    class message_type;
 
-        class writer {
-        public:
-            using duration_type = std::chrono::milliseconds;
-            static constexpr unsigned infinite_retries = std::numeric_limits<unsigned>::max ();
+    class writer {
+    public:
+      using duration_type = std::chrono::milliseconds;
+      static constexpr unsigned infinite_retries = std::numeric_limits<unsigned>::max ();
 
-            using update_callback = std::function<void ()>;
-            /// The default function called by write() to as the write() function retries the
-            /// the write operation. A simple no-op.
-            static void default_callback ();
+      using update_callback = std::function<void ()>;
+      /// The default function called by write() to as the write() function retries the
+      /// the write operation. A simple no-op.
+      static void default_callback ();
 
-            writer (fifo_path::client_pipe && pipe, duration_type retry_timeout,
-                    unsigned max_retries, update_callback cb = default_callback);
-            writer (fifo_path::client_pipe && pipe, update_callback cb = default_callback);
+      writer (fifo_path::client_pipe && pipe, duration_type retry_timeout, unsigned max_retries,
+              update_callback cb = default_callback);
+      writer (fifo_path::client_pipe && pipe, update_callback cb = default_callback);
 
-            writer (fifo_path const & fifo, duration_type retry_timeout, unsigned max_retries,
-                    update_callback cb = default_callback);
-            writer (fifo_path const & fifo, update_callback cb = default_callback);
-            writer (writer const &) = delete;
-            writer (writer && rhs) noexcept = default;
+      writer (fifo_path const & fifo, duration_type retry_timeout, unsigned max_retries,
+              update_callback cb = default_callback);
+      writer (fifo_path const & fifo, update_callback cb = default_callback);
+      writer (writer const &) = delete;
+      writer (writer && rhs) noexcept = default;
 
-            virtual ~writer () = default;
+      virtual ~writer () = default;
 
-            writer & operator= (writer const &) = delete;
-            writer & operator= (writer && rhs) noexcept = default;
+      writer & operator= (writer const &) = delete;
+      writer & operator= (writer && rhs) noexcept = default;
 
-            void write (message_type const & msg, bool error_on_timeout);
+      void write (message_type const & msg, bool error_on_timeout);
 
-        private:
-            // (virtual for unit testing)
-            virtual bool write_impl (message_type const & msg);
+    private:
+      // (virtual for unit testing)
+      virtual bool write_impl (message_type const & msg);
 
-            /// The pipe to which the write() function will write data.
-            fifo_path::client_pipe fd_;
-            /// The time delay between retries.
-            duration_type retry_timeout_;
-            /// The number of retries that will be attempted before write() will give up.
-            unsigned max_retries_;
-            /// A function which is called by write() before each retry.
-            update_callback update_cb_;
-        };
+      /// The pipe to which the write() function will write data.
+      fifo_path::client_pipe fd_;
+      /// The time delay between retries.
+      duration_type retry_timeout_;
+      /// The number of retries that will be attempted before write() will give up.
+      unsigned max_retries_;
+      /// A function which is called by write() before each retry.
+      update_callback update_cb_;
+    };
 
-    } // namespace brokerface
+  } // namespace brokerface
 } // namespace pstore
 
 #endif // PSTORE_BROKERFACE_WRITER_HPP

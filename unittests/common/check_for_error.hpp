@@ -28,42 +28,42 @@
 template <typename Function>
 void check_for_error (Function test_fn, int err, std::error_category const & category) {
 #ifdef PSTORE_EXCEPTIONS
-    auto f = [&] () {
-        try {
-            test_fn ();
-        } catch (std::system_error const & ex) {
-            EXPECT_EQ (category, ex.code ().category ());
-            EXPECT_EQ (err, ex.code ().value ());
-            throw;
-        }
-    };
-    EXPECT_THROW (f (), std::system_error);
+  auto f = [&] () {
+    try {
+      test_fn ();
+    } catch (std::system_error const & ex) {
+      EXPECT_EQ (category, ex.code ().category ());
+      EXPECT_EQ (err, ex.code ().value ());
+      throw;
+    }
+  };
+  EXPECT_THROW (f (), std::system_error);
 #else
-    (void) test_fn;
-    (void) err;
-    (void) category;
+  (void) test_fn;
+  (void) err;
+  (void) category;
 #endif // PSTORE_EXCEPTIONS
 }
 
 template <typename Function>
 void check_for_error (Function fn, pstore::error_code err) {
-    check_for_error (fn, static_cast<int> (err), pstore::get_error_category ());
+  check_for_error (fn, static_cast<int> (err), pstore::get_error_category ());
 }
 
 template <typename Function>
 void check_for_error (Function fn, std::errc err) {
-    check_for_error (fn, static_cast<int> (err), std::generic_category ());
+  check_for_error (fn, static_cast<int> (err), std::generic_category ());
 }
 
 template <typename Function>
 void check_for_error (Function fn, pstore::errno_erc err) {
-    check_for_error (fn, err.get (), std::generic_category ());
+  check_for_error (fn, err.get (), std::generic_category ());
 }
 
 #ifdef _WIN32
 template <typename Function>
 void check_for_error (Function fn, pstore::win32_erc err) {
-    check_for_error (fn, err.get (), std::system_category ());
+  check_for_error (fn, err.get (), std::system_category ());
 }
 #endif //_WIN32
 

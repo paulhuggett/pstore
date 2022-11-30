@@ -19,28 +19,28 @@
 #include <gtest/gtest.h>
 
 TEST (IotaGenerator, InitialValue) {
-    iota_generator g1;
-    EXPECT_EQ (*g1, 0UL);
+  iota_generator g1;
+  EXPECT_EQ (*g1, 0UL);
 
-    iota_generator g2 (3);
-    EXPECT_EQ (*g2, 3UL);
+  iota_generator g2 (3);
+  EXPECT_EQ (*g2, 3UL);
 }
 
 TEST (IotaGenerator, Compare) {
-    iota_generator g1 (3);
-    iota_generator g2 (3);
-    iota_generator g3 (5);
-    EXPECT_EQ (*g1, *g2);
-    EXPECT_NE (*g1, *g3);
+  iota_generator g1 (3);
+  iota_generator g2 (3);
+  iota_generator g3 (5);
+  EXPECT_EQ (*g1, *g2);
+  EXPECT_NE (*g1, *g3);
 }
 
 TEST (IotaGenerator, Increment) {
-    iota_generator g1 (3);
-    iota_generator post = g1++;
-    EXPECT_EQ (post, iota_generator (3));
-    EXPECT_EQ (g1, iota_generator (4));
+  iota_generator g1 (3);
+  iota_generator post = g1++;
+  EXPECT_EQ (post, iota_generator (3));
+  EXPECT_EQ (g1, iota_generator (4));
 
-    iota_generator pre = ++g1;
-    EXPECT_EQ (pre, iota_generator (5));
-    EXPECT_EQ (g1, iota_generator (5));
+  iota_generator pre = ++g1;
+  EXPECT_EQ (pre, iota_generator (5));
+  EXPECT_EQ (g1, iota_generator (5));
 }

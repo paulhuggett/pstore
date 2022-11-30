@@ -27,13 +27,13 @@
 
 namespace pstore {
 
-    /// Converts a string to a revision number. Leading and trailing whitespace is ignored, the text
-    /// "head" (regardless of case) will become pstore::database::head_revision.
-    ///
-    /// \param str  The string to be converted to a revision number.
-    /// \returns Either the converted revision number or nothing.
+  /// Converts a string to a revision number. Leading and trailing whitespace is ignored, the text
+  /// "head" (regardless of case) will become pstore::database::head_revision.
+  ///
+  /// \param str  The string to be converted to a revision number.
+  /// \returns Either the converted revision number or nothing.
 
-    maybe<unsigned> str_to_revision (std::string const & str);
+  maybe<unsigned> str_to_revision (std::string const & str);
 
 } // end namespace pstore
 

@@ -32,32 +32,32 @@
 
 namespace {
 
-    constexpr auto elements_per_chunk = 3U;
-    constexpr auto max_size = elements_per_chunk * 3U;
+  constexpr auto elements_per_chunk = 3U;
+  constexpr auto max_size = elements_per_chunk * 3U;
 
-    void check (pstore::chunked_sequence<int, elements_per_chunk> const & cv,
-                std::size_t const size) {
-        assert (cv.size () == size);
-        assert (std::distance (std::begin (cv), std::end (cv)) == size);
-        assert (std::all_of (std::begin (cv), std::end (cv), [] (int x) { return x == 0; }));
-    }
+  void check (pstore::chunked_sequence<int, elements_per_chunk> const & cv,
+              std::size_t const size) {
+    assert (cv.size () == size);
+    assert (std::distance (std::begin (cv), std::end (cv)) == size);
+    assert (std::all_of (std::begin (cv), std::end (cv), [] (int x) { return x == 0; }));
+  }
 
 } // end anonymous namespace
 
 
 int main () {
-    pstore::chunked_sequence<int, elements_per_chunk> cv;
-    std::size_t new_size1;
-    std::size_t new_size2;
-    klee_make_symbolic (&new_size1, sizeof (new_size1), "new_size1");
-    klee_make_symbolic (&new_size2, sizeof (new_size2), "new_size2");
-    // Limit the size to < max_size since this should represent more than enough test cases to
-    // exercise every possible code path.
-    klee_assume (new_size1 < max_size);
-    klee_assume (new_size2 < max_size);
+  pstore::chunked_sequence<int, elements_per_chunk> cv;
+  std::size_t new_size1;
+  std::size_t new_size2;
+  klee_make_symbolic (&new_size1, sizeof (new_size1), "new_size1");
+  klee_make_symbolic (&new_size2, sizeof (new_size2), "new_size2");
+  // Limit the size to < max_size since this should represent more than enough test cases to
+  // exercise every possible code path.
+  klee_assume (new_size1 < max_size);
+  klee_assume (new_size2 < max_size);
 
-    cv.resize (new_size1);
-    check (cv, new_size1);
-    cv.resize (new_size2);
-    check (cv, new_size2);
+  cv.resize (new_size1);
+  check (cv, new_size1);
+  cv.resize (new_size2);
+  check (cv, new_size2);
 }

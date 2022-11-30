@@ -25,20 +25,20 @@
 
 template <typename OStream, typename Arg>
 inline void say_impl (OStream & os, Arg a) {
-    os << a;
+  os << a;
 }
 template <typename OStream, typename Arg, typename... Args>
 inline void say_impl (OStream & os, Arg a, Args... args) {
-    os << a;
-    say_impl (os, args...);
+  os << a;
+  say_impl (os, args...);
 }
 
 template <typename OStream, typename... Args>
 void say (OStream & os, Args... args) {
-    static std::mutex io_mut;
-    std::lock_guard<std::mutex> lock{io_mut};
-    say_impl (os, args...);
-    os << std::endl;
+  static std::mutex io_mut;
+  std::lock_guard<std::mutex> lock{io_mut};
+  say_impl (os, args...);
+  os << std::endl;
 }
 
 #endif // PSTORE_LOCK_TEST_SAY_HPP

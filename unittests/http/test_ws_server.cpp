@@ -29,121 +29,117 @@ using pstore::http::make_buffered_reader;
 
 
 namespace pstore {
-    namespace http {
+  namespace http {
 
-        /// A specialization of block_for_input() which always returns a result indicating that
-        /// data is available on the input socket.
-        template <typename Reader>
-        inputs_ready block_for_input (Reader const &, int, pipe_descriptor const *) {
-            return {true, false};
-        }
+    /// A specialization of block_for_input() which always returns a result indicating that
+    /// data is available on the input socket.
+    template <typename Reader>
+    inputs_ready block_for_input (Reader const &, int, pipe_descriptor const *) {
+      return {true, false};
+    }
 
-    } // end namespace http
+  } // end namespace http
 } // end namespace pstore
 
 
 TEST (WsServer, NothingFromClient) {
-    // Define what the client will send to the server (just EOF).
-    refiller r;
-    EXPECT_CALL (r, fill (_, _)).WillRepeatedly (Invoke (eof ()));
+  // Define what the client will send to the server (just EOF).
+  refiller r;
+  EXPECT_CALL (r, fill (_, _)).WillRepeatedly (Invoke (eof ()));
 
-    // Record the server's response.
-    std::vector<std::uint8_t> output;
-    auto sender = [&output] (int io, pstore::gsl::span<std::uint8_t const> const & s) {
-        std::copy (s.begin (), s.end (), std::back_inserter (output));
-        return pstore::error_or<int>{pstore::in_place, io + 1};
-    };
+  // Record the server's response.
+  std::vector<std::uint8_t> output;
+  auto sender = [&output] (int io, pstore::gsl::span<std::uint8_t const> const & s) {
+    std::copy (s.begin (), s.end (), std::back_inserter (output));
+    return pstore::error_or<int>{pstore::in_place, io + 1};
+  };
 
-    auto io = 0;
-    auto br = make_buffered_reader<decltype (io)> (r.refill_function ());
-    ws_server_loop (br, sender, io, "", pstore::http::channel_container{});
+  auto io = 0;
+  auto br = make_buffered_reader<decltype (io)> (r.refill_function ());
+  ws_server_loop (br, sender, io, "", pstore::http::channel_container{});
 
-    // A close frame with error 0x3ee (1006: abnormal closure).
-    EXPECT_THAT (output, ::testing::ElementsAre (std::uint8_t{0x88}, std::uint8_t{0x02},
-                                                 std::uint8_t{0x03}, std::uint8_t{0xee}));
+  // A close frame with error 0x3ee (1006: abnormal closure).
+  EXPECT_THAT (output, ::testing::ElementsAre (std::uint8_t{0x88}, std::uint8_t{0x02},
+                                               std::uint8_t{0x03}, std::uint8_t{0xee}));
 }
 
 struct frame_and_mask {
-    pstore::http::frame_fixed_layout frame;
-    std::array<std::uint8_t, 4> mask;
+  pstore::http::frame_fixed_layout frame;
+  std::array<std::uint8_t, 4> mask;
 };
 
 TEST (WsServer, Ping) {
-    using namespace pstore::gsl;
+  using namespace pstore::gsl;
 
-    std::vector<std::uint8_t> send_frames;
-    {
-        pstore::http::frame_fixed_layout sf1{};
-        sf1.mask = true;
-        sf1.opcode = static_cast<std::uint16_t> (pstore::http::opcode::ping);
-        sf1.fin = true;
-        sf1 = pstore::http::host_to_network (sf1);
-        auto const sf1_span = as_bytes (make_span (&sf1, 1));
-        std::copy (std::begin (sf1_span), std::end (sf1_span), std::back_inserter (send_frames));
-        // 4 mask bytes (all 0)
-        std::generate_n (std::back_inserter (send_frames), 4, [] () { return std::uint8_t{0}; });
-    }
-    {
-        pstore::http::frame_fixed_layout sf2{};
-        sf2.mask = true;
-        sf2.opcode = static_cast<std::uint16_t> (pstore::http::opcode::close);
-        sf2.fin = true;
-        sf2 = pstore::http::host_to_network (sf2);
-        auto const sf2_span = as_bytes (make_span (&sf2, 1));
-        std::copy (std::begin (sf2_span), std::end (sf2_span), std::back_inserter (send_frames));
-        // 4 mask bytes (all 0)
-        std::generate_n (std::back_inserter (send_frames), 4, [] () { return std::uint8_t{0}; });
-    }
-
-
-    std::vector<std::uint8_t> expected_frames;
-    {
-        pstore::http::frame_fixed_layout xf1{};
-        xf1.mask = false;
-        xf1.opcode = static_cast<std::uint16_t> (pstore::http::opcode::pong);
-        xf1.fin = true;
-        xf1 = pstore::http::host_to_network (xf1);
-        auto const xf1_span = as_bytes (make_span (&xf1, 1));
-        std::copy (std::begin (xf1_span), std::end (xf1_span),
-                   std::back_inserter (expected_frames));
-    }
-    {
-        pstore::http::frame_fixed_layout xf2{};
-        xf2.payload_length =
-            std::uint16_t{sizeof (std::uint16_t)}; // payload is the close status code.
-        xf2.mask = false;
-        xf2.opcode = static_cast<std::uint16_t> (pstore::http::opcode::close);
-        xf2.fin = true;
-        xf2 = pstore::http::host_to_network (xf2);
-        auto const xf2_span = as_writeable_bytes (make_span (&xf2, 1));
-        std::copy (std::begin (xf2_span), std::end (xf2_span),
-                   std::back_inserter (expected_frames));
-        auto const close_code = pstore::http::host_to_network (
-            static_cast<std::uint16_t> (pstore::http::close_status_code::normal));
-        auto const close_span = as_bytes (make_span (&close_code, 1));
-        std::copy (std::begin (close_span), std::end (close_span),
-                   std::back_inserter (expected_frames));
-    }
+  std::vector<std::uint8_t> send_frames;
+  {
+    pstore::http::frame_fixed_layout sf1{};
+    sf1.mask = true;
+    sf1.opcode = static_cast<std::uint16_t> (pstore::http::opcode::ping);
+    sf1.fin = true;
+    sf1 = pstore::http::host_to_network (sf1);
+    auto const sf1_span = as_bytes (make_span (&sf1, 1));
+    std::copy (std::begin (sf1_span), std::end (sf1_span), std::back_inserter (send_frames));
+    // 4 mask bytes (all 0)
+    std::generate_n (std::back_inserter (send_frames), 4, [] () { return std::uint8_t{0}; });
+  }
+  {
+    pstore::http::frame_fixed_layout sf2{};
+    sf2.mask = true;
+    sf2.opcode = static_cast<std::uint16_t> (pstore::http::opcode::close);
+    sf2.fin = true;
+    sf2 = pstore::http::host_to_network (sf2);
+    auto const sf2_span = as_bytes (make_span (&sf2, 1));
+    std::copy (std::begin (sf2_span), std::end (sf2_span), std::back_inserter (send_frames));
+    // 4 mask bytes (all 0)
+    std::generate_n (std::back_inserter (send_frames), 4, [] () { return std::uint8_t{0}; });
+  }
 
 
-    // Define what the client will send to the server (the contents of send_frames above).
-    refiller r;
-    EXPECT_CALL (r, fill (_, _)).WillRepeatedly (Invoke (eof ()));
-    EXPECT_CALL (r, fill (0, _))
-        .WillOnce (Invoke (yield_bytes (as_bytes (make_span (send_frames)))));
-    auto io = 0;
-    auto br = make_buffered_reader<decltype (io)> (r.refill_function ());
+  std::vector<std::uint8_t> expected_frames;
+  {
+    pstore::http::frame_fixed_layout xf1{};
+    xf1.mask = false;
+    xf1.opcode = static_cast<std::uint16_t> (pstore::http::opcode::pong);
+    xf1.fin = true;
+    xf1 = pstore::http::host_to_network (xf1);
+    auto const xf1_span = as_bytes (make_span (&xf1, 1));
+    std::copy (std::begin (xf1_span), std::end (xf1_span), std::back_inserter (expected_frames));
+  }
+  {
+    pstore::http::frame_fixed_layout xf2{};
+    xf2.payload_length = std::uint16_t{sizeof (std::uint16_t)}; // payload is the close status code.
+    xf2.mask = false;
+    xf2.opcode = static_cast<std::uint16_t> (pstore::http::opcode::close);
+    xf2.fin = true;
+    xf2 = pstore::http::host_to_network (xf2);
+    auto const xf2_span = as_writeable_bytes (make_span (&xf2, 1));
+    std::copy (std::begin (xf2_span), std::end (xf2_span), std::back_inserter (expected_frames));
+    auto const close_code = pstore::http::host_to_network (
+      static_cast<std::uint16_t> (pstore::http::close_status_code::normal));
+    auto const close_span = as_bytes (make_span (&close_code, 1));
+    std::copy (std::begin (close_span), std::end (close_span),
+               std::back_inserter (expected_frames));
+  }
 
-    // Record the server's response.
-    std::vector<std::uint8_t> output;
-    auto sender = [&output] (int io2, pstore::gsl::span<std::uint8_t const> const & s) {
-        std::copy (s.begin (), s.end (), std::back_inserter (output));
-        return pstore::error_or<int>{pstore::in_place, io2 + 1};
-    };
+
+  // Define what the client will send to the server (the contents of send_frames above).
+  refiller r;
+  EXPECT_CALL (r, fill (_, _)).WillRepeatedly (Invoke (eof ()));
+  EXPECT_CALL (r, fill (0, _)).WillOnce (Invoke (yield_bytes (as_bytes (make_span (send_frames)))));
+  auto io = 0;
+  auto br = make_buffered_reader<decltype (io)> (r.refill_function ());
+
+  // Record the server's response.
+  std::vector<std::uint8_t> output;
+  auto sender = [&output] (int io2, pstore::gsl::span<std::uint8_t const> const & s) {
+    std::copy (s.begin (), s.end (), std::back_inserter (output));
+    return pstore::error_or<int>{pstore::in_place, io2 + 1};
+  };
 
 
-    ws_server_loop (br, sender, io, std::string{} /*uri*/, pstore::http::channel_container{});
+  ws_server_loop (br, sender, io, std::string{} /*uri*/, pstore::http::channel_container{});
 
-    EXPECT_THAT (pstore::gsl::make_span (output),
-                 ::testing::ContainerEq (make_span (expected_frames)));
+  EXPECT_THAT (pstore::gsl::make_span (output),
+               ::testing::ContainerEq (make_span (expected_frames)));
 }

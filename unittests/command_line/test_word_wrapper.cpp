@@ -24,34 +24,34 @@
 using namespace pstore::command_line;
 
 TEST (WordWrapper, NoWrap) {
-    std::string const text = "text";
-    word_wrapper wr (text, text.length ());
-    EXPECT_EQ (*wr, "text");
+  std::string const text = "text";
+  word_wrapper wr (text, text.length ());
+  EXPECT_EQ (*wr, "text");
 }
 
 TEST (WordWrapper, TwoLines) {
-    std::string const text = "one two";
+  std::string const text = "one two";
 
-    std::vector<std::string> lines;
-    // Note this loop it hand-written to ensure that the test operations don't vary according to the
-    // implementation of standard library functions.
-    auto it = word_wrapper (text, 4);
-    auto end = word_wrapper::end (text, 4);
-    while (it != end) {
-        std::string const & s = *it;
-        lines.push_back (s);
-        ++it;
-    }
-    EXPECT_THAT (lines, ::testing::ElementsAre ("one", "two"));
+  std::vector<std::string> lines;
+  // Note this loop it hand-written to ensure that the test operations don't vary according to the
+  // implementation of standard library functions.
+  auto it = word_wrapper (text, 4);
+  auto end = word_wrapper::end (text, 4);
+  while (it != end) {
+    std::string const & s = *it;
+    lines.push_back (s);
+    ++it;
+  }
+  EXPECT_THAT (lines, ::testing::ElementsAre ("one", "two"));
 }
 
 TEST (WordWrapper, LongWordShortLine) {
-    std::string const text = "antidisestablishmentarianism is along word";
+  std::string const text = "antidisestablishmentarianism is along word";
 
-    std::vector<std::string> lines;
-    // Note this loop it hand-written to ensure that the test operations don't vary according to the
-    // implementation of standard library functions.
-    auto it = word_wrapper (text, 4);
-    std::string const & s = *it;
-    EXPECT_EQ (s, "antidisestablishmentarianism");
+  std::vector<std::string> lines;
+  // Note this loop it hand-written to ensure that the test operations don't vary according to the
+  // implementation of standard library functions.
+  auto it = word_wrapper (text, 4);
+  std::string const & s = *it;
+  EXPECT_EQ (s, "antidisestablishmentarianism");
 }

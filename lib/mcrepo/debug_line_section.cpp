@@ -22,26 +22,25 @@
 #include "pstore/mcrepo/debug_line_section.hpp"
 
 namespace pstore {
-    namespace repo {
+  namespace repo {
 
-        std::size_t debug_line_section_creation_dispatcher::size_bytes () const {
-            return debug_line_section::size_bytes (section_->make_sources ());
-        }
+    std::size_t debug_line_section_creation_dispatcher::size_bytes () const {
+      return debug_line_section::size_bytes (section_->make_sources ());
+    }
 
-        std::uint8_t *
-        debug_line_section_creation_dispatcher::write (std::uint8_t * const out) const {
-            PSTORE_ASSERT (this->aligned (out) == out);
-            auto * const scn = new (out) debug_line_section (
-                header_digest_, header_, section_->make_sources (), section_->align);
-            return out + scn->size_bytes ();
-        }
+    std::uint8_t * debug_line_section_creation_dispatcher::write (std::uint8_t * const out) const {
+      PSTORE_ASSERT (this->aligned (out) == out);
+      auto * const scn = new (out)
+        debug_line_section (header_digest_, header_, section_->make_sources (), section_->align);
+      return out + scn->size_bytes ();
+    }
 
-        std::uintptr_t
-        debug_line_section_creation_dispatcher::aligned_impl (std::uintptr_t const in) const {
-            return pstore::aligned<debug_line_section> (in);
-        }
+    std::uintptr_t
+    debug_line_section_creation_dispatcher::aligned_impl (std::uintptr_t const in) const {
+      return pstore::aligned<debug_line_section> (in);
+    }
 
-        debug_line_dispatcher::~debug_line_dispatcher () noexcept = default;
+    debug_line_dispatcher::~debug_line_dispatcher () noexcept = default;
 
-    } // end namespace repo
+  } // end namespace repo
 } // end namespace pstore

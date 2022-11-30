@@ -22,10 +22,10 @@
 #include "pstore/broker/internal_commands.hpp"
 
 namespace pstore {
-    namespace broker {
+  namespace broker {
 
-        gsl::czstring const read_loop_quit_command = "_QUIT";
-        gsl::czstring const command_loop_quit_command = "_CQUIT";
+    gsl::czstring const read_loop_quit_command = "_QUIT";
+    gsl::czstring const command_loop_quit_command = "_CQUIT";
 
-    } // end namespace broker
+  } // end namespace broker
 } // end namespace pstore

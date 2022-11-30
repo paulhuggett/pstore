@@ -31,109 +31,108 @@
 #include "check_for_error.hpp"
 
 TEST (BrokerMessageType, BadPartNo) {
-    auto create = [] () {
-        std::uint32_t const mid = 3;
-        std::uint16_t const part = 2;
-        std::uint16_t const num_parts = 2;
-        return pstore::brokerface::message_type (mid, part, num_parts, "");
-    };
-    check_for_error (create, ::pstore::error_code::bad_message_part_number);
+  auto create = [] () {
+    std::uint32_t const mid = 3;
+    std::uint16_t const part = 2;
+    std::uint16_t const num_parts = 2;
+    return pstore::brokerface::message_type (mid, part, num_parts, "");
+  };
+  check_for_error (create, ::pstore::error_code::bad_message_part_number);
 }
 
 TEST (BrokerMessageType, EmptyString) {
-    std::uint32_t const mid = 1234;
-    std::uint16_t const part = 21;
-    std::uint16_t const num_parts = 1234;
+  std::uint32_t const mid = 1234;
+  std::uint16_t const part = 21;
+  std::uint16_t const num_parts = 1234;
 
-    pstore::brokerface::message_type const actual{mid, part, num_parts, ""};
+  pstore::brokerface::message_type const actual{mid, part, num_parts, ""};
 
-    EXPECT_EQ (actual.sender_id, pstore::brokerface::message_type::process_id);
-    EXPECT_EQ (actual.message_id, mid);
-    EXPECT_EQ (actual.part_no, part);
-    EXPECT_EQ (actual.num_parts, num_parts);
+  EXPECT_EQ (actual.sender_id, pstore::brokerface::message_type::process_id);
+  EXPECT_EQ (actual.message_id, mid);
+  EXPECT_EQ (actual.part_no, part);
+  EXPECT_EQ (actual.num_parts, num_parts);
 
-    pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
-    EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
+  pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
+  EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
 }
 
 TEST (BrokerMessageType, ShortString) {
-    std::string const payload = "hello world";
-    pstore::brokerface::message_type const actual{0, 0, 1, payload};
+  std::string const payload = "hello world";
+  pstore::brokerface::message_type const actual{0, 0, 1, payload};
 
-    pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
-    std::copy (std::begin (payload), std::end (payload), std::begin (expected_payload));
+  pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
+  std::copy (std::begin (payload), std::end (payload), std::begin (expected_payload));
 
-    EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
+  EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
 }
 
 TEST (BrokerMessageType, LongStringIsTruncated) {
-    std::string const long_payload (pstore::brokerface::message_type::payload_chars + 1, 'A');
+  std::string const long_payload (pstore::brokerface::message_type::payload_chars + 1, 'A');
 
-    pstore::brokerface::message_type const actual{0, 0, 1, long_payload};
+  pstore::brokerface::message_type const actual{0, 0, 1, long_payload};
 
-    pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
-    std::fill (std::begin (expected_payload), std::end (expected_payload), 'A');
+  pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
+  std::fill (std::begin (expected_payload), std::end (expected_payload), 'A');
 
-    EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
+  EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
 }
 
 TEST (BrokerMessageType, ShortPayloadUsingIterator) {
-    std::string const payload = "hello world";
-    pstore::brokerface::message_type const actual{0, 0, 1, std::begin (payload),
-                                                  std::end (payload)};
+  std::string const payload = "hello world";
+  pstore::brokerface::message_type const actual{0, 0, 1, std::begin (payload), std::end (payload)};
 
-    pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
-    std::copy (std::begin (payload), std::end (payload), std::begin (expected_payload));
+  pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
+  std::copy (std::begin (payload), std::end (payload), std::begin (expected_payload));
 
-    EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
+  EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
 }
 
 namespace {
 
-    template <typename OutputIterator>
-    void generate (OutputIterator out, std::size_t num) {
-        auto ctr = 0U;
-        std::generate_n (out, num, [&ctr] () { return static_cast<char> (ctr++ % 26 + 'A'); });
-    }
+  template <typename OutputIterator>
+  void generate (OutputIterator out, std::size_t num) {
+    auto ctr = 0U;
+    std::generate_n (out, num, [&ctr] () { return static_cast<char> (ctr++ % 26 + 'A'); });
+  }
 
 } // end anonymous namespace
 
 TEST (BrokerMessageType, MaxLengthIteratorRange) {
-    std::string long_payload;
-    constexpr auto num = std::size_t{pstore::brokerface::message_type::payload_chars};
-    generate (std::back_inserter (long_payload), num);
+  std::string long_payload;
+  constexpr auto num = std::size_t{pstore::brokerface::message_type::payload_chars};
+  generate (std::back_inserter (long_payload), num);
 
-    pstore::brokerface::message_type const actual{0, 0, 1, std::begin (long_payload),
-                                                  std::end (long_payload)};
+  pstore::brokerface::message_type const actual{0, 0, 1, std::begin (long_payload),
+                                                std::end (long_payload)};
 
-    pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
-    generate (std::begin (expected_payload), expected_payload.size ());
-    EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
+  pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
+  generate (std::begin (expected_payload), expected_payload.size ());
+  EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
 }
 
 TEST (BrokerMessageType, TooLongIteratorRangeIsTruncated) {
-    std::list<char>
-        long_payload; // deliberately using list<> because it's quite different from array<>/string.
-    constexpr auto num = std::size_t{pstore::brokerface::message_type::payload_chars + 1};
-    generate (std::back_inserter (long_payload), num);
+  std::list<char>
+    long_payload; // deliberately using list<> because it's quite different from array<>/string.
+  constexpr auto num = std::size_t{pstore::brokerface::message_type::payload_chars + 1};
+  generate (std::back_inserter (long_payload), num);
 
-    pstore::brokerface::message_type const actual (0, 0, 1, std::begin (long_payload),
-                                                   std::end (long_payload));
+  pstore::brokerface::message_type const actual (0, 0, 1, std::begin (long_payload),
+                                                 std::end (long_payload));
 
-    pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
-    generate (std::begin (expected_payload), expected_payload.size ());
-    EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
+  pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
+  generate (std::begin (expected_payload), expected_payload.size ());
+  EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
 }
 
 TEST (BrokerMessageType, NegativeDistanceBetweenIterators) {
-    char const payload[] = "payload";
-    // Note that first and last are reversed.
-    auto last = std::begin (payload);
-    auto first = std::end (payload);
-    ASSERT_LT (std::distance (first, last), 0);
+  char const payload[] = "payload";
+  // Note that first and last are reversed.
+  auto last = std::begin (payload);
+  auto first = std::end (payload);
+  ASSERT_LT (std::distance (first, last), 0);
 
-    pstore::brokerface::message_type const actual (0, 0, 1, first, last);
+  pstore::brokerface::message_type const actual (0, 0, 1, first, last);
 
-    pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
-    EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
+  pstore::brokerface::message_type::payload_type expected_payload{{'\0'}};
+  EXPECT_THAT (actual.payload, ::testing::ContainerEq (expected_payload));
 }

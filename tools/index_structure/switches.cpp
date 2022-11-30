@@ -32,41 +32,41 @@ using namespace pstore::command_line;
 
 namespace {
 
-    opt<pstore::command_line::revision_opt, parser<std::string>>
-        revision ("revision", desc ("The starting revision number (or 'HEAD')"));
-    alias revision2 ("r", desc ("Alias for --revision"), aliasopt (revision));
+  opt<pstore::command_line::revision_opt, parser<std::string>>
+    revision ("revision", desc ("The starting revision number (or 'HEAD')"));
+  alias revision2 ("r", desc ("Alias for --revision"), aliasopt (revision));
 
-    opt<std::string> db_path (positional, required, usage ("repository"), desc ("Database path"));
+  opt<std::string> db_path (positional, required, usage ("repository"), desc ("Database path"));
 
 #define X(a) literal (#a, static_cast<int> (pstore::trailer::indices::a), #a),
-    list<pstore::trailer::indices> index_names_opt (positional, optional, one_or_more,
-                                                    usage ("[index-name...]"),
-                                                    values ({PSTORE_INDICES}));
+  list<pstore::trailer::indices> index_names_opt (positional, optional, one_or_more,
+                                                  usage ("[index-name...]"),
+                                                  values ({PSTORE_INDICES}));
 #undef X
 
-    std::string usage_help () {
-        std::ostringstream usage;
-        usage << "pstore index structure\n\n"
-                 "Dumps the internal structure of one of more pstore indexes. index-name may be "
-                 "any of: ";
-        pstore::gsl::czstring separator = "";
-        for (literal const & lit : *index_names_opt.get_parser ()) {
-            usage << separator << '\'' << lit.name << '\'';
-            separator = ", ";
-        }
-        return usage.str ();
+  std::string usage_help () {
+    std::ostringstream usage;
+    usage << "pstore index structure\n\n"
+             "Dumps the internal structure of one of more pstore indexes. index-name may be "
+             "any of: ";
+    pstore::gsl::czstring separator = "";
+    for (literal const & lit : *index_names_opt.get_parser ()) {
+      usage << separator << '\'' << lit.name << '\'';
+      separator = ", ";
     }
+    return usage.str ();
+  }
 
 } // end anonymous namespace
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-    parse_command_line_options (argc, argv, usage_help ());
+  parse_command_line_options (argc, argv, usage_help ());
 
-    switches sw;
-    sw.revision = static_cast<unsigned> (revision.get ());
-    sw.db_path = db_path.get ();
-    for (pstore::trailer::indices idx : index_names_opt) {
-        sw.selected.set (static_cast<std::underlying_type<pstore::trailer::indices>::type> (idx));
-    }
-    return {sw, EXIT_SUCCESS};
+  switches sw;
+  sw.revision = static_cast<unsigned> (revision.get ());
+  sw.db_path = db_path.get ();
+  for (pstore::trailer::indices idx : index_names_opt) {
+    sw.selected.set (static_cast<std::underlying_type<pstore::trailer::indices>::type> (idx));
+  }
+  return {sw, EXIT_SUCCESS};
 }

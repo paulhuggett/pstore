@@ -24,36 +24,36 @@
 
 namespace pstore {
 
-    class database;
+  class database;
 
-    namespace exchange {
-        namespace import_ns {
+  namespace exchange {
+    namespace import_ns {
 
-            class root final : public rule {
-            public:
-                explicit root (not_null<context *> const ctxt) noexcept
-                        : rule (ctxt) {}
-                root (root const &) = delete;
-                root (root &&) noexcept = delete;
-                ~root () noexcept override = default;
+      class root final : public rule {
+      public:
+        explicit root (not_null<context *> const ctxt) noexcept
+                : rule (ctxt) {}
+        root (root const &) = delete;
+        root (root &&) noexcept = delete;
+        ~root () noexcept override = default;
 
-                root & operator= (root const &) = delete;
-                root & operator= (root &&) noexcept = delete;
+        root & operator= (root const &) = delete;
+        root & operator= (root &&) noexcept = delete;
 
-                gsl::czstring name () const noexcept override;
-                std::error_code begin_object () override;
+        gsl::czstring name () const noexcept override;
+        std::error_code begin_object () override;
 
-            private:
-                std::error_code apply_patches ();
-            };
+      private:
+        std::error_code apply_patches ();
+      };
 
-            /// Creates a JSON parser instance which will consume pstore exchange input.
-            /// \param db  The database into which the imported data will be written.
-            /// \returns A JSON parser instance.
-            json::parser<callbacks> create_parser (database & db);
+      /// Creates a JSON parser instance which will consume pstore exchange input.
+      /// \param db  The database into which the imported data will be written.
+      /// \returns A JSON parser instance.
+      json::parser<callbacks> create_parser (database & db);
 
-        } // end namespace import_ns
-    }     // end namespace exchange
+    } // end namespace import_ns
+  }   // end namespace exchange
 } // end namespace pstore
 
 #endif // PSTORE_EXCHANGE_IMPORT_ROOT_HPP

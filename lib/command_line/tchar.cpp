@@ -16,15 +16,15 @@
 #include "pstore/command_line/tchar.hpp"
 
 namespace pstore {
-    namespace command_line {
+  namespace command_line {
 
 #if defined(_WIN32) && defined(_UNICODE)
-        std::wostream & error_stream = std::wcerr;
-        std::wostream & out_stream = std::wcout;
+    std::wostream & error_stream = std::wcerr;
+    std::wostream & out_stream = std::wcout;
 #else
-        std::ostream & error_stream = std::cerr;
-        std::ostream & out_stream = std::cout;
+    std::ostream & error_stream = std::cerr;
+    std::ostream & out_stream = std::cout;
 #endif
 
-    } // end namespace command_line
+  } // end namespace command_line
 } // end namespace pstore

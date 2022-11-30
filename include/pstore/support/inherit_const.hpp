@@ -97,37 +97,37 @@
 
 namespace pstore {
 
-    /// Provides a member typedef inherit_const::type, which is defined as \p R const if
-    /// \p T is a const type and \p R if \p T is non-const.
-    ///
-    /// \tparam T  A type whose constness will determine the constness of
-    ///   inherit_const::type.
-    /// \tparam R  The result type.
-    /// \tparam RC  The const-result type.
-    template <typename T, typename R, typename RC = R const>
-    struct inherit_const {
-        /// If \p T is const, \p R const otherwise \p R.
-        using type =
-            typename std::conditional<std::is_const<typename std::remove_reference<T>::type>::value,
-                                      RC, R>::type;
-    };
+  /// Provides a member typedef inherit_const::type, which is defined as \p R const if
+  /// \p T is a const type and \p R if \p T is non-const.
+  ///
+  /// \tparam T  A type whose constness will determine the constness of
+  ///   inherit_const::type.
+  /// \tparam R  The result type.
+  /// \tparam RC  The const-result type.
+  template <typename T, typename R, typename RC = R const>
+  struct inherit_const {
+    /// If \p T is const, \p R const otherwise \p R.
+    using type =
+      typename std::conditional<std::is_const<typename std::remove_reference<T>::type>::value, RC,
+                                R>::type;
+  };
 
 } // namespace pstore
 
 static_assert (std::is_same<typename pstore::inherit_const<int, bool>::type, bool>::value,
                "int -> bool");
 static_assert (
-    std::is_same<typename pstore::inherit_const<int const, bool>::type, bool const>::value,
-    "int const -> bool const");
+  std::is_same<typename pstore::inherit_const<int const, bool>::type, bool const>::value,
+  "int const -> bool const");
 static_assert (std::is_same<typename pstore::inherit_const<int &, bool>::type, bool>::value,
                "int& -> bool");
 static_assert (
-    std::is_same<typename pstore::inherit_const<int const &, bool>::type, bool const>::value,
-    "int const & -> bool const");
+  std::is_same<typename pstore::inherit_const<int const &, bool>::type, bool const>::value,
+  "int const & -> bool const");
 static_assert (std::is_same<typename pstore::inherit_const<int &&, bool>::type, bool>::value,
                "int && -> bool");
 static_assert (
-    std::is_same<typename pstore::inherit_const<int const &&, bool>::type, bool const>::value,
-    "int const && -> bool const");
+  std::is_same<typename pstore::inherit_const<int const &&, bool>::type, bool const>::value,
+  "int const && -> bool const");
 
 #endif // PSTORE_SUPPORT_INHERIT_CONST_HPP

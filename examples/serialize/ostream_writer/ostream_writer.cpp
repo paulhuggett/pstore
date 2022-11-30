@@ -25,45 +25,45 @@
 
 namespace {
 
-    class osw_policy {
-    public:
-        using result_type = pstore::serialize::archive::void_type;
+  class osw_policy {
+  public:
+    using result_type = pstore::serialize::archive::void_type;
 
-        explicit osw_policy (std::ostream & os) noexcept
-                : os_{os} {}
+    explicit osw_policy (std::ostream & os) noexcept
+            : os_{os} {}
 
-        // Writes an object of standard-layout type Ty to the output stream.
-        // A return type of 'void_type' is used in the case that the archive writer policy does not
-        // have a sensible value that it could return to the caller.
-        template <typename Ty>
-        auto put (Ty const & t) -> result_type {
-            static_assert (std::is_standard_layout<Ty>::value, "Ty is not standard-layout");
-            os_ << t << '\n';
-            return {};
-        }
+    // Writes an object of standard-layout type Ty to the output stream.
+    // A return type of 'void_type' is used in the case that the archive writer policy does not
+    // have a sensible value that it could return to the caller.
+    template <typename Ty>
+    auto put (Ty const & t) -> result_type {
+      static_assert (std::is_standard_layout<Ty>::value, "Ty is not standard-layout");
+      os_ << t << '\n';
+      return {};
+    }
 
-        // Flushes the output stream.
-        void flush () { os_ << std::flush; }
+    // Flushes the output stream.
+    void flush () { os_ << std::flush; }
 
-    private:
-        std::ostream & os_;
-    };
+  private:
+    std::ostream & os_;
+  };
 
-    class ostream_writer final : public pstore::serialize::archive::writer_base<osw_policy> {
-    public:
-        explicit ostream_writer (std::ostream & os)
-                : writer_base<osw_policy> (osw_policy{os}) {}
-    };
+  class ostream_writer final : public pstore::serialize::archive::writer_base<osw_policy> {
+  public:
+    explicit ostream_writer (std::ostream & os)
+            : writer_base<osw_policy> (osw_policy{os}) {}
+  };
 
 } // end anonymous namespace
 
 int main () {
-    // A simple function which will write a series of integer values to an instance ostream_writer.
-    ostream_writer writer{std::cout};
+  // A simple function which will write a series of integer values to an instance ostream_writer.
+  ostream_writer writer{std::cout};
 
-    // The array of values that we'll be writing.
-    std::array<int, 3> values{{179, 127, 73}};
+  // The array of values that we'll be writing.
+  std::array<int, 3> values{{179, 127, 73}};
 
-    // Write the sequence of values as a span.
-    pstore::serialize::write (writer, pstore::gsl::make_span (values));
+  // Write the sequence of values as a span.
+  pstore::serialize::write (writer, pstore::gsl::make_span (values));
 }

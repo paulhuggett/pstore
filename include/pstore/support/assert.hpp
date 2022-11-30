@@ -25,17 +25,17 @@
 namespace pstore {
 
 #ifndef NDEBUG
-    PSTORE_NO_RETURN
-    void assert_failed (char const * str, char const * file, int line);
+  PSTORE_NO_RETURN
+  void assert_failed (char const * str, char const * file, int line);
 #endif // NDEBUG
 
 } // end namespace pstore
 
 #ifndef NDEBUG
-#    define PSTORE_ASSERT(expr)                                                                    \
-        ((expr) ? static_cast<void> (0) : ::pstore::assert_failed (#expr, __FILE__, __LINE__))
+#  define PSTORE_ASSERT(expr)                                                                      \
+    ((expr) ? static_cast<void> (0) : ::pstore::assert_failed (#expr, __FILE__, __LINE__))
 #else
-#    define PSTORE_ASSERT(x)
+#  define PSTORE_ASSERT(x)
 #endif // NDEBUG
 
 #endif // PSTORE_SUPPORT_ASSERT_HPP

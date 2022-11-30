@@ -22,57 +22,57 @@
 #include "pstore/support/gsl.hpp"
 
 namespace pstore {
-    class database;
-    class transaction_base;
+  class database;
+  class transaction_base;
 
-    namespace exchange {
-        namespace import_ns {
+  namespace exchange {
+    namespace import_ns {
 
-            class patcher {
-            public:
-                patcher () noexcept = default;
-                patcher (patcher const & rhs) noexcept = default;
-                patcher (patcher && rhs) noexcept = default;
+      class patcher {
+      public:
+        patcher () noexcept = default;
+        patcher (patcher const & rhs) noexcept = default;
+        patcher (patcher && rhs) noexcept = default;
 
-                virtual ~patcher () noexcept = default;
+        virtual ~patcher () noexcept = default;
 
-                patcher & operator= (patcher const & rhs) noexcept = default;
-                patcher & operator= (patcher && rhs) noexcept = default;
+        patcher & operator= (patcher const & rhs) noexcept = default;
+        patcher & operator= (patcher && rhs) noexcept = default;
 
-                virtual std::error_code operator() (transaction_base * t) = 0;
-            };
+        virtual std::error_code operator() (transaction_base * t) = 0;
+      };
 
-            class rule;
+      class rule;
 
-            struct context {
-                explicit context (gsl::not_null<database *> const db_) noexcept
-                        : db{db_} {}
-                context (context const &) = delete;
-                context (context &&) = delete;
+      struct context {
+        explicit context (gsl::not_null<database *> const db_) noexcept
+                : db{db_} {}
+        context (context const &) = delete;
+        context (context &&) = delete;
 
-                ~context () noexcept = default;
+        ~context () noexcept = default;
 
-                context & operator= (context const &) = delete;
-                context & operator= (context &&) = delete;
+        context & operator= (context const &) = delete;
+        context & operator= (context &&) = delete;
 
-                std::error_code apply_patches (transaction_base * const t) {
-                    for (auto const & patch : patches) {
-                        if (std::error_code const erc = (*patch) (t)) {
-                            return erc;
-                        }
-                    }
-                    // Ensure that we can't apply the patches more than once.
-                    patches.clear ();
-                    return {};
-                }
+        std::error_code apply_patches (transaction_base * const t) {
+          for (auto const & patch : patches) {
+            if (std::error_code const erc = (*patch) (t)) {
+              return erc;
+            }
+          }
+          // Ensure that we can't apply the patches more than once.
+          patches.clear ();
+          return {};
+        }
 
-                gsl::not_null<database *> const db;
-                std::stack<std::unique_ptr<rule>> stack;
-                std::list<std::unique_ptr<patcher>> patches;
-            };
+        gsl::not_null<database *> const db;
+        std::stack<std::unique_ptr<rule>> stack;
+        std::list<std::unique_ptr<patcher>> patches;
+      };
 
-        } // end namespace import_ns
-    }     // end namespace exchange
+    } // end namespace import_ns
+  }   // end namespace exchange
 } // end namespace pstore
 
 #endif // PSTORE_EXCHANGE_IMPORT_CONTEXT_HPP

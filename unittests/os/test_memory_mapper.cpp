@@ -33,37 +33,37 @@
 #include "pstore/support/error.hpp"
 
 TEST (MemoryMapper, MemoryMapThenCheckFileContents) {
-    using ::testing::ContainerEq;
+  using ::testing::ContainerEq;
 
-    pstore::file::file_handle file;
-    file.open (pstore::file::file_handle::temporary ());
+  pstore::file::file_handle file;
+  file.open (pstore::file::file_handle::temporary ());
 
-    std::size_t const size = pstore::system_page_size ().get ();
-    ASSERT_GT (size, 0U);
+  std::size_t const size = pstore::system_page_size ().get ();
+  ASSERT_GT (size, 0U);
 
-    file.seek (size - 1U);
-    file.write (0);
-    {
-        pstore::memory_mapper mm{file,  // backing file
-                                 true,  // writable?
-                                 0U,    // offset
-                                 size}; // number of bytes to map
+  file.seek (size - 1U);
+  file.write (0);
+  {
+    pstore::memory_mapper mm{file,  // backing file
+                             true,  // writable?
+                             0U,    // offset
+                             size}; // number of bytes to map
 
-        EXPECT_EQ (size, mm.size ());
-        EXPECT_EQ (0U, mm.offset ());
+    EXPECT_EQ (size, mm.size ());
+    EXPECT_EQ (0U, mm.offset ());
 
-        // Flood the memory mapped file with values.
-        auto ptr = std::static_pointer_cast<std::uint8_t> (mm.data ());
-        std::iota (ptr.get (), ptr.get () + size, std::uint8_t{0});
-    }
+    // Flood the memory mapped file with values.
+    auto ptr = std::static_pointer_cast<std::uint8_t> (mm.data ());
+    std::iota (ptr.get (), ptr.get () + size, std::uint8_t{0});
+  }
 
-    // Now read back the contents of the file.
-    file.seek (0);
-    std::vector<std::uint8_t> contents (size);
-    file.read_span (pstore::gsl::make_span (contents));
+  // Now read back the contents of the file.
+  file.seek (0);
+  std::vector<std::uint8_t> contents (size);
+  file.read_span (pstore::gsl::make_span (contents));
 
-    // Now check that the file contains thevalues we wrote to it.
-    std::vector<std::uint8_t> expected (size);
-    std::iota (expected.begin (), expected.end (), std::uint8_t{0});
-    EXPECT_THAT (expected, ContainerEq (contents));
+  // Now check that the file contains thevalues we wrote to it.
+  std::vector<std::uint8_t> expected (size);
+  std::iota (expected.begin (), expected.end (), std::uint8_t{0});
+  EXPECT_THAT (expected, ContainerEq (contents));
 }

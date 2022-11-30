@@ -28,31 +28,31 @@
 #include "pstore/mcrepo/compilation.hpp"
 
 namespace pstore {
-    namespace exchange {
-        namespace export_ns {
+  namespace exchange {
+    namespace export_ns {
 
-            class ostream_base;
+      class ostream_base;
 
-            void emit_compilation (ostream_base & os, indent ind, database const & db,
-                                   repo::compilation const & compilation,
-                                   string_mapping const & strings, bool comments);
+      void emit_compilation (ostream_base & os, indent ind, database const & db,
+                             repo::compilation const & compilation, string_mapping const & strings,
+                             bool comments);
 
-            void emit_compilation_index (ostream_base & os, indent ind, database const & db,
-                                         unsigned generation, string_mapping const & strings,
-                                         bool comments);
+      void emit_compilation_index (ostream_base & os, indent ind, database const & db,
+                                   unsigned generation, string_mapping const & strings,
+                                   bool comments);
 
-        } // end namespace export_ns
-    }     // end namespace exchange
+    } // end namespace export_ns
+  }   // end namespace exchange
 
-    namespace repo {
+  namespace repo {
 
-        exchange::export_ns::ostream_base & operator<< (exchange::export_ns::ostream_base & os,
-                                                        linkage l);
+    exchange::export_ns::ostream_base & operator<< (exchange::export_ns::ostream_base & os,
+                                                    linkage l);
 
-        exchange::export_ns::ostream_base & operator<< (exchange::export_ns::ostream_base & os,
-                                                        visibility v);
+    exchange::export_ns::ostream_base & operator<< (exchange::export_ns::ostream_base & os,
+                                                    visibility v);
 
-    } // end namespace repo
+  } // end namespace repo
 } // end namespace pstore
 
 #endif // PSTORE_EXCHANGE_EXPORT_COMPILATION_HPP

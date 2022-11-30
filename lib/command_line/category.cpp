@@ -16,10 +16,10 @@
 #include "pstore/command_line/category.hpp"
 
 namespace pstore {
-    namespace command_line {
+  namespace command_line {
 
-        option_category::option_category (std::string const & title)
-                : title_{title} {}
+    option_category::option_category (std::string const & title)
+            : title_{title} {}
 
-    }     // namespace command_line
+  } // namespace command_line
 } // namespace pstore

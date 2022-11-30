@@ -19,50 +19,49 @@
 #include "pstore/exchange/import_strings.hpp"
 
 namespace pstore {
-    namespace exchange {
-        namespace import_ns {
+  namespace exchange {
+    namespace import_ns {
 
-            // lookup
-            // ~~~~~~
-            error_or<typed_address<indirect_string>>
-            string_mapping::lookup (std::uint64_t const index) const {
-                using result_type = error_or<typed_address<indirect_string>>;
+      // lookup
+      // ~~~~~~
+      error_or<typed_address<indirect_string>>
+      string_mapping::lookup (std::uint64_t const index) const {
+        using result_type = error_or<typed_address<indirect_string>>;
 
-                auto const pos = lookup_.find (index);
-                return pos != std::end (lookup_) ? result_type{pos->second}
-                                                 : result_type{error::no_such_name};
-            }
+        auto const pos = lookup_.find (index);
+        return pos != std::end (lookup_) ? result_type{pos->second}
+                                         : result_type{error::no_such_name};
+      }
 
-            // add string
-            // ~~~~~~~~~~
-            std::error_code
-            string_mapping::add_string (not_null<transaction_base *> const transaction,
-                                        std::string const & str) {
-                strings_.push_back (str);
-                std::string const & x = strings_.back ();
+      // add string
+      // ~~~~~~~~~~
+      std::error_code string_mapping::add_string (not_null<transaction_base *> const transaction,
+                                                  std::string const & str) {
+        strings_.push_back (str);
+        std::string const & x = strings_.back ();
 
-                views_.emplace_back (make_sstring_view (x));
-                auto & s = views_.back ();
+        views_.emplace_back (make_sstring_view (x));
+        auto & s = views_.back ();
 
-                std::shared_ptr<index::name_index> const names_index =
-                    index::get_index<trailer::indices::name> (transaction->db ());
-                std::pair<index::name_index::iterator, bool> const add_res =
-                    adder_.add (*transaction, names_index, &s);
-                if (!add_res.second) {
-                    return error::duplicate_name;
-                }
+        std::shared_ptr<index::name_index> const names_index =
+          index::get_index<trailer::indices::name> (transaction->db ());
+        std::pair<index::name_index::iterator, bool> const add_res =
+          adder_.add (*transaction, names_index, &s);
+        if (!add_res.second) {
+          return error::duplicate_name;
+        }
 
-                lookup_.emplace (lookup_.size (), typed_address<indirect_string>::make (
-                                                      add_res.first.get_address ()));
-                return {};
-            }
+        lookup_.emplace (lookup_.size (),
+                         typed_address<indirect_string>::make (add_res.first.get_address ()));
+        return {};
+      }
 
-            // flush
-            // ~~~~~
-            void string_mapping::flush (not_null<transaction_base *> const transaction) {
-                adder_.flush (*transaction);
-            }
+      // flush
+      // ~~~~~
+      void string_mapping::flush (not_null<transaction_base *> const transaction) {
+        adder_.flush (*transaction);
+      }
 
-        } // end namespace import_ns
-    }     // end namespace exchange
+    } // end namespace import_ns
+  }   // end namespace exchange
 } // namespace pstore

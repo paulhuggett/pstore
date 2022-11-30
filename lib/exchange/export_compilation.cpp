@@ -28,82 +28,80 @@
 using pstore::exchange::export_ns::ostream_base;
 
 namespace pstore {
-    namespace repo {
+  namespace repo {
 
 #define X(a)                                                                                       \
-    case repo::linkage::a: return os << #a;
-        ostream_base & operator<< (ostream_base & os, linkage const l) {
-            switch (l) { PSTORE_REPO_LINKAGES }
-            return os << "unknown";
-        }
+  case repo::linkage::a: return os << #a;
+    ostream_base & operator<< (ostream_base & os, linkage const l) {
+      switch (l) { PSTORE_REPO_LINKAGES }
+      return os << "unknown";
+    }
 #undef X
 
-        ostream_base & operator<< (ostream_base & os, visibility const v) {
-            switch (v) {
-            case repo::visibility::default_vis: return os << "default";
-            case repo::visibility::hidden_vis: return os << "hidden";
-            case repo::visibility::protected_vis: return os << "protected";
-            }
-            return os << "unknown";
-        }
+    ostream_base & operator<< (ostream_base & os, visibility const v) {
+      switch (v) {
+      case repo::visibility::default_vis: return os << "default";
+      case repo::visibility::hidden_vis: return os << "hidden";
+      case repo::visibility::protected_vis: return os << "protected";
+      }
+      return os << "unknown";
+    }
 
-    } // end namespace repo
+  } // end namespace repo
 } // end namespace pstore
 
 namespace pstore {
-    namespace exchange {
-        namespace export_ns {
+  namespace exchange {
+    namespace export_ns {
 
-            void emit_compilation (ostream_base & os, indent const ind, database const & db,
-                                   repo::compilation const & compilation,
-                                   string_mapping const & strings, bool const comments) {
-                os << "{\n";
-                auto const object_indent = ind.next ();
-                os << object_indent << R"("triple":)" << strings.index (compilation.triple ())
-                   << ',';
-                show_string (os, db, compilation.triple (), comments);
-                os << '\n' << object_indent << R"("definitions":)";
-                emit_array_with_name (os, object_indent, db, compilation.begin (),
-                                      compilation.end (), comments,
-                                      [&] (ostream_base & os1, repo::definition const & d) {
-                                          os1 << R"({"digest":)";
-                                          emit_digest (os1, d.digest);
-                                          os1 << R"(,"name":)" << strings.index (d.name)
-                                              << R"(,"linkage":")" << d.linkage () << '"';
-                                          if (d.visibility () != repo::visibility::default_vis) {
-                                              os1 << R"(,"visibility":")" << d.visibility () << '"';
-                                          }
-                                          os1 << '}';
-                                          return d.name;
-                                      });
-                os << '\n' << ind << '}';
-            }
+      void emit_compilation (ostream_base & os, indent const ind, database const & db,
+                             repo::compilation const & compilation, string_mapping const & strings,
+                             bool const comments) {
+        os << "{\n";
+        auto const object_indent = ind.next ();
+        os << object_indent << R"("triple":)" << strings.index (compilation.triple ()) << ',';
+        show_string (os, db, compilation.triple (), comments);
+        os << '\n' << object_indent << R"("definitions":)";
+        emit_array_with_name (os, object_indent, db, compilation.begin (), compilation.end (),
+                              comments, [&] (ostream_base & os1, repo::definition const & d) {
+                                os1 << R"({"digest":)";
+                                emit_digest (os1, d.digest);
+                                os1 << R"(,"name":)" << strings.index (d.name) << R"(,"linkage":")"
+                                    << d.linkage () << '"';
+                                if (d.visibility () != repo::visibility::default_vis) {
+                                  os1 << R"(,"visibility":")" << d.visibility () << '"';
+                                }
+                                os1 << '}';
+                                return d.name;
+                              });
+        os << '\n' << ind << '}';
+      }
 
 
-            void emit_compilation_index (ostream_base & os, indent const ind, database const & db,
-                                         unsigned const generation, string_mapping const & strings,
-                                         bool const comments) {
-                auto const compilations = index::get_index<trailer::indices::compilation> (db);
-                if (!compilations || compilations->empty ()) {
-                    return;
-                }
-                if (generation == 0) {
-                    // The first (zeroth) transaction in the store is, by definition, empty.
-                    return;
-                }
-                auto const * sep = "\n";
+      void emit_compilation_index (ostream_base & os, indent const ind, database const & db,
+                                   unsigned const generation, string_mapping const & strings,
+                                   bool const comments) {
+        auto const compilations = index::get_index<trailer::indices::compilation> (db);
+        if (!compilations || compilations->empty ()) {
+          return;
+        }
+        if (generation == 0) {
+          // The first (zeroth) transaction in the store is, by definition, empty.
+          return;
+        }
+        auto const * sep = "\n";
 
-                auto const out_fn = [&] (address const addr) {
-                    auto const & kvp = compilations->load_leaf_node (db, addr);
-                    os << sep << ind;
-                    emit_digest (os, kvp.first);
-                    os << ':';
-                    emit_compilation (os, ind, db, *db.getro (kvp.second), strings, comments);
-                    sep = ",\n";
-                };
-                diff (db, *compilations, generation - 1U, make_diff_out (&out_fn));
-            }
+        auto const out_fn = [&] (address const addr) {
+          auto const & kvp = compilations->load_leaf_node (db, addr);
+          os << sep << ind;
+          emit_digest (os, kvp.first);
+          os << ':';
+          emit_compilation (os, ind, db, *db.getro (kvp.second), strings, comments);
+          sep = ",\n";
+        };
+        diff (db, *compilations, generation - 1U, make_diff_out (&out_fn));
+      }
 
-        } // end namespace export_ns
-    }     // end namespace exchange
+    } // end namespace export_ns
+  }   // end namespace exchange
 } // end namespace pstore

@@ -21,25 +21,25 @@
 
 #ifndef _WIN32
 
-#    include <unistd.h>
-#    include "pstore/brokerface/message_type.hpp"
-#    include "pstore/support/error.hpp"
+#  include <unistd.h>
+#  include "pstore/brokerface/message_type.hpp"
+#  include "pstore/support/error.hpp"
 
 namespace pstore {
-    namespace brokerface {
+  namespace brokerface {
 
-        bool writer::write_impl (message_type const & msg) {
-            bool const ok = ::write (fd_.native_handle (), &msg, sizeof (msg)) == sizeof (msg);
-            if (!ok) {
-                int const err = errno;
-                if (err != EAGAIN && err != EWOULDBLOCK && err != EPIPE) {
-                    raise (errno_erc{err}, "write to broker pipe");
-                }
-            }
-            return ok;
+    bool writer::write_impl (message_type const & msg) {
+      bool const ok = ::write (fd_.native_handle (), &msg, sizeof (msg)) == sizeof (msg);
+      if (!ok) {
+        int const err = errno;
+        if (err != EAGAIN && err != EWOULDBLOCK && err != EPIPE) {
+          raise (errno_erc{err}, "write to broker pipe");
         }
+      }
+      return ok;
+    }
 
-    } // end namespace brokerface
+  } // end namespace brokerface
 } // end namespace pstore
 
 #endif // _WIN32

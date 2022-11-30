@@ -19,47 +19,47 @@
 #include "pstore/http/server_status.hpp"
 
 #ifdef _WIN32
-#    include <ws2tcpip.h>
+#  include <ws2tcpip.h>
 #else
-#    include <sys/socket.h>
+#  include <sys/socket.h>
 #endif
 
 #include "pstore/http/endian.hpp"
 #include "pstore/support/error.hpp"
 
 namespace pstore {
-    namespace http {
+  namespace http {
 
-        //*                               _        _            *
-        //*  ___ ___ _ ___ _____ _ _   __| |_ __ _| |_ _  _ ___ *
-        //* (_-</ -_) '_\ V / -_) '_| (_-<  _/ _` |  _| || (_-< *
-        //* /__/\___|_|  \_/\___|_|   /__/\__\__,_|\__|\_,_/__/ *
-        //*                                                     *
-        // set real port number
-        // ~~~~~~~~~~~~~~~~~~~~
-        in_port_t server_status::set_real_port_number (socket_descriptor const & descriptor) {
-            std::lock_guard<decltype (mut_)> lock{mut_};
-            if (port_ == 0) {
-                sockaddr_in address{};
-                socklen_t address_len = sizeof (address);
-                if (getsockname (descriptor.native_handle (),
-                                 reinterpret_cast<sockaddr *> (&address), &address_len) != 0) {
-                    raise (errno_erc{errno}, "getsockname");
-                }
-
-                auto const port = network_to_host (address.sin_port);
-                PSTORE_ASSERT (port != 0);
-                port_ = port;
-            }
-            return port_;
+    //*                               _        _            *
+    //*  ___ ___ _ ___ _____ _ _   __| |_ __ _| |_ _  _ ___ *
+    //* (_-</ -_) '_\ V / -_) '_| (_-<  _/ _` |  _| || (_-< *
+    //* /__/\___|_|  \_/\___|_|   /__/\__\__,_|\__|\_,_/__/ *
+    //*                                                     *
+    // set real port number
+    // ~~~~~~~~~~~~~~~~~~~~
+    in_port_t server_status::set_real_port_number (socket_descriptor const & descriptor) {
+      std::lock_guard<decltype (mut_)> lock{mut_};
+      if (port_ == 0) {
+        sockaddr_in address{};
+        socklen_t address_len = sizeof (address);
+        if (getsockname (descriptor.native_handle (), reinterpret_cast<sockaddr *> (&address),
+                         &address_len) != 0) {
+          raise (errno_erc{errno}, "getsockname");
         }
 
-        // port
-        // ~~~~
-        in_port_t server_status::port () const {
-            std::lock_guard<decltype (mut_)> lock{mut_};
-            return port_;
-        }
+        auto const port = network_to_host (address.sin_port);
+        PSTORE_ASSERT (port != 0);
+        port_ = port;
+      }
+      return port_;
+    }
 
-    } // end namespace http
+    // port
+    // ~~~~
+    in_port_t server_status::port () const {
+      std::lock_guard<decltype (mut_)> lock{mut_};
+      return port_;
+    }
+
+  } // end namespace http
 } // end namespace pstore

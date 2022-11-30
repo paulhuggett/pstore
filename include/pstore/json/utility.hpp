@@ -19,11 +19,11 @@
 #include <string>
 
 namespace pstore {
-    namespace json {
+  namespace json {
 
-        bool is_valid (std::string const & str);
+    bool is_valid (std::string const & str);
 
-    } // end namespace json
+  } // end namespace json
 } // end namespace pstore
 
 #endif // PSTORE_JSON_UTILITY_HPP

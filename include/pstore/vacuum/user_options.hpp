@@ -21,10 +21,10 @@
 
 namespace vacuum {
 
-    struct user_options {
-        bool daemon_mode = false;
-        std::string src_path;
-    };
+  struct user_options {
+    bool daemon_mode = false;
+    std::string src_path;
+  };
 
 } // end namespace vacuum
 

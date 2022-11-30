@@ -20,28 +20,28 @@
 #include "pstore/support/head_revision.hpp"
 
 namespace pstore {
-    namespace diff_dump {
+  namespace diff_dump {
 
-        revisions_type update_revisions (revisions_type const & revisions,
-                                         revision_number const actual_head) {
-            revision_number r1 = revisions.first;
-            maybe<revision_number> r2 = revisions.second;
+    revisions_type update_revisions (revisions_type const & revisions,
+                                     revision_number const actual_head) {
+      revision_number r1 = revisions.first;
+      maybe<revision_number> r2 = revisions.second;
 
-            if (r1 == pstore::head_revision) {
-                r1 = actual_head;
-            }
-            if (r2) {
-                if (*r2 == pstore::head_revision) {
-                    r2 = actual_head;
-                }
-            } else {
-                r2 = r1 > 0 ? r1 - 1 : 0;
-            }
-            if (r1 < *r2) {
-                std::swap (r1, *r2);
-            }
-            return std::make_pair (r1, r2);
+      if (r1 == pstore::head_revision) {
+        r1 = actual_head;
+      }
+      if (r2) {
+        if (*r2 == pstore::head_revision) {
+          r2 = actual_head;
         }
+      } else {
+        r2 = r1 > 0 ? r1 - 1 : 0;
+      }
+      if (r1 < *r2) {
+        std::swap (r1, *r2);
+      }
+      return std::make_pair (r1, r2);
+    }
 
-    } // end namespace diff_dump
+  } // end namespace diff_dump
 } // end namespace pstore

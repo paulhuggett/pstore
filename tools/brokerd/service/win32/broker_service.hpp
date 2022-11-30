@@ -28,23 +28,23 @@
 
 // Platform includes
 #ifndef _WIN32
-#    include <signal.h>
+#  include <signal.h>
 #endif
 
 class broker_service final : public service_base {
 public:
-    broker_service (TCHAR const * service_name, bool can_stop = true, bool can_shutdown = true,
-                    bool can_pause_continue = false);
-    ~broker_service () override;
+  broker_service (TCHAR const * service_name, bool can_stop = true, bool can_shutdown = true,
+                  bool can_pause_continue = false);
+  ~broker_service () override;
 
 protected:
-    void start_handler (DWORD argc, TCHAR * argv[]) override;
-    void stop_handler () override;
+  void start_handler (DWORD argc, TCHAR * argv[]) override;
+  void stop_handler () override;
 
-    void worker (switches opt);
+  void worker (switches opt);
 
 private:
-    std::thread worker_thread_;
+  std::thread worker_thread_;
 };
 
 #endif // PSTORE_BROKER_SERVICE_HPP

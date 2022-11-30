@@ -40,72 +40,71 @@
 #include "pstore/vacuum/status.hpp"
 
 namespace {
-    template <typename Lock>
-    bool can_lock (Lock & lock) {
-        if (lock.try_lock ()) {
-            lock.unlock ();
-            return true;
-        }
-        return false;
+  template <typename Lock>
+  bool can_lock (Lock & lock) {
+    if (lock.try_lock ()) {
+      lock.unlock ();
+      return true;
     }
+    return false;
+  }
 } // end anonymous namespace
 
 
 namespace vacuum {
-    watch_state wst;
+  watch_state wst;
 
 
-    void watch (std::shared_ptr<pstore::database> from,
-                std::unique_lock<pstore::file::range_lock> & lock, status * const st) {
-        pstore::threads::set_name ("watch");
-        pstore::create_log_stream ("vacuumd");
+  void watch (std::shared_ptr<pstore::database> from,
+              std::unique_lock<pstore::file::range_lock> & lock, status * const st) {
+    pstore::threads::set_name ("watch");
+    pstore::create_log_stream ("vacuumd");
 
-        st->watch_running = true;
-        using priority = pstore::logger::priority;
+    st->watch_running = true;
+    using priority = pstore::logger::priority;
 
-        PSTORE_TRY {
-            std::unique_lock<decltype (wst.start_watch_mutex)> mlock (wst.start_watch_mutex);
-            while (!st->done) {
-                // Block until the start_watch condition variable is signaled.
-                auto start_time = from->latest_time ();
-                while (!wst.start_watch && !st->done) {
-                    log (priority::notice, "Waiting until asked to watch by the copy thread...");
-                    wst.start_watch_cv.wait_for (mlock, watch_interval,
-                                                 [st] () { return wst.start_watch || st->done; });
-                }
-                wst.start_watch = false;
-
-                auto count = 0U;
-
-                while (!st->done && !st->modified) {
-                    log (priority::notice, "watch ... ", count);
-                    ++count;
-
-                    auto const current_time = from->latest_time ();
-                    bool const file_modified = current_time > start_time;
-                    start_time = current_time;
-
-                    if (file_modified || !can_lock (lock)) {
-                        log (priority::notice, "Store touched by another process!");
-                        st->modified = true;
-                    }
-
-                    wst.start_watch_cv.wait_for (mlock, watch_interval);
-                }
-            }
+    PSTORE_TRY {
+      std::unique_lock<decltype (wst.start_watch_mutex)> mlock (wst.start_watch_mutex);
+      while (!st->done) {
+        // Block until the start_watch condition variable is signaled.
+        auto start_time = from->latest_time ();
+        while (!wst.start_watch && !st->done) {
+          log (priority::notice, "Waiting until asked to watch by the copy thread...");
+          wst.start_watch_cv.wait_for (mlock, watch_interval,
+                                       [st] () { return wst.start_watch || st->done; });
         }
-        // clang-format off
-        PSTORE_CATCH (std::exception const & ex, { // clang-format off
-            log (priority::error, "An error occurred: ", ex.what ());
-        })
-        // clang-format off
-        PSTORE_CATCH (..., {// clang-format off
-            log (priority::error, "Unknown error");
-        })
-        // clang-format on
+        wst.start_watch = false;
 
-        from.reset ();
-        log (priority::notice, "Watch thread exiting");
-        st->watch_running = false;
+        auto count = 0U;
+
+        while (!st->done && !st->modified) {
+          log (priority::notice, "watch ... ", count);
+          ++count;
+
+          auto const current_time = from->latest_time ();
+          bool const file_modified = current_time > start_time;
+          start_time = current_time;
+
+          if (file_modified || !can_lock (lock)) {
+            log (priority::notice, "Store touched by another process!");
+            st->modified = true;
+          }
+
+          wst.start_watch_cv.wait_for (mlock, watch_interval);
+        }
+      }
     }
+    // clang-format off
+    PSTORE_CATCH (std::exception const & ex, { // clang-format on
+      log (priority::error, "An error occurred: ", ex.what ());
+    })
+    // clang-format off
+    PSTORE_CATCH (..., {// clang-format on
+      log (priority::error, "Unknown error");
+    })
+
+    from.reset ();
+    log (priority::notice, "Watch thread exiting");
+    st->watch_running = false;
+  }
 } // end namespace vacuum

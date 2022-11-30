@@ -22,48 +22,48 @@
 #include <gtest/gtest.h>
 
 TEST (ArrayStack, Empty) {
-    pstore::array_stack<int, 2> stack;
-    EXPECT_EQ (0U, stack.size ());
-    EXPECT_TRUE (stack.empty ());
+  pstore::array_stack<int, 2> stack;
+  EXPECT_EQ (0U, stack.size ());
+  EXPECT_TRUE (stack.empty ());
 }
 
 TEST (ArrayStack, MaxSize) {
-    pstore::array_stack<int, 2> stack;
-    EXPECT_EQ (2U, stack.max_size ());
+  pstore::array_stack<int, 2> stack;
+  EXPECT_EQ (2U, stack.max_size ());
 }
 
 TEST (ArrayStack, Push1Value) {
-    pstore::array_stack<int, 2> stack;
-    stack.push (17);
-    EXPECT_EQ (1U, stack.size ());
-    EXPECT_FALSE (stack.empty ());
-    EXPECT_EQ (17, stack.top ());
+  pstore::array_stack<int, 2> stack;
+  stack.push (17);
+  EXPECT_EQ (1U, stack.size ());
+  EXPECT_FALSE (stack.empty ());
+  EXPECT_EQ (17, stack.top ());
 }
 
 TEST (ArrayStack, PushMoveValue) {
-    pstore::array_stack<std::string, 2> stack;
+  pstore::array_stack<std::string, 2> stack;
 
-    std::string value{"Hello"};
-    stack.push (std::move (value));
+  std::string value{"Hello"};
+  stack.push (std::move (value));
 
-    std::string const & top = stack.top ();
-    EXPECT_STREQ ("Hello", top.c_str ());
+  std::string const & top = stack.top ();
+  EXPECT_STREQ ("Hello", top.c_str ());
 }
 
 TEST (ArrayStack, PushAndPop1Value) {
-    pstore::array_stack<int, 2> stack;
-    stack.push (31);
-    stack.pop ();
-    EXPECT_EQ (0U, stack.size ());
-    EXPECT_TRUE (stack.empty ());
+  pstore::array_stack<int, 2> stack;
+  stack.push (31);
+  stack.pop ();
+  EXPECT_EQ (0U, stack.size ());
+  EXPECT_TRUE (stack.empty ());
 }
 
 TEST (ArrayStack, PushAndPopMaxValues) {
-    pstore::array_stack<int, 2> stack;
-    stack.push (31);
-    stack.push (33);
-    stack.pop ();
-    stack.pop ();
-    EXPECT_EQ (0U, stack.size ());
-    EXPECT_TRUE (stack.empty ());
+  pstore::array_stack<int, 2> stack;
+  stack.push (31);
+  stack.push (33);
+  stack.pop ();
+  stack.pop ();
+  EXPECT_EQ (0U, stack.size ());
+  EXPECT_TRUE (stack.empty ());
 }

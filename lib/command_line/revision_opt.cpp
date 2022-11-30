@@ -22,22 +22,22 @@
 #include "pstore/command_line/tchar.hpp"
 
 namespace pstore {
-    namespace command_line {
+  namespace command_line {
 
-        revision_opt & revision_opt::operator= (std::string const & val) {
-            if (!val.empty ()) {
-                auto rp = pstore::str_to_revision (val);
-                if (!rp) {
-                    error_stream << PSTORE_NATIVE_TEXT (
-                        "Error: revision must be a revision number or 'HEAD'\n");
-                    std::exit (EXIT_FAILURE);
-                }
-                r_ = *rp;
-            }
-            return *this;
+    revision_opt & revision_opt::operator= (std::string const & val) {
+      if (!val.empty ()) {
+        auto rp = pstore::str_to_revision (val);
+        if (!rp) {
+          error_stream << PSTORE_NATIVE_TEXT (
+            "Error: revision must be a revision number or 'HEAD'\n");
+          std::exit (EXIT_FAILURE);
         }
+        r_ = *rp;
+      }
+      return *this;
+    }
 
-        gsl::czstring type_description<revision_opt>::value = "rev";
+    gsl::czstring type_description<revision_opt>::value = "rev";
 
-    } // end namespace command_line
+  } // end namespace command_line
 } // end namespace pstore

@@ -33,44 +33,44 @@
 #include "pstore/support/quoted.hpp"
 
 namespace pstore {
-    namespace brokerface {
+  namespace brokerface {
 
-        char const * const fifo_path::default_pipe_name = PSTORE_VENDOR_ID ".pstore_broker.fifo";
+    char const * const fifo_path::default_pipe_name = PSTORE_VENDOR_ID ".pstore_broker.fifo";
 
-        // (ctor)
-        // ~~~~~~
-        fifo_path::fifo_path (gsl::czstring const pipe_path, duration_type const retry_timeout,
-                              unsigned const max_retries, update_callback cb)
-                : path_{pipe_path == nullptr ? get_default_path () : pipe_path}
-                , retry_timeout_{retry_timeout}
-                , max_retries_{max_retries}
-                , update_cb_{std::move (cb)} {}
+    // (ctor)
+    // ~~~~~~
+    fifo_path::fifo_path (gsl::czstring const pipe_path, duration_type const retry_timeout,
+                          unsigned const max_retries, update_callback cb)
+            : path_{pipe_path == nullptr ? get_default_path () : pipe_path}
+            , retry_timeout_{retry_timeout}
+            , max_retries_{max_retries}
+            , update_cb_{std::move (cb)} {}
 
-        fifo_path::fifo_path (gsl::czstring const pipe_path, update_callback cb)
-                : fifo_path (pipe_path, duration_type{0}, 0, std::move (cb)) {}
+    fifo_path::fifo_path (gsl::czstring const pipe_path, update_callback cb)
+            : fifo_path (pipe_path, duration_type{0}, 0, std::move (cb)) {}
 
-        // open
-        // ~~~~
-        auto fifo_path::open_client_pipe () const -> client_pipe {
-            client_pipe fd{};
-            auto tries = 0U;
-            for (; max_retries_ == infinite_retries || tries <= max_retries_; ++tries) {
-                update_cb_ (operation::open);
-                fd = this->open_impl ();
-                if (fd.valid ()) {
-                    break;
-                }
-                update_cb_ (operation::wait);
-                this->wait_until_impl (retry_timeout_);
-            }
-
-            if (!fd.valid ()) {
-                std::ostringstream str;
-                str << "Could not open client named pipe " << pstore::quoted (path_);
-                raise (error_code::unable_to_open_named_pipe, str.str ());
-            }
-            return fd;
+    // open
+    // ~~~~
+    auto fifo_path::open_client_pipe () const -> client_pipe {
+      client_pipe fd{};
+      auto tries = 0U;
+      for (; max_retries_ == infinite_retries || tries <= max_retries_; ++tries) {
+        update_cb_ (operation::open);
+        fd = this->open_impl ();
+        if (fd.valid ()) {
+          break;
         }
+        update_cb_ (operation::wait);
+        this->wait_until_impl (retry_timeout_);
+      }
 
-    } // end namespace brokerface
+      if (!fd.valid ()) {
+        std::ostringstream str;
+        str << "Could not open client named pipe " << pstore::quoted (path_);
+        raise (error_code::unable_to_open_named_pipe, str.str ());
+      }
+      return fd;
+    }
+
+  } // end namespace brokerface
 } // end namespace pstore

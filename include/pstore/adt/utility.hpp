@@ -21,11 +21,11 @@
 
 namespace pstore {
 
-    struct in_place_t {
-        explicit in_place_t () = default;
-    };
+  struct in_place_t {
+    explicit in_place_t () = default;
+  };
 
-    constexpr in_place_t in_place{};
+  constexpr in_place_t in_place{};
 
 } // end namespace pstore
 

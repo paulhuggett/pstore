@@ -29,37 +29,37 @@
 
 namespace {
 
-    class service_handle {
-    public:
-        explicit service_handle (SC_HANDLE h) noexcept
-                : h_{h} {}
-        service_handle (service_handle const &) noexcept = delete;
-        service_handle (service_handle && other) noexcept
-                : h_{std::move (other.h_)} {}
-        ~service_handle () noexcept { this->reset (); }
+  class service_handle {
+  public:
+    explicit service_handle (SC_HANDLE h) noexcept
+            : h_{h} {}
+    service_handle (service_handle const &) noexcept = delete;
+    service_handle (service_handle && other) noexcept
+            : h_{std::move (other.h_)} {}
+    ~service_handle () noexcept { this->reset (); }
 
-        service_handle & operator= (service_handle const &) noexcept = delete;
-        service_handle & operator= (service_handle && other) noexcept {
-            if (&other != this) {
-                this->reset ();
-                h_ = std::move (other.h_);
-            }
-            return *this;
-        }
+    service_handle & operator= (service_handle const &) noexcept = delete;
+    service_handle & operator= (service_handle && other) noexcept {
+      if (&other != this) {
+        this->reset ();
+        h_ = std::move (other.h_);
+      }
+      return *this;
+    }
 
-        operator bool () const noexcept { return h_ != nullptr; }
-        SC_HANDLE get () const noexcept { return h_; }
+    operator bool () const noexcept { return h_ != nullptr; }
+    SC_HANDLE get () const noexcept { return h_; }
 
-        void reset () noexcept {
-            if (h_) {
-                ::CloseServiceHandle (h_);
-                h_ = nullptr;
-            }
-        }
+    void reset () noexcept {
+      if (h_) {
+        ::CloseServiceHandle (h_);
+        h_ = nullptr;
+      }
+    }
 
-    private:
-        SC_HANDLE h_;
-    };
+  private:
+    SC_HANDLE h_;
+  };
 
 } // end anonymous namespace
 
@@ -67,50 +67,50 @@ namespace {
 // ~~~~~~~~~~~~~~~
 void install_service (ctzstring service_name, ctzstring display_name, DWORD start_type,
                       ctzstring dependencies, ctzstring account, ctzstring password) {
-    pstore::small_vector<TCHAR> path;
-    path.resize (path.capacity ());
+  pstore::small_vector<TCHAR> path;
+  path.resize (path.capacity ());
 
-    DWORD erc = NO_ERROR;
-    for (;;) {
-        auto nsize = static_cast<DWORD> (path.size ());
-        ::GetModuleFileName (nullptr, path.data (), nsize);
-        erc = ::GetLastError ();
-        if (erc != ERROR_INSUFFICIENT_BUFFER) {
-            break;
-        }
-        nsize += nsize / 2;
-        path.resize (nsize);
+  DWORD erc = NO_ERROR;
+  for (;;) {
+    auto nsize = static_cast<DWORD> (path.size ());
+    ::GetModuleFileName (nullptr, path.data (), nsize);
+    erc = ::GetLastError ();
+    if (erc != ERROR_INSUFFICIENT_BUFFER) {
+      break;
     }
-    if (erc != NO_ERROR) {
-        raise (pstore::win32_erc{::GetLastError ()}, "GetModuleFileName failed");
-    }
+    nsize += nsize / 2;
+    path.resize (nsize);
+  }
+  if (erc != NO_ERROR) {
+    raise (pstore::win32_erc{::GetLastError ()}, "GetModuleFileName failed");
+  }
 
-    // Open the local default service control manager database
-    service_handle scm{
-        ::OpenSCManager (nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE)};
-    if (!scm) {
-        raise (pstore::win32_erc{::GetLastError ()}, "OpenSCManager failed");
-    }
+  // Open the local default service control manager database
+  service_handle scm{
+    ::OpenSCManager (nullptr, nullptr, SC_MANAGER_CONNECT | SC_MANAGER_CREATE_SERVICE)};
+  if (!scm) {
+    raise (pstore::win32_erc{::GetLastError ()}, "OpenSCManager failed");
+  }
 
-    // Install the service into SCM.
-    service_handle service{::CreateService (scm.get (), // SCManager database
-                                            service_name,
-                                            display_name,              // Name to display
-                                            SERVICE_QUERY_STATUS,      // Desired access
-                                            SERVICE_WIN32_OWN_PROCESS, // Service type
-                                            start_type,                // Service start type
-                                            SERVICE_ERROR_NORMAL,      // Error control type
-                                            path.data (),              // Service's binary
-                                            nullptr,                   // No load ordering group
-                                            nullptr,                   // No tag identifier
-                                            dependencies,              // Dependencies
-                                            account,                   // Service running account
-                                            password)};
-    if (!service) {
-        raise (pstore::win32_erc{::GetLastError ()}, "CreateService failed");
-    }
+  // Install the service into SCM.
+  service_handle service{::CreateService (scm.get (), // SCManager database
+                                          service_name,
+                                          display_name,              // Name to display
+                                          SERVICE_QUERY_STATUS,      // Desired access
+                                          SERVICE_WIN32_OWN_PROCESS, // Service type
+                                          start_type,                // Service start type
+                                          SERVICE_ERROR_NORMAL,      // Error control type
+                                          path.data (),              // Service's binary
+                                          nullptr,                   // No load ordering group
+                                          nullptr,                   // No tag identifier
+                                          dependencies,              // Dependencies
+                                          account,                   // Service running account
+                                          password)};
+  if (!service) {
+    raise (pstore::win32_erc{::GetLastError ()}, "CreateService failed");
+  }
 
-    wprintf (TEXT ("%s is installed.\n"), service_name);
+  wprintf (TEXT ("%s is installed.\n"), service_name);
 }
 
 // uninstall_service
@@ -119,45 +119,45 @@ void install_service (ctzstring service_name, ctzstring display_name, DWORD star
 /// \param service_name  The name of the service to be removed.
 void uninstall_service (TCHAR const * service_name) {
 
-    // Open the local default service control manager database
-    service_handle scm{::OpenSCManager (NULL, NULL, SC_MANAGER_CONNECT)};
-    if (!scm) {
-        raise (pstore::win32_erc{::GetLastError ()}, "OpenSCManager failed");
-    }
+  // Open the local default service control manager database
+  service_handle scm{::OpenSCManager (NULL, NULL, SC_MANAGER_CONNECT)};
+  if (!scm) {
+    raise (pstore::win32_erc{::GetLastError ()}, "OpenSCManager failed");
+  }
 
-    // Open the service with delete, stop, and query status permissions
-    service_handle service{
-        ::OpenService (scm.get (), service_name, SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE)};
-    if (!service) {
-        raise (pstore::win32_erc{::GetLastError ()}, "OpenService failed");
-    }
+  // Open the service with delete, stop, and query status permissions
+  service_handle service{
+    ::OpenService (scm.get (), service_name, SERVICE_STOP | SERVICE_QUERY_STATUS | DELETE)};
+  if (!service) {
+    raise (pstore::win32_erc{::GetLastError ()}, "OpenService failed");
+  }
 
-    // Try to stop the service
-    SERVICE_STATUS status{};
-    if (::ControlService (service.get (), SERVICE_CONTROL_STOP, &status)) {
-        using namespace std::chrono_literals;
+  // Try to stop the service
+  SERVICE_STATUS status{};
+  if (::ControlService (service.get (), SERVICE_CONTROL_STOP, &status)) {
+    using namespace std::chrono_literals;
 
-        // TODO: can I use a condition variable rather than polling?
-        wprintf (TEXT ("Stopping %s."), service_name);
+    // TODO: can I use a condition variable rather than polling?
+    wprintf (TEXT ("Stopping %s."), service_name);
+    std::this_thread::sleep_for (1s);
+
+    while (::QueryServiceStatus (service.get (), &status)) {
+      if (status.dwCurrentState == SERVICE_STOP_PENDING) {
+        wprintf (L".");
         std::this_thread::sleep_for (1s);
-
-        while (::QueryServiceStatus (service.get (), &status)) {
-            if (status.dwCurrentState == SERVICE_STOP_PENDING) {
-                wprintf (L".");
-                std::this_thread::sleep_for (1s);
-            } else {
-                break;
-            }
-        }
-
-        if (status.dwCurrentState == SERVICE_STOPPED) {
-            wprintf (TEXT ("\n%s is stopped.\n"), service_name);
-        } else {
-            wprintf (TEXT ("\n%s failed to stop.\n"), service_name);
-        }
+      } else {
+        break;
+      }
     }
 
-    if (!::DeleteService (service.get ())) {
-        raise (pstore::win32_erc{::GetLastError ()}, "DeleteService failed");
+    if (status.dwCurrentState == SERVICE_STOPPED) {
+      wprintf (TEXT ("\n%s is stopped.\n"), service_name);
+    } else {
+      wprintf (TEXT ("\n%s failed to stop.\n"), service_name);
     }
+  }
+
+  if (!::DeleteService (service.get ())) {
+    raise (pstore::win32_erc{::GetLastError ()}, "DeleteService failed");
+  }
 }

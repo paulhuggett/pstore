@@ -20,65 +20,65 @@
 #include <system_error>
 
 #ifdef _WIN32
-#    include <winsock2.h>
+#  include <winsock2.h>
 #endif // _WIN32
 
 #include "pstore/support/error.hpp"
 
 namespace pstore {
-    namespace http {
+  namespace http {
 
-        // **************
-        // * error code *
-        // **************
-        enum class error_code : int {
-            bad_request = 1,
-            bad_websocket_version,
-            not_implemented,
-            string_too_long,
-            refill_out_of_range,
-        };
+    // **************
+    // * error code *
+    // **************
+    enum class error_code : int {
+      bad_request = 1,
+      bad_websocket_version,
+      not_implemented,
+      string_too_long,
+      refill_out_of_range,
+    };
 
-        // ******************
-        // * error category *
-        // ******************
-        class error_category final : public std::error_category {
-        public:
-            // The need for this constructor was removed by CWG defect 253 but Clang (prior
-            // to 3.9.0) and GCC (before 4.6.4) require its presence.
-            error_category () noexcept {} // NOLINT
-            char const * name () const noexcept override;
-            std::string message (int error) const override;
-        };
+    // ******************
+    // * error category *
+    // ******************
+    class error_category final : public std::error_category {
+    public:
+      // The need for this constructor was removed by CWG defect 253 but Clang (prior
+      // to 3.9.0) and GCC (before 4.6.4) require its presence.
+      error_category () noexcept {} // NOLINT
+      char const * name () const noexcept override;
+      std::string message (int error) const override;
+    };
 
-        std::error_category const & get_error_category () noexcept;
+    std::error_category const & get_error_category () noexcept;
 
-        inline std::error_code make_error_code (error_code const e) {
-            static_assert (
-                std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
-                "base type of pstore::httpd::error_code must be int to permit safe static cast");
-            return {static_cast<int> (e), get_error_category ()};
-        }
+    inline std::error_code make_error_code (error_code const e) {
+      static_assert (
+        std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
+        "base type of pstore::httpd::error_code must be int to permit safe static cast");
+      return {static_cast<int> (e), get_error_category ()};
+    }
 
 
-        // get last error
-        // ~~~~~~~~~~~~~~
-        inline std::error_code get_last_error () noexcept {
+    // get last error
+    // ~~~~~~~~~~~~~~
+    inline std::error_code get_last_error () noexcept {
 #ifdef _WIN32
-            return make_error_code (win32_erc{static_cast<DWORD> (WSAGetLastError ())});
+      return make_error_code (win32_erc{static_cast<DWORD> (WSAGetLastError ())});
 #else
-            return make_error_code (errno_erc{errno});
+      return make_error_code (errno_erc{errno});
 #endif // !_WIN32
-        }
+    }
 
-    } // end namespace http
+  } // end namespace http
 } // end namespace pstore
 
 
 namespace std {
 
-    template <>
-    struct is_error_code_enum<pstore::http::error_code> : std::true_type {};
+  template <>
+  struct is_error_code_enum<pstore::http::error_code> : std::true_type {};
 
 } // end namespace std
 

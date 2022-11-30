@@ -24,10 +24,10 @@
 #include "pstore/diff_dump/revision.hpp"
 
 struct switches {
-    std::string db_path;
-    pstore::revision_number first_revision = pstore::head_revision;
-    pstore::maybe<pstore::revision_number> second_revision;
-    bool hex = false;
+  std::string db_path;
+  pstore::revision_number first_revision = pstore::head_revision;
+  pstore::maybe<pstore::revision_number> second_revision;
+  bool hex = false;
 };
 
 std::pair<switches, int> get_switches (int argc, pstore::command_line::tchar * argv[]);

@@ -20,22 +20,21 @@
 #include "pstore/dump/mcrepo_value.hpp"
 
 namespace pstore {
-    namespace dump {
+  namespace dump {
 
-        template <typename trailer::indices Index, typename MakeValueFn>
-        value_ptr make_index (database const & db, MakeValueFn mk) {
-            using return_type = typename index::enum_to_index<Index>::type const;
-            using value_type = typename return_type::value_type;
-            array::container members;
-            if (std::shared_ptr<return_type> const index =
-                    index::get_index<Index> (db, false /* create */)) {
-                std::for_each (
-                    index->begin (db), index->end (db),
-                    [&members, mk] (value_type const & v) { members.emplace_back (mk (v)); });
-            }
-            return make_value (std::move (members));
-        }
-    } // namespace dump
+    template <typename trailer::indices Index, typename MakeValueFn>
+    value_ptr make_index (database const & db, MakeValueFn mk) {
+      using return_type = typename index::enum_to_index<Index>::type const;
+      using value_type = typename return_type::value_type;
+      array::container members;
+      if (std::shared_ptr<return_type> const index =
+            index::get_index<Index> (db, false /* create */)) {
+        std::for_each (index->begin (db), index->end (db),
+                       [&members, mk] (value_type const & v) { members.emplace_back (mk (v)); });
+      }
+      return make_value (std::move (members));
+    }
+  } // namespace dump
 } // namespace pstore
 
 #endif // PSTORE_DUMP_INDEX_VALUE_HPP

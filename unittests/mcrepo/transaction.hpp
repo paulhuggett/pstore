@@ -28,19 +28,19 @@
 
 class transaction {
 public:
-    using storage_type = std::map<std::uint8_t *, std::shared_ptr<std::uint8_t>>;
+  using storage_type = std::map<std::uint8_t *, std::shared_ptr<std::uint8_t>>;
 
-    auto allocate (std::size_t size, unsigned align) -> pstore::address;
+  auto allocate (std::size_t size, unsigned align) -> pstore::address;
 
-    auto getrw (pstore::address addr, std::size_t size) -> std::shared_ptr<void>;
+  auto getrw (pstore::address addr, std::size_t size) -> std::shared_ptr<void>;
 
-    auto alloc_rw (std::size_t size, unsigned align)
-        -> std::pair<std::shared_ptr<void>, pstore::address>;
+  auto alloc_rw (std::size_t size, unsigned align)
+    -> std::pair<std::shared_ptr<void>, pstore::address>;
 
-    storage_type const & get_storage () const { return storage_; }
+  storage_type const & get_storage () const { return storage_; }
 
 private:
-    storage_type storage_;
+  storage_type storage_;
 };
 
 #endif // MCREPO_TRANSACTION_HPP

@@ -42,39 +42,39 @@
 
 namespace {
 
-    // A simple linear congruential random number generator from Numerical Recipes
-    class rng {
-    public:
-        explicit rng (unsigned s = 0)
-                : seed_{s % IM} {}
+  // A simple linear congruential random number generator from Numerical Recipes
+  class rng {
+  public:
+    explicit rng (unsigned s = 0)
+            : seed_{s % IM} {}
 
-        double operator() () {
-            seed_ = (IA * seed_ + IC) % IM;
-            return seed_ / double (IM);
-        }
-
-    private:
-        static unsigned const IM = 714025;
-        static unsigned const IA = 1366;
-        static unsigned const IC = 150889;
-
-        unsigned seed_;
-    };
-
-    using digest_set = std::unordered_set<pstore::index::digest, pstore::index::u128_hash>;
-
-    void find (pstore::database const & database, pstore::index::fragment_index const & index,
-               digest_set const & keys) {
-        pstore::parallel_for_each (
-            std::begin (keys), std::end (keys),
-            [&database, &index] (pstore::index::digest key) { index.find (database, key); });
+    double operator() () {
+      seed_ = (IA * seed_ + IC) % IM;
+      return seed_ / double (IM);
     }
 
-    using namespace pstore::command_line;
+  private:
+    static unsigned const IM = 714025;
+    static unsigned const IA = 1366;
+    static unsigned const IC = 150889;
 
-    opt<std::string> data_file{positional, usage ("repository"),
-                               desc ("Path of the pstore repository to use for index exercise."),
-                               required};
+    unsigned seed_;
+  };
+
+  using digest_set = std::unordered_set<pstore::index::digest, pstore::index::u128_hash>;
+
+  void find (pstore::database const & database, pstore::index::fragment_index const & index,
+             digest_set const & keys) {
+    pstore::parallel_for_each (
+      std::begin (keys), std::end (keys),
+      [&database, &index] (pstore::index::digest key) { index.find (database, key); });
+  }
+
+  using namespace pstore::command_line;
+
+  opt<std::string> data_file{positional, usage ("repository"),
+                             desc ("Path of the pstore repository to use for index exercise."),
+                             required};
 
 } // end anonymous namespace
 
@@ -84,87 +84,87 @@ int _tmain (int argc, TCHAR * argv[]) {
 #else
 int main (int argc, char * argv[]) {
 #endif
-    int exit_code = EXIT_SUCCESS;
+  int exit_code = EXIT_SUCCESS;
 
-    using pstore::utf::to_native_string;
+  using pstore::utf::to_native_string;
 
-    PSTORE_TRY {
-        parse_command_line_options (argc, argv, "Exercises the pstore index code");
+  PSTORE_TRY {
+    parse_command_line_options (argc, argv, "Exercises the pstore index code");
 
-        pstore::database database{data_file.get (), pstore::database::access_mode::writable};
+    pstore::database database{data_file.get (), pstore::database::access_mode::writable};
 
-        auto index = pstore::index::get_index<pstore::trailer::indices::fragment> (database);
+    auto index = pstore::index::get_index<pstore::trailer::indices::fragment> (database);
 
-        // generate a large number of unique digests.
-        // create a 1k value block (a simulated fragment)
-        digest_set keys;
-        std::vector<std::uint8_t> value{0, 1};
+    // generate a large number of unique digests.
+    // create a 1k value block (a simulated fragment)
+    digest_set keys;
+    std::vector<std::uint8_t> value{0, 1};
 
-        {
-            auto const num_keys = std::size_t{300000};
-            rng random;
-            auto u64_random = [&random] () -> std::uint64_t {
-                return (static_cast<std::uint64_t> (
-                            std::round (random () * std::numeric_limits<std::uint32_t>::max ()))
-                        << 32) |
-                       static_cast<std::uint64_t> (
-                           std::round (random () * std::numeric_limits<std::uint32_t>::max ()));
-            };
-            while (keys.size () < num_keys) {
-                keys.insert (pstore::index::digest (u64_random (), u64_random ()));
-            }
+    {
+      auto const num_keys = std::size_t{300000};
+      rng random;
+      auto u64_random = [&random] () -> std::uint64_t {
+        return (static_cast<std::uint64_t> (
+                  std::round (random () * std::numeric_limits<std::uint32_t>::max ()))
+                << 32) |
+               static_cast<std::uint64_t> (
+                 std::round (random () * std::numeric_limits<std::uint32_t>::max ()));
+      };
+      while (keys.size () < num_keys) {
+        keys.insert (pstore::index::digest (u64_random (), u64_random ()));
+      }
 
-            auto const value_size = std::size_t{64};
-            value.reserve (value_size);
-            // A simple fibonnaci sequence generator.
-            while (value.size () < value_size) {
-                auto it = value.rbegin ();
-                auto const a = *(it++), b = *(it++);
-                value.push_back (a + b);
-            }
-        }
-
-        find (database, *index, keys);
-
-        {
-            // Start a transaction...
-            auto transaction = pstore::begin (database);
-
-            for (auto & k : keys) {
-                // Allocate space in the transaction for the value block
-                auto addr = pstore::typed_address<std::uint8_t>::null ();
-                std::shared_ptr<std::uint8_t> ptr;
-                std::tie (ptr, addr) = transaction.alloc_rw<std::uint8_t> (value.size ());
-
-                // Copy the value to the store.
-                std::copy (std::begin (value), std::end (value), ptr.get ());
-
-                // Add the key/value pair to the index.
-                index->insert_or_assign (
-                    transaction, k,
-                    make_extent (pstore::typed_address<pstore::repo::fragment> (addr.to_address ()),
-                                 value.size ()));
-            }
-
-            transaction.commit ();
-        }
-
-        database.close ();
+      auto const value_size = std::size_t{64};
+      value.reserve (value_size);
+      // A simple fibonnaci sequence generator.
+      while (value.size () < value_size) {
+        auto it = value.rbegin ();
+        auto const a = *(it++), b = *(it++);
+        value.push_back (a + b);
+      }
     }
-    // clang-format off
-    PSTORE_CATCH (std::exception const & ex, { // clang-format on
-        auto what = ex.what ();
-        pstore::command_line::error_stream << PSTORE_NATIVE_TEXT ("An error occurred: ")
-                                           << to_native_string (what) << std::endl;
-        exit_code = EXIT_FAILURE;
-    })
-    // clang-format off
-    PSTORE_CATCH (..., { // clang-format on
-        pstore::command_line::error_stream << PSTORE_NATIVE_TEXT ("An unknown error occurred.")
-                                           << std::endl;
-        exit_code = EXIT_FAILURE;
-    })
-    // clang-format on
 
-    return exit_code;
+    find (database, *index, keys);
+
+    {
+      // Start a transaction...
+      auto transaction = pstore::begin (database);
+
+      for (auto & k : keys) {
+        // Allocate space in the transaction for the value block
+        auto addr = pstore::typed_address<std::uint8_t>::null ();
+        std::shared_ptr<std::uint8_t> ptr;
+        std::tie (ptr, addr) = transaction.alloc_rw<std::uint8_t> (value.size ());
+
+        // Copy the value to the store.
+        std::copy (std::begin (value), std::end (value), ptr.get ());
+
+        // Add the key/value pair to the index.
+        index->insert_or_assign (
+          transaction, k,
+          make_extent (pstore::typed_address<pstore::repo::fragment> (addr.to_address ()),
+                       value.size ()));
+      }
+
+      transaction.commit ();
+    }
+
+    database.close ();
+  }
+  // clang-format off
+  PSTORE_CATCH (std::exception const & ex, { // clang-format on
+    auto what = ex.what ();
+    pstore::command_line::error_stream << PSTORE_NATIVE_TEXT ("An error occurred: ")
+                                       << to_native_string (what) << std::endl;
+    exit_code = EXIT_FAILURE;
+  })
+  // clang-format off
+  PSTORE_CATCH (..., { // clang-format on
+    pstore::command_line::error_stream << PSTORE_NATIVE_TEXT ("An unknown error occurred.")
+                                       << std::endl;
+    exit_code = EXIT_FAILURE;
+  })
+  // clang-format on
+
+  return exit_code;
 }

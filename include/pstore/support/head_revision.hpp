@@ -20,8 +20,8 @@
 
 namespace pstore {
 
-    using revision_number = unsigned;
-    constexpr revision_number head_revision = std::numeric_limits<revision_number>::max ();
+  using revision_number = unsigned;
+  constexpr revision_number head_revision = std::numeric_limits<revision_number>::max ();
 
 } // namespace pstore
 

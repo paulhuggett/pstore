@@ -23,17 +23,17 @@
 #include "pstore/command_line/tchar.hpp"
 
 enum class endian {
-    native,
-    big,
-    little,
+  native,
+  big,
+  little,
 };
 
 struct user_options {
-    std::string output;
-    endian endianness;
-    unsigned long maximum;
+  std::string output;
+  endian endianness;
+  unsigned long maximum;
 
-    static user_options get (int argc, pstore::command_line::tchar * argv[]);
+  static user_options get (int argc, pstore::command_line::tchar * argv[]);
 };
 
 #endif // SIEVE_SWITCHES_HPP

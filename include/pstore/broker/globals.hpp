@@ -22,15 +22,15 @@
 #include <mutex>
 
 namespace pstore {
-    namespace broker {
+  namespace broker {
 
-        extern std::atomic<bool> done;
-        extern std::atomic<int> exit_code;
+    extern std::atomic<bool> done;
+    extern std::atomic<int> exit_code;
 
-        /// A mutex to guard any use of stdout or stderr.
-        extern std::mutex iomut;
+    /// A mutex to guard any use of stdout or stderr.
+    extern std::mutex iomut;
 
-    } // namespace broker
+  } // namespace broker
 } // namespace pstore
 
 #endif // PSTORE_BROKER_GLOBALS_HPP

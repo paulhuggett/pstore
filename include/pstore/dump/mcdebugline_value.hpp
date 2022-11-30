@@ -26,12 +26,12 @@
 #include "pstore/dump/value.hpp"
 
 namespace pstore {
-    namespace dump {
+  namespace dump {
 
-        value_ptr make_debuglineheader_value (std::uint8_t const * first, std::uint8_t const * last,
-                                              bool hex_mode);
+    value_ptr make_debuglineheader_value (std::uint8_t const * first, std::uint8_t const * last,
+                                          bool hex_mode);
 
-    } // namespace dump
+  } // namespace dump
 } // namespace pstore
 
 #endif // PSTORE_DUMP_MCDEBUGLINE_VALUE_HPP

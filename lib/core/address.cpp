@@ -20,16 +20,16 @@
 
 namespace pstore {
 
-    constexpr unsigned const address::offset_number_bits;
-    constexpr unsigned const address::segment_number_bits;
+  constexpr unsigned const address::offset_number_bits;
+  constexpr unsigned const address::segment_number_bits;
 
-    constexpr address::offset_type const address::max_offset;
-    constexpr address::segment_type const address::max_segment;
+  constexpr address::offset_type const address::max_offset;
+  constexpr address::segment_type const address::max_segment;
 
-    constexpr std::uint64_t const address::segment_size;
+  constexpr std::uint64_t const address::segment_size;
 
-    std::ostream & operator<< (std::ostream & os, address const & addr) {
-        return os << "{s:" << addr.segment () << " +:" << addr.offset () << "}";
-    }
+  std::ostream & operator<< (std::ostream & os, address const & addr) {
+    return os << "{s:" << addr.segment () << " +:" << addr.offset () << "}";
+  }
 
 } // namespace pstore

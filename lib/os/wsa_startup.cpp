@@ -16,20 +16,20 @@
 #include "pstore/os/wsa_startup.hpp"
 
 #ifdef _WIN32
-#    include <Winsock2.h>
+#  include <Winsock2.h>
 
 namespace pstore {
 
-    wsa_startup::~wsa_startup () noexcept {
-        if (started_) {
-            WSACleanup ();
-        }
+  wsa_startup::~wsa_startup () noexcept {
+    if (started_) {
+      WSACleanup ();
     }
+  }
 
-    bool wsa_startup::start () noexcept {
-        WSAData wsa_data;
-        return WSAStartup (MAKEWORD (2, 2), &wsa_data) == 0;
-    }
+  bool wsa_startup::start () noexcept {
+    WSAData wsa_data;
+    return WSAStartup (MAKEWORD (2, 2), &wsa_data) == 0;
+  }
 
 } // end namespace pstore
 
