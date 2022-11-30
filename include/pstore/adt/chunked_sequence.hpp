@@ -221,8 +221,8 @@ namespace pstore {
     }
 
   private:
-    template <typename ChunkedSequence, typename Result = typename inherit_const<
-                                          ChunkedSequence, iterator, const_iterator>::type>
+    template <typename ChunkedSequence,
+              typename Result = inherit_const_t<ChunkedSequence, iterator, const_iterator>>
     static Result end_impl (ChunkedSequence & cv) noexcept;
 
     /// Add default-initialized members to increase the number of elements held in the container
@@ -245,7 +245,7 @@ namespace pstore {
     /// Yields either 'T' or 'T const' depending on the value is IsConst.
     template <typename T, bool IsConst>
     struct value_type {
-      using type = typename std::conditional<IsConst, T const, T>::type;
+      using type = std::conditional_t<IsConst, T const, T>;
     };
 
   } // end namespace details
@@ -448,8 +448,7 @@ namespace pstore {
 
   private:
     std::size_t size_ = 0U;
-    std::array<typename std::aligned_storage<ActualSize, ActualAlign>::type, ElementsPerChunk>
-      membs_;
+    std::array<typename std::aligned_storage_t<ActualSize, ActualAlign>, ElementsPerChunk> membs_;
   };
 
   // (dtor)
@@ -497,8 +496,8 @@ namespace pstore {
             std::size_t ActualAlign>
   template <bool IsConst>
   class chunked_sequence<T, ElementsPerChunk, ActualSize, ActualAlign>::iterator_base {
-    using list_iterator = typename std::conditional<IsConst, typename chunk_list::const_iterator,
-                                                    typename chunk_list::iterator>::type;
+    using list_iterator = typename std::conditional_t<IsConst, typename chunk_list::const_iterator,
+                                                      typename chunk_list::iterator>;
 
     friend class iterator_base<true>;
 
