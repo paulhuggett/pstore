@@ -91,8 +91,8 @@ jobs:
                       -Dsonar.exclusions='build/**/*,3rd_party/**/*'         \
                       -Dsonar.host.url=https://sonarcloud.io                 \
                       -Dsonar.login=$LOGIN                                   \
-                      -Dsonar.organization=snsystems                         \
-                      -Dsonar.projectKey=SNSystems_pstore                    \
+                      -Dsonar.organization=paulhuggett-github                \
+                      -Dsonar.projectKey=paulhuggett_pstore                  \
                       -Dsonar.projectName=pstore                             \
                       -Dsonar.projectVersion=$GITHUB_SHA                     \
                       -Dsonar.sourceEncoding=UTF-8                           \
