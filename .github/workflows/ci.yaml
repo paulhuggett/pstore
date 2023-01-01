@@ -28,14 +28,14 @@ jobs:
                       cxx_compiler: -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
                       generator: Ninja
                       options: '-DPSTORE_ALWAYS_SPANNING=Yes'
-                      os: ubuntu-latest
+                      os: ubuntu-20.04
 
                     - name: Ubuntu-latest/gcc-7.5/Release
                       apt_install: g++-7 ninja-build
                       build_type: Release
                       cxx_compiler: -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
                       generator: Ninja
-                      os: ubuntu-latest
+                      os: ubuntu-20.04
 
 
                     - name: Ubuntu-latest/gcc-10/Debug
