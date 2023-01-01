@@ -59,14 +59,14 @@ jobs:
                       cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-8 -DCMAKE_C_COMPILER=clang-8
                       generator: Ninja
                       options: '-DPSTORE_ALWAYS_SPANNING=Yes'
-                      os: ubuntu-latest
+                      os: ubuntu-20.04
 
                     - name: Ubuntu-latest/clang-8/Release
                       apt_install: clang-8 ninja-build
                       build_type: Release
                       cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-8 -DCMAKE_C_COMPILER=clang-8
                       generator: Ninja
-                      os: ubuntu-latest
+                      os: ubuntu-20.04
 
 
                     - name: Ubuntu-latest/clang-12/Debug
