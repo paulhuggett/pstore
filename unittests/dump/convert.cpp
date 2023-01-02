@@ -16,23 +16,24 @@
 
 #include "convert.hpp"
 
+#include <vector>
+
 template <>
 std::basic_string<char> convert (char const * str) {
   return {str};
 }
 template <>
 std::basic_string<wchar_t> convert (char const * str) {
-  std::basic_string<wchar_t> result (std::strlen (str) + 1, L'\0');
-  std::size_t bytes_written = 0;
+  std::vector<wchar_t> result (std::strlen (str) + 1, L'\0');
   for (;;) {
-    std::size_t len = result.length ();
-    bytes_written = std::mbstowcs (&result[0], str, len);
-    if (bytes_written < len) {
+    auto const bytes_available = result.size ();
+    auto const bytes_written = std::mbstowcs (&result[0], str, bytes_available);
+    if (bytes_written < bytes_available) {
       result.resize (bytes_written);
       break;
     }
-    len += len / 2U;
-    result.resize (len, L'\0');
+    result.resize (bytes_available + bytes_available / 2U, L'\0');
   }
-  return result;
+
+  return {std::begin (result), std::end (result)};
 }
