@@ -1,0 +1,8 @@
+# This is a valgrind suppression file. It is used to avoid errors when comparing two instances of basic_string<wchar_t>.
+{
+   std_string_wchar_t/compare
+   Memcheck:Addr32
+   fun:__wmemcmp_avx2_movbe
+   fun:_ZNSt11char_traitsIwE7compareEPKwS2_m
+   fun:_ZSteqIwEN9__gnu_cxx11__enable_ifIXsrSt9__is_charIT_E7__valueEbE6__typeERKNSt7__cxx1112basic_stringIS3_St11char_traitsIS3_ESaIS3_EEESE_
+}

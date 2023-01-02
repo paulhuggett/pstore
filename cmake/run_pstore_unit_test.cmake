@@ -20,67 +20,72 @@
 #
 #===----------------------------------------------------------------------===//
 if (PSTORE_VALGRIND)
-    find_program (VALGRIND_PATH valgrind)
-    if (VALGRIND_PATH STREQUAL "VALGRIND_PATH-NOTFOUND")
-        set (PSTORE_VALGRIND No)
-        message (WARNING "Valgrind was requested but could not be found")
-    else ()
-        message (STATUS "Running unit tests with Valgrind memcheck")
-    endif ()
+  find_program (VALGRIND_PATH valgrind)
+  if (VALGRIND_PATH STREQUAL "VALGRIND_PATH-NOTFOUND")
+    set (PSTORE_VALGRIND No)
+    message (WARNING "Valgrind was requested but could not be found")
+  else ()
+    message (STATUS "Running unit tests with Valgrind memcheck")
+  endif ()
 endif ()
 
 
 function (run_pstore_unit_test prelink_target test_target)
-    if (CMAKE_HOST_SYSTEM_NAME MATCHES "SunOS")
-       message (WARNING "Unit tests disabled because of a crash in Google Mock")
-    else ()
-        set (OUT_XML "${CMAKE_BINARY_DIR}/${test_target}.xml")
+  if (CMAKE_HOST_SYSTEM_NAME MATCHES "SunOS")
+    message (WARNING "Unit tests disabled because of a crash in Google Mock")
+  else ()
+    set (OUT_XML "${CMAKE_BINARY_DIR}/${test_target}.xml")
 
-        set (command_line "$<TARGET_FILE:${test_target}>" "--gtest_output=xml:${OUT_XML}")
-        if (PSTORE_NOISY_UNIT_TESTS)
-            list (APPEND command_line "--loud")
-        endif ()
-
-	if (PSTORE_VALGRIND)
-            add_custom_command (
-                TARGET ${prelink_target}
-                PRE_LINK
-                COMMAND "${VALGRIND_PATH}"
-                        --tool=memcheck --leak-check=full --show-reachable=yes
-                        --undef-value-errors=yes --track-origins=no
-                        --child-silent-after-fork=no --trace-children=no
-                        --error-exitcode=13
-                        ${command_line}
-                WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-                COMMENT "Valgrind Running ${test_target}"
-                DEPENDS ${test_target}
-                BYPRODUCTS ${OUT_XML}
-                VERBATIM
-            )
-        elseif (PSTORE_COVERAGE)
-            add_custom_command (
-                TARGET ${prelink_target}
-                PRE_LINK
-                COMMAND ${CMAKE_COMMAND}
-                        -E env "LLVM_PROFILE_FILE=$<TARGET_FILE:${test_target}>.profraw"
-                        ${command_line}
-                WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-                COMMENT "Running ${test_target}"
-                DEPENDS ${test_target}
-                BYPRODUCTS ${OUT_XML}
-                VERBATIM
-            )
-        else ()
-            add_custom_command (
-                TARGET ${prelink_target}
-                PRE_LINK
-                COMMAND ${command_line}
-                WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-                COMMENT "Running ${test_target}"
-                DEPENDS ${test_target}
-                BYPRODUCTS ${OUT_XML}
-                VERBATIM
-            )
-        endif ()
+    set (command_line "$<TARGET_FILE:${test_target}>" "--gtest_output=xml:${OUT_XML}")
+    if (PSTORE_NOISY_UNIT_TESTS)
+      list (APPEND command_line "--loud")
     endif ()
+
+    if (PSTORE_VALGRIND)
+      add_custom_command (
+        TARGET ${prelink_target}
+        PRE_LINK
+        COMMAND "${VALGRIND_PATH}"
+                --tool=memcheck
+                "--suppressions=${PSTORE_ROOT_DIR}/unittests/std_string_wchar_t.supp"
+                --leak-check=full
+                --show-reachable=yes
+                --undef-value-errors=yes
+                --track-origins=no
+                --child-silent-after-fork=no
+                --trace-children=no
+                --error-exitcode=13
+                ${command_line}
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        COMMENT "Valgrind Running ${test_target}"
+        DEPENDS ${test_target}
+        BYPRODUCTS ${OUT_XML}
+        VERBATIM
+      )
+    elseif (PSTORE_COVERAGE)
+      add_custom_command (
+        TARGET ${prelink_target}
+        PRE_LINK
+        COMMAND ${CMAKE_COMMAND}
+                -E env "LLVM_PROFILE_FILE=$<TARGET_FILE:${test_target}>.profraw"
+                ${command_line}
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        COMMENT "Running ${test_target}"
+        DEPENDS ${test_target}
+        BYPRODUCTS ${OUT_XML}
+        VERBATIM
+      )
+    else ()
+      add_custom_command (
+        TARGET ${prelink_target}
+        PRE_LINK
+        COMMAND ${command_line}
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        COMMENT "Running ${test_target}"
+        DEPENDS ${test_target}
+        BYPRODUCTS ${OUT_XML}
+        VERBATIM
+      )
+    endif ()
+  endif ()
 endfunction (run_pstore_unit_test)
