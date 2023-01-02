@@ -629,48 +629,45 @@ namespace {
 
   class EnvironmentSaveFixture : public ::testing::Test {
   public:
-    // Save the environment variables tht the test may replace.
-    void SetUp () final;
-    // Restore the environment variable values.
-    void TearDown () final;
+    EnvironmentSaveFixture () {
+      // Save the environment variables tht the test may replace.
+      for (auto const & key : {L"TMP", L"TEMP", L"USERPROFILE"}) {
+        env_[key] = this->getenv (key);
+      }
+    }
+
+    ~EnvironmentSaveFixture () noexcept override {
+      // Restore the environment variable values.
+      for (auto const & kvp : env_) {
+        ::SetEnvironmentVariableW (kvp.first.c_str (), kvp.second.c_str ());
+      }
+    }
 
   protected:
     void set_temp_path (std::wstring const & path);
     static std::wstring getenv (std::wstring const & key);
+    void setenv (std::wstring const & key, std::wstring const & value);
 
   private:
-    std::map<std::wstring, std::wstring> env_;
+    std::unordered_map<std::wstring, std::wstring> env_;
   };
 
-  // SetUp
-  // ~~~~~
-  void EnvironmentSaveFixture::SetUp () {
-    env_.clear ();
-    std::array<std::wstring, 3> const keys{{L"TMP", L"TEMP", L"USERPROFILE"}};
-    for (auto const & key : keys) {
-      env_[key] = this->getenv (key);
-    }
-  }
-
-  // TearDown
-  // ~~~~~~~~
-  void EnvironmentSaveFixture::TearDown () {
-    for (auto const & kvp : env_) {
-      ::SetEnvironmentVariableW (kvp.first.c_str (), kvp.second.c_str ());
-    }
-    env_.clear ();
-  }
-
-  // set_temp_path
+  // set temp path
   // ~~~~~~~~~~~~~
   void EnvironmentSaveFixture::set_temp_path (std::wstring const & path) {
     // Note that the three environment variables that I'm setting here
     // are the three that Microsoft documents as being used by
     // GetTempPathW().
+    setenv (L"TMP", path.c_str ());
+    setenv (L"TEMP", nullptr);
+    setenv (L"USERPROFILE", nullptr);
+  }
 
-    ::SetEnvironmentVariableW (L"TMP", path.c_str ());
-    ::SetEnvironmentVariableW (L"TEMP", nullptr);
-    ::SetEnvironmentVariableW (L"USERPROFILE", nullptr);
+  // setenv
+  // ~~~~~~
+  void EnvironmentSaveFixture::setenv (std::wstring const & key, std::wstring const & value) {
+    PSTORE_ASSERT (env_.find (key) != env_.end ());
+    ::SetEnvironmentVariableW (key.c_str (), value.c_str ());
   }
 
   // getenv
@@ -681,7 +678,8 @@ namespace {
       ::GetEnvironmentVariableW (key.c_str (), buffer.data (), static_cast<DWORD> (buffer.size ()));
     if (sz == 0) {
       return {};
-    } else if (sz > buffer.size ()) {
+    }
+    if (sz > buffer.size ()) {
       buffer.resize (sz);
       PSTORE_ASSERT (buffer.size () == sz);
       sz = ::GetEnvironmentVariableW (key.c_str (), buffer.data (), sz);
