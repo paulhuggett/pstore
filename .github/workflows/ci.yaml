@@ -22,7 +22,7 @@ jobs:
 
                     # Ubuntu builds
                     # ~~~~~~~~~~~~~
-                    - name: Ubuntu-latest/gcc-7.5/Debug
+                    - name: Ubuntu-20.04/gcc-7.5/Debug
                       apt_install: g++-7 ninja-build
                       build_type: Debug
                       cxx_compiler: -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
@@ -30,7 +30,7 @@ jobs:
                       options: '-DPSTORE_ALWAYS_SPANNING=Yes'
                       os: ubuntu-20.04
 
-                    - name: Ubuntu-latest/gcc-7.5/Release
+                    - name: Ubuntu-20.04/gcc-7.5/Release
                       apt_install: g++-7 ninja-build
                       build_type: Release
                       cxx_compiler: -DCMAKE_CXX_COMPILER=g++-7 -DCMAKE_C_COMPILER=gcc-7
@@ -53,7 +53,7 @@ jobs:
                       os: ubuntu-latest
 
 
-                    - name: Ubuntu-latest/clang-8/Debug
+                    - name: Ubuntu-20.04/clang-8/Debug
                       apt_install: clang-8 ninja-build
                       build_type: Debug
                       cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-8 -DCMAKE_C_COMPILER=clang-8
@@ -61,7 +61,7 @@ jobs:
                       options: '-DPSTORE_ALWAYS_SPANNING=Yes'
                       os: ubuntu-20.04
 
-                    - name: Ubuntu-latest/clang-8/Release
+                    - name: Ubuntu-20.04/clang-8/Release
                       apt_install: clang-8 ninja-build
                       build_type: Release
                       cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-8 -DCMAKE_C_COMPILER=clang-8
