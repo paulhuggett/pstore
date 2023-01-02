@@ -13,8 +13,10 @@ jobs:
       SONAR_CACHE_DIR: build_cache_dir
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
+          submodules: 'True'
           # Disabling shallow clone is recommended for improving relevancy of reporting
           fetch-depth: 0
 
