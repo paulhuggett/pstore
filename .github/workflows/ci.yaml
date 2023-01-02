@@ -118,9 +118,9 @@ jobs:
               with:
                 submodules: 'True'
 
-            - uses: actions/setup-node@v1
+            - uses: actions/setup-node@v3
               with:
-                  node-version: 16
+                node-version: 16
 
             - name: Install Dependencies (Linux)
               if: startsWith(matrix.os, 'ubuntu-') && matrix.apt_install != ''
