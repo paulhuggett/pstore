@@ -647,6 +647,7 @@ namespace {
     void set_temp_path (std::wstring const & path);
     static std::wstring getenv (std::wstring const & key);
     void setenv (std::wstring const & key, std::wstring const & value);
+    void unsetenv (std::wstring const & key);
 
   private:
     std::unordered_map<std::wstring, std::wstring> env_;
@@ -658,9 +659,9 @@ namespace {
     // Note that the three environment variables that I'm setting here
     // are the three that Microsoft documents as being used by
     // GetTempPathW().
-    setenv (L"TMP", path.c_str ());
-    setenv (L"TEMP", nullptr);
-    setenv (L"USERPROFILE", nullptr);
+    this->setenv (L"TMP", path);
+    this->unsetenv (L"TEMP");
+    this->unsetenv (L"USERPROFILE");
   }
 
   // setenv
@@ -668,6 +669,13 @@ namespace {
   void EnvironmentSaveFixture::setenv (std::wstring const & key, std::wstring const & value) {
     PSTORE_ASSERT (env_.find (key) != env_.end ());
     ::SetEnvironmentVariableW (key.c_str (), value.c_str ());
+  }
+
+  // unsetenv
+  // ~~~~~~~~
+  void EnvironmentSaveFixture::unsetenv (std::wstring const & key) {
+    PSTORE_ASSERT (env_.find (key) != env_.end ());
+    ::SetEnvironmentVariableW (key.c_str (), nullptr);
   }
 
   // getenv
