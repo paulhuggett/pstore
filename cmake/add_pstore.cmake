@@ -209,11 +209,13 @@ function (pstore_add_additional_compiler_flags target_name)
         #       therefore if constexpr is not available.
         # 4146: unary minus applied to unsigned, result still unsigned.
         # 4512: assignment operator could not be generated.
+        # 4702: unreachable code
         target_compile_options (${target_name} PRIVATE
             -W4
             -wd4127
             -wd4146
             -wd4512
+            -wd4702
         )
         target_compile_definitions (${target_name} PRIVATE
             -D_CRT_SECURE_NO_WARNINGS
