@@ -13,12 +13,16 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-import {series} from './series.js'
+import { series } from './series.js'
+
 const bridgeAPI = window.bridgeAPI;
 
 function newWS (port, channel, onMessage) {
   const socket = new WebSocket('ws://localhost:' + port + '/' + channel)
   socket.onerror = event => {
+    // FIXME: this is no longer possible in Electron: page rendering now runs
+    // in its own process. See the Electron IPC docs.
+    // https://www.electronjs.org/docs/latest/tutorial/ipc
     dialog.showMessageBox({
       type: 'error',
       buttons: ['Quit', 'Retry'],
