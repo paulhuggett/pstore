@@ -2,7 +2,7 @@
 
 [![CI Build/Test](https://github.com/paulhuggett/pstore/actions/workflows/ci.yaml/badge.svg)](https://github.com/paulhuggett/pstore/actions/workflows/ci.yaml)
 
-pstore is a lightweight persistent append-only key/value store intended for use as a back-end for the [LLVM Program Repository](https://github.com/SNSystems/llvm-project-prepo).
+pstore is a lightweight persistent append-only key/value store originally intended for use as a back-end for the [LLVM Program Repository](https://github.com/SNSystems/llvm-project-prepo).
 
 Its design goals are:
 
@@ -67,7 +67,7 @@ Make sure that pstore is located within the llvm-project directory tree. For exa
 ~~~bash
 git clone http://github.com/SNSystems/llvm-project-prepo.git
 cd llvm
-git clone http://github.com/SNSystems/pstore.git
+git clone http://github.com/paulhuggett/pstore.git
 cd -
 ~~~
 
