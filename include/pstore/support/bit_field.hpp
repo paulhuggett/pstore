@@ -102,8 +102,8 @@ namespace pstore {
 
 
     template <typename ValueType, unsigned Index, unsigned Bits,
-              typename = typename std::enable_if<std::is_unsigned<ValueType>::value &&
-                                                 Index + Bits <= sizeof (ValueType) * 8>::type>
+              typename = typename std::enable_if_t<std::is_unsigned_v<ValueType> &&
+                                                   Index + Bits <= sizeof (ValueType) * 8>>
     class bit_field_base {
     public:
       static constexpr auto first_bit = Index;
@@ -119,9 +119,8 @@ namespace pstore {
       /// Returns the value stored in this bit-field.
       constexpr value_type value () const noexcept { return (this->value_ >> Index) & this->mask_; }
 
-      template <typename T,
-                typename = typename std::enable_if<std::is_unsigned<T>::value &&
-                                                   sizeof (T) <= sizeof (value_type)>::type>
+      template <typename T, typename = typename std::enable_if_t<std::is_unsigned_v<T> &&
+                                                                 sizeof (T) <= sizeof (value_type)>>
       void assign (T v) noexcept {
         value_ = static_cast<value_type> (value_ & ~(mask_ << Index)) |
                  static_cast<value_type> ((v & mask_) << Index);

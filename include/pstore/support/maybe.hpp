@@ -63,11 +63,11 @@ namespace pstore {
     /// std::forward<U>(value).
     template <typename U,
               typename = typename std::enable_if<
-                std::is_constructible<T, U &&>::value &&
+                std::is_constructible_v<T, U &&> &&
                 !std::is_same<typename details::remove_cvref_t<U>, maybe<T>>::value>::type>
-    explicit maybe (U && value) noexcept (std::is_nothrow_move_constructible<T>::value &&
-                                            std::is_nothrow_copy_constructible<T>::value &&
-                                          !std::is_convertible<U &&, T>::value)
+    explicit maybe (U && value) noexcept (
+      std::is_nothrow_move_constructible_v<T> && std::is_nothrow_copy_constructible_v<T> &&
+      !std::is_convertible<U &&, T>::value)
             : valid_{true} {
 
       new (&storage_) T (std::forward<U> (value));
@@ -113,7 +113,7 @@ namespace pstore {
     }
 
     maybe & operator= (maybe const & other) noexcept (
-      std::is_nothrow_copy_assignable<T>::value && std::is_nothrow_copy_constructible<T>::value) {
+      std::is_nothrow_copy_assignable_v<T> && std::is_nothrow_copy_constructible<T>::value) {
       if (&other != this) {
         if (!other.has_value ()) {
           this->reset ();
@@ -125,7 +125,7 @@ namespace pstore {
     }
 
     maybe & operator= (maybe && other) noexcept (
-      std::is_nothrow_move_assignable<T>::value && std::is_nothrow_move_constructible<T>::value) {
+      std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_constructible<T>::value) {
 
       if (&other != this) {
         if (!other.has_value ()) {
@@ -140,11 +140,11 @@ namespace pstore {
 
     template <typename U,
               typename = typename std::enable_if<
-                std::is_constructible<T, U &&>::value &&
+                std::is_constructible_v<T, U &&> &&
                 !std::is_same<typename details::remove_cvref_t<U>, maybe<T>>::value>::type>
     maybe & operator= (U && other) noexcept (
-      std::is_nothrow_copy_assignable<T>::value && std::is_nothrow_copy_constructible<T>::value &&
-        std::is_nothrow_move_assignable<T>::value && std::is_nothrow_move_constructible<T>::value) {
+      std::is_nothrow_copy_assignable_v<T> && std::is_nothrow_copy_constructible_v<T> &&
+        std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_constructible<T>::value) {
 
       if (valid_) {
         T temp = std::forward<U> (other);

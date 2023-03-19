@@ -14,7 +14,7 @@
 //
 //===----------------------------------------------------------------------===//
 /// \file error_or.hpp
-/// \brief error_or<T> holds either an instance of T or a std:error.
+/// \brief error_or<T> holds either an instance of T or a std::error.
 
 #ifndef PSTORE_ADT_ERROR_OR_HPP
 #define PSTORE_ADT_ERROR_OR_HPP
@@ -31,8 +31,8 @@
 namespace pstore {
 
   template <typename Error>
-  struct is_error : std::integral_constant<bool, std::is_error_code_enum<Error>::value ||
-                                                   std::is_error_condition_enum<Error>::value> {};
+  struct is_error : std::integral_constant<bool, std::is_error_code_enum_v<Error> ||
+                                                   std::is_error_condition_enum_v<Error>> {};
 
   template <typename T>
   class error_or {
