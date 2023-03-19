@@ -114,7 +114,7 @@ namespace pstore {
         return 0;
       }
       auto const file_size =
-        std::make_unsigned<off_t>::type (std::max (dir_.stat ().size, std::size_t{0}));
+        std::make_unsigned_t<off_t> (std::max (dir_.stat ().size, std::size_t{0}));
       auto num_read = std::size_t{0};
       auto const * start = reinterpret_cast<std::uint8_t const *> (dir_.contents ().get ()) + pos_;
       void * buffer = b;

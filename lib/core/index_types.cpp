@@ -21,7 +21,7 @@
 namespace {
 
   constexpr auto index_integral (pstore::trailer::indices const idx) noexcept
-    -> std::underlying_type<pstore::trailer::indices>::type {
+    -> std::underlying_type_t<pstore::trailer::indices> {
     return static_cast<std::underlying_type<pstore::trailer::indices>::type> (idx);
   }
 

@@ -68,8 +68,7 @@ namespace pstore {
         using value_type = typename std::remove_const<element_type>::type;
         using difference_type = typename Span::index_type;
 
-        using reference =
-          typename std::conditional<IsConst, element_type const, element_type>::type &;
+        using reference = typename std::conditional_t<IsConst, element_type const, element_type> &;
         using pointer = typename std::add_pointer<reference>::type;
 
         friend class span_iterator<Span, true>;

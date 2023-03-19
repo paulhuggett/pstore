@@ -45,9 +45,9 @@ namespace pstore {
   public:
     using value_type = T;
     using reference = T &;
-    using const_reference = typename std::remove_reference<T>::type const &;
-    using pointer = gsl::not_null<typename std::remove_reference<T>::type *>;
-    using const_pointer = gsl::not_null<typename std::remove_reference<T>::type const *>;
+    using const_reference = typename std::remove_reference_t<T> const &;
+    using pointer = gsl::not_null<typename std::remove_reference_t<T> *>;
+    using const_pointer = gsl::not_null<typename std::remove_reference_t<T> const *>;
 
     // ****
     // construction
@@ -130,7 +130,7 @@ namespace pstore {
       return static_cast<bool> (*this) && this->get () == rhs;
     }
     template <typename Error>
-    typename std::enable_if<is_error<Error>::value, bool>::type operator== (Error rhs) const {
+    typename std::enable_if_t<is_error<Error>::value, bool> operator== (Error rhs) const {
       return get_error () == rhs;
     }
 
@@ -138,7 +138,7 @@ namespace pstore {
     bool operator!= (std::error_code const rhs) const { return !operator== (rhs); }
     bool operator!= (error_or const & rhs) { return !operator== (rhs); }
     template <typename Error>
-    typename std::enable_if<is_error<Error>::value, bool>::type operator!= (Error rhs) const {
+    typename std::enable_if_t<is_error<Error>::value, bool> operator!= (Error rhs) const {
       return !operator== (rhs);
     }
 
@@ -213,7 +213,7 @@ namespace pstore {
     std::error_code const * PSTORE_NONNULL get_error_storage () const noexcept;
 
     union {
-      typename std::aligned_storage<sizeof (storage_type), alignof (storage_type)>::type storage_;
+      typename std::aligned_storage_t<sizeof (storage_type), alignof (storage_type)> storage_;
       std::aligned_storage<sizeof (std::error_code), alignof (std::error_code)>::type
         error_storage_;
     };
@@ -354,19 +354,19 @@ namespace pstore {
   // get
   // ~~~
   template <std::size_t I, class... Types>
-  typename std::tuple_element<I, std::tuple<Types...>>::type &
+  typename std::tuple_element_t<I, std::tuple<Types...>> &
   get (error_or_n<Types...> & eon) noexcept {
     return std::get<I> (*eon);
   }
 
   template <std::size_t I, class... Types>
-  typename std::tuple_element<I, std::tuple<Types...>>::type &&
+  typename std::tuple_element_t<I, std::tuple<Types...>> &&
   get (error_or_n<Types...> && eon) noexcept {
     return std::get<I> (*eon);
   }
 
   template <std::size_t I, class... Types>
-  typename std::tuple_element<I, std::tuple<Types...>>::type const &
+  typename std::tuple_element_t<I, std::tuple<Types...>> const &
   get (error_or_n<Types...> const & eon) noexcept {
     return std::get<I> (*eon);
   }

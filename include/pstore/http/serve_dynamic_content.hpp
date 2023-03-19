@@ -88,7 +88,7 @@ namespace pstore {
       }
 
       template <typename T>
-      auto clamp_to_signed_max (T v) noexcept -> typename std::make_signed<T>::type {
+      auto clamp_to_signed_max (T v) noexcept -> std::make_signed_t<T> {
         using st = typename std::make_signed<T>::type;
         constexpr auto maxs = std::numeric_limits<st>::max ();
         PSTORE_STATIC_ASSERT (maxs >= 0);

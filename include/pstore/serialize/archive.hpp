@@ -115,7 +115,7 @@ namespace pstore {
     namespace archive {
 
       template <typename T>
-      auto unsigned_cast (T const & t) -> typename std::make_unsigned<T>::type {
+      auto unsigned_cast (T const & t) -> std::make_unsigned_t<T> {
         using unsigned_type = typename std::make_unsigned<T>::type;
         PSTORE_ASSERT (t >= 0);
         return static_cast<unsigned_type> (t);
@@ -596,7 +596,7 @@ namespace pstore {
         /// returns the value extracted.
         template <typename T>
         T get () {
-          typename std::remove_const<T>::type result;
+          std::remove_const_t<T> result;
           static_assert (std::is_standard_layout<T>::value,
                          "buffer_reader(T&) can only read standard-layout types");
           if (first_ + sizeof (T) > last_) {

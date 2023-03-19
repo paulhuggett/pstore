@@ -545,7 +545,7 @@ namespace pstore {
                    "File type must be derived from file::file_base");
     PSTORE_ASSERT (file.is_open ());
 
-    std::aligned_storage<sizeof (header), alignof (header)>::type header_storage{};
+    std::aligned_storage_t<sizeof (header), alignof (header)> header_storage{};
     auto h = reinterpret_cast<header *> (&header_storage);
     file.seek (0);
     file.read (h);
