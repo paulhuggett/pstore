@@ -56,8 +56,8 @@ namespace pstore {
   };
 
   template <typename Function>
-  scope_guard<typename std::decay<Function>::type> make_scope_guard (Function && f) {
-    return scope_guard<typename std::decay<Function>::type> (std::forward<Function> (f));
+  scope_guard<std::decay_t<Function>> make_scope_guard (Function && f) {
+    return scope_guard<std::decay_t<Function>> (std::forward<Function> (f));
   }
 
 } // namespace pstore

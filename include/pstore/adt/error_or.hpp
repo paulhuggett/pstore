@@ -395,11 +395,11 @@ namespace pstore {
 
     template <typename Function, typename Tuple>
     inline auto apply (Function && f, Tuple && t)
-      -> decltype (applier<std::tuple_size<typename std::decay<Tuple>::type>::value>::apply (
+      -> decltype (applier<std::tuple_size_v<std::decay_t<Tuple>>>::apply (
         std::forward<Function> (f), std::forward<Tuple> (t))) {
 
-      return applier<std::tuple_size<typename std::decay<Tuple>::type>::value>::apply (
-        std::forward<Function> (f), std::forward<Tuple> (t));
+      return applier<std::tuple_size_v<std::decay_t<Tuple>>>::apply (std::forward<Function> (f),
+                                                                     std::forward<Tuple> (t));
     }
 
   } // end namespace details
