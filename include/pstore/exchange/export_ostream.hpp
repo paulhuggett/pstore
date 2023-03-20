@@ -95,8 +95,7 @@ namespace pstore {
         ostream_base & write (char const * s, std::streamsize length);
 
         /// Writes an unsigned numeric value to the output.
-        template <typename Unsigned,
-                  typename = typename std::enable_if_t<std::is_unsigned<Unsigned>::value>>
+        template <typename Unsigned, typename = std::enable_if_t<std::is_unsigned_v<Unsigned>>>
         ostream_base & write (Unsigned const v) {
           details::base10storage<Unsigned> str{{}};
           auto res = details::to_characters (v, &str);
@@ -105,9 +104,9 @@ namespace pstore {
 
         /// Writes an signed numeric value to the output.
         template <typename Signed, typename Unused = void,
-                  typename = typename std::enable_if_t<!std::is_unsigned<Signed>::value>>
+                  typename = std::enable_if_t<!std::is_unsigned_v<Signed>>>
         ostream_base & write (Signed const v) {
-          using unsigned_type = typename std::make_unsigned<Signed>::type;
+          using unsigned_type = std::make_unsigned_t<Signed>;
           if (v < 0) {
             this->write ('-');
             if (v == std::numeric_limits<Signed>::min ()) {
@@ -169,8 +168,7 @@ namespace pstore {
         return *this;
       }
 
-      template <typename T,
-                typename = typename std::enable_if_t<std::numeric_limits<T>::is_integer>>
+      template <typename T, typename = std::enable_if_t<std::numeric_limits<T>::is_integer>>
       inline ostream_base & operator<< (ostream_base & os, T const v) {
         return os.write (v);
       }

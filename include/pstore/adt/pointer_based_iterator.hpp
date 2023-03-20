@@ -61,13 +61,13 @@ namespace pstore {
     explicit constexpr pointer_based_iterator (std::nullptr_t) noexcept
             : pos_{nullptr} {}
 
-    template <typename Other, typename = typename std::enable_if_t<std::is_const<T>::value &&
-                                                                   !std::is_const<Other>::value>>
+    template <typename Other,
+              typename = std::enable_if_t<std::is_const_v<T> && !std::is_const_v<Other>>>
     explicit constexpr pointer_based_iterator (Other const * const pos) noexcept
             : pos_{pos} {}
 
-    template <typename Other, typename = typename std::enable_if_t<std::is_const<T>::value ==
-                                                                   std::is_const<Other>::value>>
+    template <typename Other,
+              typename = std::enable_if_t<std::is_const_v<T> == std::is_const_v<Other>>>
     explicit constexpr pointer_based_iterator (Other * const pos) noexcept
             : pos_{pos} {}
 

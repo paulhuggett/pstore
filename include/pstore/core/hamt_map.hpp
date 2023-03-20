@@ -115,7 +115,7 @@ namespace pstore {
 
         /// Copy constructor. Allows for implicit conversion from a regular iterator to a
         /// const_iterator
-        template <bool Enable = IsConstIterator, typename = typename std::enable_if<Enable>::type>
+        template <bool Enable = IsConstIterator, typename = std::enable_if_t<Enable>>
         // NOLINTNEXTLINE(hicpp-explicit-conversions)
         iterator_base (iterator_base<false> const & other) noexcept
                 : db_{other.db_}

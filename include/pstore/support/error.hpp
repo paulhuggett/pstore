@@ -145,7 +145,7 @@ namespace std {
 namespace pstore {
 
   template <typename Exception,
-            typename = typename std::enable_if_t<std::is_base_of_v<std::exception, Exception>>>
+            typename = std::enable_if_t<std::is_base_of_v<std::exception, Exception>>>
   PSTORE_NO_RETURN void raise_exception (Exception const & exc) {
 #ifdef PSTORE_EXCEPTIONS
     throw exc;

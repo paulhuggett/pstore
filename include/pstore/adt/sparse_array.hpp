@@ -133,19 +133,19 @@ namespace pstore {
   template <std::uintmax_t V, typename Enable = void>
   struct sparray_bitmap;
   template <std::uintmax_t V>
-  struct sparray_bitmap<V, typename std::enable_if_t<(V <= 8U)>> {
+  struct sparray_bitmap<V, std::enable_if_t<(V <= 8U)>> {
     using type = std::uint8_t;
   };
   template <std::uintmax_t V>
-  struct sparray_bitmap<V, typename std::enable_if_t<(V > 8U && V <= 16U)>> {
+  struct sparray_bitmap<V, std::enable_if_t<(V > 8U && V <= 16U)>> {
     using type = std::uint16_t;
   };
   template <std::uintmax_t V>
-  struct sparray_bitmap<V, typename std::enable_if_t<(V > 16U && V <= 32U)>> {
+  struct sparray_bitmap<V, std::enable_if_t<(V > 16U && V <= 32U)>> {
     using type = std::uint32_t;
   };
   template <std::uintmax_t V>
-  struct sparray_bitmap<V, typename std::enable_if_t<(V > 32U && V <= 64U)>> {
+  struct sparray_bitmap<V, std::enable_if_t<(V > 32U && V <= 64U)>> {
     using type = std::uint64_t;
   };
 
@@ -449,19 +449,16 @@ namespace pstore {
 
     /// Computes the bitmap value given a pair of iterators which will produce the
     /// sequence of indices to be present in a sparse array.
-    template <typename InputIterator,
-              typename = typename std::enable_if_t<
-                std::is_unsigned<typename std::iterator_traits<InputIterator>::value_type>::value>>
+    template <typename InputIterator, typename = std::enable_if_t<std::is_unsigned_v<
+                                        typename std::iterator_traits<InputIterator>::value_type>>>
     static BitmapType bitmap (InputIterator first, InputIterator last);
 
     /// The implementation of operator[].
-    template <typename SparseArray,
-              typename ResultType = typename inherit_const<SparseArray, ValueType>::type>
+    template <typename SparseArray, typename ResultType = inherit_const_t<SparseArray, ValueType>>
     static ResultType & index_impl (SparseArray && sa, size_type pos) noexcept;
 
     /// The implementation of at().
-    template <typename SparseArray,
-              typename ResultType = typename inherit_const<SparseArray, ValueType>::type>
+    template <typename SparseArray, typename ResultType = inherit_const_t<SparseArray, ValueType>>
     static ResultType & at_impl (SparseArray && sa, size_type pos);
   };
 

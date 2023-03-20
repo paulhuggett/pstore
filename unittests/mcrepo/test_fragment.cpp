@@ -64,7 +64,7 @@ namespace {
   }
 
   template <typename SectionIterator, typename DefinitionIterator,
-            typename = typename std::enable_if_t<
+            typename = std::enable_if_t<
               std::is_same<typename std::iterator_traits<DefinitionIterator>::value_type,
                            pstore::repo::linked_definitions::value_type>::value>>
   pstore::extent<fragment> build_fragment (transaction & transaction, SectionIterator section_begin,

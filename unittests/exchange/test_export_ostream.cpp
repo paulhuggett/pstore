@@ -185,7 +185,7 @@ namespace {
   // signed test values
   // ~~~~~~~~~~~~~~~~~~
   // Returns the values used to test signed integer types.
-  template <typename T, typename = typename std::enable_if_t<std::is_signed<T>::value>>
+  template <typename T, typename = std::enable_if_t<std::is_signed_v<T>>>
   decltype (auto) signed_test_values () {
     return testing::Values (std::numeric_limits<T>::min (),
                             static_cast<T> (std::numeric_limits<T>::min () + 1), T{-1}, T{0}, T{1},
@@ -196,7 +196,7 @@ namespace {
   // unsigned test values
   // ~~~~~~~~~~~~~~~~~~~~
   // Generates the values used to test unsigned integer types.
-  template <typename T, typename = typename std::enable_if_t<std::is_unsigned<T>::value>>
+  template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
   decltype (auto) unsigned_test_values () {
     return testing::Values (T{0}, T{1}, static_cast<T> (std::numeric_limits<T>::max () - 1U),
                             std::numeric_limits<T>::max ());

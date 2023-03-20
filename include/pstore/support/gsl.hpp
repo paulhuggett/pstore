@@ -86,8 +86,7 @@ namespace pstore {
         constexpr span_iterator (span_iterator<Span, false> const & other) noexcept
                 : span_iterator (other.span_, other.index_) {}
 
-        template <bool OtherIsConst = IsConst,
-                  typename = typename std::enable_if<OtherIsConst>::type>
+        template <bool OtherIsConst = IsConst, typename = std::enable_if_t<OtherIsConst>>
         // NOLINTNEXTLINE(hicpp-explicit-conversions)
         constexpr span_iterator (span_iterator<Span, true> const & other) noexcept
                 : span_iterator (other.span_, other.index_) {}
@@ -97,8 +96,7 @@ namespace pstore {
           index_ = rhs.index_;
           return *this;
         }
-        template <bool OtherIsConst = IsConst,
-                  typename = typename std::enable_if<OtherIsConst>::type>
+        template <bool OtherIsConst = IsConst, typename = std::enable_if_t<OtherIsConst>>
         span_iterator & operator= (span_iterator<Span, true> const & rhs) noexcept {
           span_ = rhs.span_;
           index_ = rhs.index_;
@@ -491,7 +489,7 @@ namespace pstore {
     }
 
     template <typename ElementType, std::ptrdiff_t Extent,
-              class = typename std::enable_if<!std::is_const<ElementType>::value>::type>
+              typename = std::enable_if_t<!std::is_const_v<ElementType>>>
     span<std::uint8_t, details::calculate_byte_size<ElementType, Extent>::value>
     as_writeable_bytes (span<ElementType, Extent> s) noexcept {
       return {reinterpret_cast<std::uint8_t *> (s.data ()), s.size_bytes ()};

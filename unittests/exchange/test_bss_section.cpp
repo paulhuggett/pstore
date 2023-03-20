@@ -70,7 +70,7 @@ TEST_F (BssSection, RoundTripForAnEmptySection) {
   constexpr auto kind = pstore::repo::section_kind::bss;
   // The type used to store a text section's properties.
   using section_type = pstore::repo::enum_to_section_t<kind>;
-  static_assert (std::is_same<section_type, pstore::repo::bss_section>::value,
+  static_assert (std::is_same_v<section_type, pstore::repo::bss_section>,
                  "Expected bss to map to bss_section");
 
   pstore::exchange::export_ns::string_mapping exported_names{
@@ -109,7 +109,7 @@ TEST_F (BssSection, RoundTripForPopulated) {
   constexpr auto kind = pstore::repo::section_kind::bss;
   // The type used to store a text section's properties.
   using section_type = pstore::repo::enum_to_section_t<kind>;
-  static_assert (std::is_same<section_type, pstore::repo::bss_section>::value,
+  static_assert (std::is_same_v<section_type, pstore::repo::bss_section>,
                  "Expected bss to map to bss_section");
 
   pstore::exchange::export_ns::string_mapping exported_names{

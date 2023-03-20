@@ -72,7 +72,7 @@ namespace pstore {
     /// the __uint128_t type. Note that we can't use PSTORE_HAVE_UINT128_T to determine this
     /// because we enable this flag to be disabled for testing.
     template <typename T>
-    class high<T, typename std::enable_if<(sizeof (T) > sizeof (std::uint64_t))>::type> {
+    class high<T, std::enable_if_t<(sizeof (T) > sizeof (std::uint64_t))>> {
     public:
       constexpr std::uint64_t operator() (T v) const noexcept {
         return (v >> 64U) & ((T{1} << 64) - 1U);
@@ -92,7 +92,7 @@ namespace pstore {
 
     /// Construct from an unsigned integer that's 128-bits wide or fewer.
     template <typename IntType,
-              typename = typename std::enable_if<std::is_unsigned<IntType>::value>::type>
+              typename = std::enable_if_t<std::is_unsigned_v<IntType>>>
     constexpr uint128 (IntType v) noexcept // NOLINT(hicpp-explicit-conversions)
             : v_{v} {}
 
@@ -106,8 +106,7 @@ namespace pstore {
             , high_{high} {}
 
     /// Construct from an unsigned integer that's 64-bits wide or fewer.
-    template <typename IntType,
-              typename = typename std::enable_if<std::is_unsigned<IntType>::value>::type>
+    template <typename IntType, typename = std::enable_if_t<std::is_unsigned_v<IntType>>>
     constexpr uint128 (IntType const v) noexcept
             : low_{v} {}
 

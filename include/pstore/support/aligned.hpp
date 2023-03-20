@@ -27,7 +27,7 @@
 namespace pstore {
 
   /// \returns True if the input value is a power of 2.
-  template <typename Ty, typename = typename std::enable_if<std::is_unsigned<Ty>::value>>
+  template <typename Ty, typename = std::enable_if<std::is_unsigned_v<Ty>>>
   constexpr bool is_power_of_two (Ty const n) noexcept {
     //  if a number n is a power of 2 then bitwise & of n and n-1 will be zero.
     return n > 0U && !(n & (n - 1U));

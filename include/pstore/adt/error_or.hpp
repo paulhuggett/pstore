@@ -39,7 +39,7 @@ namespace pstore {
     template <typename Other>
     friend class error_or;
 
-    using wrapper = std::reference_wrapper<typename std::remove_reference<T>::type>;
+    using wrapper = std::reference_wrapper<std::remove_reference_t<T>>;
     using storage_type = typename std::conditional<std::is_reference<T>::value, wrapper, T>::type;
 
   public:
@@ -53,8 +53,7 @@ namespace pstore {
     // construction
     // ****
 
-    template <typename ErrorCode,
-              typename = typename std::enable_if<is_error<ErrorCode>::value>::type>
+    template <typename ErrorCode, typename = std::enable_if_t<is_error<ErrorCode>::value>>
     explicit error_or (ErrorCode const erc) {
       new (get_error_storage ()) std::error_code (make_error_code (erc));
     }
@@ -63,8 +62,7 @@ namespace pstore {
       new (get_error_storage ()) std::error_code (erc);
     }
 
-    template <typename Other,
-              typename = typename std::enable_if<std::is_convertible<Other, T>::value>::type>
+    template <typename Other, typename = std::enable_if_t<std::is_convertible_v<Other, T>>>
     explicit error_or (Other && other)
             : has_error_{false} {
       new (get_storage ()) storage_type (std::forward<Other> (other));
@@ -79,8 +77,7 @@ namespace pstore {
 
     error_or (error_or const & rhs) { copy_construct (rhs); }
 
-    template <typename Other,
-              typename = typename std::enable_if<std::is_convertible<Other, T>::value>::type>
+    template <typename Other, typename = std::enable_if_t<std::is_convertible_v<Other, T>>>
     // NOLINTNEXTLINE(hicpp-explicit-conversions)
     error_or (error_or<Other> const & rhs) {
       copy_construct (rhs);
@@ -88,8 +85,7 @@ namespace pstore {
 
     error_or (error_or && rhs) noexcept { move_construct (std::move (rhs)); }
 
-    template <typename Other,
-              typename = typename std::enable_if<std::is_convertible<Other, T>::value>::type>
+    template <typename Other, typename = std::enable_if_t<std::is_convertible_v<Other, T>>>
     // NOLINTNEXTLINE(hicpp-explicit-conversions)
     error_or (error_or<Other> && rhs) noexcept {
       move_construct (std::move (rhs));
@@ -101,8 +97,7 @@ namespace pstore {
     // ****
     // assignment
     // ****
-    template <typename ErrorCode,
-              typename = typename std::enable_if<is_error<ErrorCode>::value>::type>
+    template <typename ErrorCode, typename = std::enable_if_t<is_error<ErrorCode>::value>>
     error_or & operator= (ErrorCode rhs) {
       operator= (error_or<T>{rhs});
       return *this;
@@ -130,7 +125,7 @@ namespace pstore {
       return static_cast<bool> (*this) && this->get () == rhs;
     }
     template <typename Error>
-    typename std::enable_if_t<is_error<Error>::value, bool> operator== (Error rhs) const {
+    std::enable_if_t<is_error<Error>::value, bool> operator== (Error rhs) const {
       return get_error () == rhs;
     }
 
@@ -138,7 +133,7 @@ namespace pstore {
     bool operator!= (std::error_code const rhs) const { return !operator== (rhs); }
     bool operator!= (error_or const & rhs) { return !operator== (rhs); }
     template <typename Error>
-    typename std::enable_if_t<is_error<Error>::value, bool> operator!= (Error rhs) const {
+    std::enable_if_t<is_error<Error>::value, bool> operator!= (Error rhs) const {
       return !operator== (rhs);
     }
 

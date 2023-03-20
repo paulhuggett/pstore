@@ -142,7 +142,7 @@ namespace {
 
   using pstore::broker::sig_self_quit;
 
-  template <ssize_t Size, typename = typename std::enable_if_t<(Size > 0)>>
+  template <ssize_t Size, typename = std::enable_if_t<(Size > 0)>>
   char const * signal_name (int signo, pstore::gsl::span<char, Size> buffer) {
 #define X(sig)                                                                                     \
   case sig: return #sig;

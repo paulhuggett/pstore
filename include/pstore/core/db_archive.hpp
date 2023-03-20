@@ -119,8 +119,7 @@ namespace pstore {
         /// placed.
         ///
         /// \tparam Ty  A standard-layout type.
-        template <typename Ty,
-                  typename = typename std::enable_if<std::is_standard_layout<Ty>::value>::type>
+        template <typename Ty, typename = std::enable_if_t<std::is_standard_layout_v<Ty>>>
         void get (Ty & v);
 
         /// Reads a span of a trivial type from the current store address.
@@ -128,8 +127,8 @@ namespace pstore {
         /// \param span  A span of uninitialized memory into which the data will be placed.
         ///
         /// \tparam SpanType  A GSL span which describes a range of uninitialized memory.
-        template <typename SpanType, typename = typename std::enable_if<std::is_standard_layout<
-                                       typename SpanType::element_type>::value>::type>
+        template <typename SpanType, typename = std::enable_if_t<
+                                       std::is_standard_layout_v<typename SpanType::element_type>>>
         void getn (SpanType span);
 
       private:

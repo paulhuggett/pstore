@@ -33,7 +33,7 @@ namespace pstore {
 
     namespace details {
 
-      template <typename T, typename = typename std::enable_if<std::is_unsigned<T>::value>::type>
+      template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
       constexpr int int_cast (T value) noexcept {
         using common = typename std::common_type<T, unsigned>::type;
         return static_cast<int> (

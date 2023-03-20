@@ -38,21 +38,21 @@ namespace pstore {
 
     template <typename T>
     struct remove_cvref {
-      using type = typename std::remove_cv<typename std::remove_reference<T>::type>::type;
+      using type = std::remove_cv_t<std::remove_reference_t<T>>;
     };
     template <typename T>
     using remove_cvref_t = typename remove_cvref<T>::type;
 
   } // end namespace details
 
-  template <typename T, typename = typename std::enable_if<!std::is_reference<T>::value>::type>
+  template <typename T, typename = std::enable_if_t<!std::is_reference_v<T>>>
   class maybe {
   public:
     using value_type = T;
 
-    static_assert (std::is_object<value_type>::value,
+    static_assert (std::is_object_v<value_type>,
                    "Instantiation of maybe<> with a non-object type is undefined behavior.");
-    static_assert (std::is_nothrow_destructible<value_type>::value,
+    static_assert (std::is_nothrow_destructible_v<value_type>,
                    "Instantiation of maybe<> with an object type that is not noexcept "
                    "destructible is undefined behavior.");
 
@@ -62,12 +62,11 @@ namespace pstore {
     /// Constructs an optional object that contains a value, initialized with the expression
     /// std::forward<U>(value).
     template <typename U,
-              typename = typename std::enable_if<
-                std::is_constructible_v<T, U &&> &&
-                !std::is_same<typename details::remove_cvref_t<U>, maybe<T>>::value>::type>
+              typename = std::enable_if_t<std::is_constructible_v<T, U &&> &&
+                                          !std::is_same_v<details::remove_cvref_t<U>, maybe<T>>>>
     explicit maybe (U && value) noexcept (
       std::is_nothrow_move_constructible_v<T> && std::is_nothrow_copy_constructible_v<T> &&
-      !std::is_convertible<U &&, T>::value)
+      !std::is_convertible_v<U &&, T>)
             : valid_{true} {
 
       new (&storage_) T (std::forward<U> (value));
@@ -83,7 +82,7 @@ namespace pstore {
     /// Copy constructor: If other contains a value, initializes the contained value with the
     /// expression *other. If other does not contain a value, constructs an object that does not
     /// contain a value.
-    maybe (maybe const & other) noexcept (std::is_nothrow_copy_constructible<T>::value) {
+    maybe (maybe const & other) noexcept (std::is_nothrow_copy_constructible_v<T>) {
       if (other.valid_) {
         new (&storage_) T (*other);
         valid_ = true;
@@ -94,7 +93,7 @@ namespace pstore {
     /// expression std::move(*other) and does not make other empty: a moved-from optional still
     /// contains a value, but the value itself is moved from. If other does not contain a value,
     /// constructs an object that does not contain a value.
-    maybe (maybe && other) noexcept (std::is_nothrow_move_constructible<T>::value) {
+    maybe (maybe && other) noexcept (std::is_nothrow_move_constructible_v<T>) {
       if (other.valid_) {
         new (&storage_) T (std::move (*other));
         valid_ = true;
@@ -113,7 +112,7 @@ namespace pstore {
     }
 
     maybe & operator= (maybe const & other) noexcept (
-      std::is_nothrow_copy_assignable_v<T> && std::is_nothrow_copy_constructible<T>::value) {
+      std::is_nothrow_copy_assignable_v<T> && std::is_nothrow_copy_constructible_v<T>) {
       if (&other != this) {
         if (!other.has_value ()) {
           this->reset ();
@@ -125,7 +124,7 @@ namespace pstore {
     }
 
     maybe & operator= (maybe && other) noexcept (
-      std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_constructible<T>::value) {
+      std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_constructible_v<T>) {
 
       if (&other != this) {
         if (!other.has_value ()) {
@@ -139,12 +138,11 @@ namespace pstore {
 
 
     template <typename U,
-              typename = typename std::enable_if<
-                std::is_constructible_v<T, U &&> &&
-                !std::is_same<typename details::remove_cvref_t<U>, maybe<T>>::value>::type>
+              typename = std::enable_if_t<std::is_constructible_v<T, U &&> &&
+                                          !std::is_same_v<details::remove_cvref_t<U>, maybe<T>>>>
     maybe & operator= (U && other) noexcept (
       std::is_nothrow_copy_assignable_v<T> && std::is_nothrow_copy_constructible_v<T> &&
-        std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_constructible<T>::value) {
+        std::is_nothrow_move_assignable_v<T> && std::is_nothrow_move_constructible_v<T>) {
 
       if (valid_) {
         T temp = std::forward<U> (other);
@@ -208,7 +206,7 @@ namespace pstore {
     }
 
   private:
-    template <typename Maybe, typename ResultType = typename inherit_const<Maybe, T>::type>
+    template <typename Maybe, typename ResultType = inherit_const_t<Maybe, T>>
     static ResultType & value_impl (Maybe && m) noexcept {
       PSTORE_ASSERT (m.has_value ());
       return *m;

@@ -166,7 +166,7 @@ namespace pstore {
     /// \tparam T  The data type to be loaded.
     /// \param ex The extent of of the data to be loaded.
     /// \return A read-only pointer to the loaded data.
-    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout<T>::value>>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T const> getro (extent<T> const & ex) const;
 
     /// Load a block of data starting at the address and size specified by \p ex and return an
@@ -175,7 +175,7 @@ namespace pstore {
     /// \tparam T  The data type to be loaded.
     /// \param ex The extent of of the data to be loaded.
     /// \return A read-only pointer to the loaded data.
-    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout<T>::value>>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     unique_pointer<T const> getrou (extent<T> const & ex) const;
 
     /// Returns a shared-pointer to a immutable instance of type T.
@@ -183,7 +183,7 @@ namespace pstore {
     /// \tparam T  The type to be loaded. Must be standard-layout.
     /// \param addr The address at which the data begins.
     /// \return A read-only pointer to the loaded data.
-    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout<T>::value>>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T const> getro (typed_address<T> const addr) const {
       return this->getro (addr, std::size_t{1});
     }
@@ -193,7 +193,7 @@ namespace pstore {
     /// \tparam T  The type to be loaded. Must be standard-layout.
     /// \param addr The address at which the data begins.
     /// \return A read-only pointer to the loaded data.
-    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout<T>::value>>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     unique_pointer<T const> getrou (typed_address<T> const addr) const {
       return this->getrou (addr, std::size_t{1});
     }
@@ -204,7 +204,7 @@ namespace pstore {
     /// \param addr The address at which the data begins.
     /// \param elements The number of elements in the T[] array.
     /// \return A read-only pointer to the loaded data.
-    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout<T>::value>>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T const> getro (typed_address<T> const addr, std::size_t const elements) const {
       if (addr.to_address ().absolute () % alignof (T) != 0) {
         raise (error_code::bad_alignment);
@@ -219,7 +219,7 @@ namespace pstore {
     /// \param addr The address at which the data begins.
     /// \param elements The number of elements in the T[] array.
     /// \return A read-only pointer to the loaded data.
-    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout<T>::value>>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     unique_pointer<T const> getrou (typed_address<T> const addr, std::size_t const elements) const;
     ///@}
 
@@ -244,8 +244,7 @@ namespace pstore {
     ///
     /// \param ex The extent of the data.
     /// \return A mutable pointer to the loaded data.
-    template <typename T,
-              typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T> getrw (extent<T> const & ex) {
       if (ex.addr.to_address ().absolute () % alignof (T) != 0) {
         raise (error_code::bad_alignment);
@@ -260,8 +259,7 @@ namespace pstore {
     ///
     /// \param addr The address at which the data begins.
     /// \return A mutable pointer to the loaded data.
-    template <typename T,
-              typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T> getrw (typed_address<T> addr) {
       return this->getrw<T> (addr, std::size_t{1});
     }
@@ -271,8 +269,7 @@ namespace pstore {
     /// \param addr The address at which the data begins.
     /// \param elements The number of elements in the T[] array.
     /// \return A mutable pointer to the loaded data.
-    template <typename T,
-              typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T> getrw (typed_address<T> const addr, std::size_t const elements) {
       if (addr.to_address ().absolute () % alignof (T) != 0) {
         raise (error_code::bad_alignment);
