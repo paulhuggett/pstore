@@ -1,6 +1,7 @@
 <img alt="pstore logo" src="doc_sources/logo.svg" height="80" width="150">
 
 [![CI Build/Test](https://github.com/paulhuggett/pstore/actions/workflows/ci.yaml/badge.svg)](https://github.com/paulhuggett/pstore/actions/workflows/ci.yaml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=paulhuggett_pstore&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=paulhuggett_pstore)
 
 pstore is a lightweight persistent append-only key/value store originally intended for use as a back-end for the [LLVM Program Repository](https://github.com/SNSystems/llvm-project-prepo).
 
