@@ -40,7 +40,7 @@ namespace pstore {
     friend class error_or;
 
     using wrapper = std::reference_wrapper<std::remove_reference_t<T>>;
-    using storage_type = typename std::conditional<std::is_reference<T>::value, wrapper, T>::type;
+    using storage_type = typename std::conditional_t<std::is_reference_v<T>, wrapper, T>;
 
   public:
     using value_type = T;

@@ -86,15 +86,15 @@ namespace pstore {
         /// For const_iterator: define value_reference_type to be a 'value_type const &'
         /// For iterator:       define value_reference_type to be a 'value_type &'
         using value_reference_type =
-          typename std::conditional<IsConstIterator, value_type const &, value_type &>::type;
+          typename std::conditional_t<IsConstIterator, value_type const &, value_type &>;
 
         /// For const_iterator:   define value_pointer_type to be a 'value_type const *'
         /// For regular iterator: define value_pointer_type to be a 'value_type *'
         using value_pointer_type =
-          typename std::conditional<IsConstIterator, value_type const *, value_type *>::type;
+          typename std::conditional_t<IsConstIterator, value_type const *, value_type *>;
 
         using database_reference =
-          typename std::conditional<IsConstIterator, database const &, database &>::type;
+          typename std::conditional_t<IsConstIterator, database const &, database &>;
 
         iterator_base (database_reference db, parent_stack && parents, hamt_map const * idx)
                 : db_{db}
