@@ -18,12 +18,10 @@
 
 #include <string>
 
-namespace pstore {
-  namespace json {
+namespace pstore::json {
 
-    bool is_valid (std::string const & str);
+  bool is_valid (std::string const & str);
 
-  } // end namespace json
-} // end namespace pstore
+} // end namespace pstore::json
 
 #endif // PSTORE_JSON_UTILITY_HPP
