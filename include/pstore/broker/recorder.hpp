@@ -27,50 +27,48 @@
 #include "pstore/brokerface/message_type.hpp"
 #include "pstore/os/file.hpp"
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    class recorder {
-    public:
-      explicit recorder (std::string path);
-      // No copying or assignment.
-      recorder (recorder const &) = delete;
-      recorder (recorder &&) noexcept = delete;
+  class recorder {
+  public:
+    explicit recorder (std::string path);
+    // No copying or assignment.
+    recorder (recorder const &) = delete;
+    recorder (recorder &&) noexcept = delete;
 
-      ~recorder ();
+    ~recorder ();
 
-      // No copying or assignment.
-      recorder & operator= (recorder const &) = delete;
-      recorder & operator= (recorder &&) noexcept = delete;
+    // No copying or assignment.
+    recorder & operator= (recorder const &) = delete;
+    recorder & operator= (recorder &&) noexcept = delete;
 
-      void record (brokerface::message_type const & cmd);
+    void record (brokerface::message_type const & cmd);
 
-    private:
-      std::mutex mut_;
-      file::file_handle file_;
-    };
+  private:
+    std::mutex mut_;
+    file::file_handle file_;
+  };
 
-    class player {
-    public:
-      explicit player (std::string path);
-      // No copying or assignment.
-      player (player const &) = delete;
-      player (player &&) noexcept = delete;
+  class player {
+  public:
+    explicit player (std::string path);
+    // No copying or assignment.
+    player (player const &) = delete;
+    player (player &&) noexcept = delete;
 
-      ~player ();
+    ~player ();
 
-      // No copying or assignment.
-      player & operator= (player const &) = delete;
-      player & operator= (player &&) noexcept = delete;
+    // No copying or assignment.
+    player & operator= (player const &) = delete;
+    player & operator= (player &&) noexcept = delete;
 
-      brokerface::message_ptr read ();
+    brokerface::message_ptr read ();
 
-    private:
-      std::mutex mut_;
-      file::file_handle file_;
-    };
+  private:
+    std::mutex mut_;
+    file::file_handle file_;
+  };
 
-  } // end namespace broker
-} // end namespace pstore
+} // end namespace pstore::broker
 
 #endif // PSTORE_BROKER_RECORDER_HPP
