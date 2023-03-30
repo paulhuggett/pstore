@@ -45,7 +45,7 @@ namespace {
 
 } // end anonymous namespace
 
-namespace pstore {
+namespace pstore::command_line {
 
   maybe<unsigned> str_to_revision (std::string const & str) {
     std::string const arg = trim_and_lowercase (str);
@@ -70,4 +70,4 @@ namespace pstore {
     return nothing<unsigned> ();
   }
 
-} // end namespace pstore
+} // end namespace pstore::command_line

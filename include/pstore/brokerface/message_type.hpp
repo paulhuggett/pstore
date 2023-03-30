@@ -108,13 +108,13 @@ namespace pstore {
 
         auto dist = std::distance (first, last);
         using distance_type = decltype (dist);
-        using udistance_type = typename std::make_unsigned<distance_type>::type;
+        using udistance_type = typename std::make_unsigned_t<distance_type>;
         auto count = static_cast<udistance_type> (std::max (dist, distance_type{0}));
 
         static_assert (payload_chars < std::numeric_limits<udistance_type>::max (),
                        "payload chars is too large for static conversion to difference_type");
         count = std::min (count, static_cast<udistance_type> (payload_chars));
-        payload_type::iterator out_first = std::begin (result);
+        auto out_first = std::begin (result);
         if (count > 0) {
           out_first = std::copy_n (first, count, out_first);
         }
@@ -123,8 +123,7 @@ namespace pstore {
       }
     };
 
-    static_assert (std::is_standard_layout<message_type>::value,
-                   "message_type must be standard layout");
+    static_assert (std::is_standard_layout_v<message_type>, "message_type must be standard layout");
     static_assert (sizeof (message_type) == message_size, "sizeof (message_type) != message_size");
     static_assert (offsetof (message_type, sender_id) == 0, "offset of sender_id must be 0");
     static_assert (offsetof (message_type, message_id) == 4, "offset of message_id must be 4");

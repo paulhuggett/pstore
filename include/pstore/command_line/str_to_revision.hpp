@@ -25,7 +25,7 @@
 
 #include "pstore/support/maybe.hpp"
 
-namespace pstore {
+namespace pstore::command_line {
 
   /// Converts a string to a revision number. Leading and trailing whitespace is ignored, the text
   /// "head" (regardless of case) will become pstore::database::head_revision.
@@ -35,6 +35,6 @@ namespace pstore {
 
   maybe<unsigned> str_to_revision (std::string const & str);
 
-} // end namespace pstore
+} // end namespace pstore::command_line
 
 #endif // PSTORE_COMMAND_LINE_STR_TO_REVISION_HPP

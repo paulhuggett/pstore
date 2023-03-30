@@ -41,7 +41,7 @@ namespace pstore {
                      "return type from Accessor must be a reference");
 
     public:
-      using value_type = typename std::remove_reference<return_type>::type;
+      using value_type = typename std::remove_reference_t<return_type>;
       using pointer = value_type *;
       using const_pointer = value_type const *;
       using reference = value_type &;

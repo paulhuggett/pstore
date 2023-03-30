@@ -90,101 +90,96 @@ namespace {
 } // end anonymous namespace
 
 
-namespace pstore {
-  namespace command_line {
-    namespace details {
+namespace pstore::command_line::details {
 
-      bool less_name::operator() (gsl::not_null<option const *> const x,
-                                  gsl::not_null<option const *> const y) const {
-        return x->name () < y->name ();
+  bool less_name::operator() (gsl::not_null<option const *> const x,
+                              gsl::not_null<option const *> const y) const {
+    return x->name () < y->name ();
+  }
+
+  // get_max_width
+  // ~~~~~~~~~~~~~
+  std::size_t get_max_width () {
+    std::size_t max_width = terminal_width ();
+    if (max_width == 0U) {
+      // We couldn't figure out the terminal width, so just guess at 80.
+      max_width = 80U;
+    }
+    if (max_width < overlong_opt_max) {
+      max_width = overlong_opt_max * 2U;
+    }
+    return max_width;
+  }
+
+  // build_categories
+  // ~~~~~~~~~~~~~~~~
+  categories_collection build_categories (option const * const self,
+                                          option::options_container const & all) {
+    categories_collection categories;
+    for (option const * const op : all) {
+      if (op != self && !op->is_positional ()) {
+        categories[op->category ()].insert (op);
+      }
+    }
+    return categories;
+  }
+
+  // get_switch_strings
+  // ~~~~~~~~~~~~~~~~~~
+  auto get_switch_strings (options_set const & ops) -> switch_strings {
+    constexpr char const separator[] = ", ";
+    constexpr auto separator_len = array_elements (separator) - 1U;
+
+    switch_strings names;
+    for (option const * op : ops) {
+      std::pair<std::string, std::size_t> name = option_string (*op);
+      PSTORE_ASSERT (pstore::utf::length (std::get<std::string> (name)) ==
+                     std::get<std::size_t> (name));
+
+      if (alias const * const alias = op->as_alias ()) {
+        op = alias->original ();
       }
 
-      // get_max_width
-      // ~~~~~~~~~~~~~
-      std::size_t get_max_width () {
-        std::size_t max_width = terminal_width ();
-        if (max_width == 0U) {
-          // We couldn't figure out the terminal width, so just guess at 80.
-          max_width = 80U;
+      auto & v = names[op];
+      if (!v.empty ()) {
+        auto & prev = v.back ();
+        auto & prev_string = std::get<std::string> (prev);
+        auto & prev_code_points = std::get<std::size_t> (prev);
+
+        if (prev_code_points + separator_len + std::get<std::size_t> (name) <= overlong_opt_max) {
+          // Fold this string onto the same output line as its predecessor.
+          prev_string += separator + std::get<std::string> (name);
+          prev_code_points += separator_len + std::get<std::size_t> (name);
+
+          PSTORE_ASSERT (pstore::utf::length (prev_string) == prev_code_points);
+          continue;
         }
-        if (max_width < overlong_opt_max) {
-          max_width = overlong_opt_max * 2U;
+      }
+      v.push_back (name);
+    }
+    return names;
+  }
+
+  // widest_option
+  // ~~~~~~~~~~~~~
+  std::size_t widest_option (categories_collection const & categories) {
+    auto max_name_len = std::size_t{0};
+    for (auto const & cat : categories) {
+      for (auto const & sw : get_switch_strings (cat.second)) {
+        for (std::tuple<std::string, std::size_t> const & name : sw.second) {
+          max_name_len = std::max (max_name_len, std::get<std::size_t> (name));
         }
-        return max_width;
       }
+    }
+    return std::min (max_name_len, overlong_opt_max);
+  }
 
-      // build_categories
-      // ~~~~~~~~~~~~~~~~
-      categories_collection build_categories (option const * const self,
-                                              option::options_container const & all) {
-        categories_collection categories;
-        for (option const * const op : all) {
-          if (op != self && !op->is_positional ()) {
-            categories[op->category ()].insert (op);
-          }
-        }
-        return categories;
-      }
+  // has_switches
+  // ~~~~~~~~~~~~
+  bool has_switches (option const * const self, option::options_container const & all) {
+    return std::any_of (std::begin (all), std::end (all), [self] (option const * const op) {
+      return op != self && !op->is_alias () && !op->is_positional ();
+    });
+  }
 
-      // get_switch_strings
-      // ~~~~~~~~~~~~~~~~~~
-      auto get_switch_strings (options_set const & ops) -> switch_strings {
-        constexpr char const separator[] = ", ";
-        constexpr auto separator_len = array_elements (separator) - 1U;
-
-        switch_strings names;
-        for (option const * op : ops) {
-          std::pair<std::string, std::size_t> name = option_string (*op);
-          PSTORE_ASSERT (pstore::utf::length (std::get<std::string> (name)) ==
-                         std::get<std::size_t> (name));
-
-          if (alias const * const alias = op->as_alias ()) {
-            op = alias->original ();
-          }
-
-          auto & v = names[op];
-          if (!v.empty ()) {
-            auto & prev = v.back ();
-            auto & prev_string = std::get<std::string> (prev);
-            auto & prev_code_points = std::get<std::size_t> (prev);
-
-            if (prev_code_points + separator_len + std::get<std::size_t> (name) <=
-                overlong_opt_max) {
-              // Fold this string onto the same output line as its predecessor.
-              prev_string += separator + std::get<std::string> (name);
-              prev_code_points += separator_len + std::get<std::size_t> (name);
-
-              PSTORE_ASSERT (pstore::utf::length (prev_string) == prev_code_points);
-              continue;
-            }
-          }
-          v.push_back (name);
-        }
-        return names;
-      }
-
-      // widest_option
-      // ~~~~~~~~~~~~~
-      std::size_t widest_option (categories_collection const & categories) {
-        auto max_name_len = std::size_t{0};
-        for (auto const & cat : categories) {
-          for (auto const & sw : get_switch_strings (cat.second)) {
-            for (std::tuple<std::string, std::size_t> const & name : sw.second) {
-              max_name_len = std::max (max_name_len, std::get<std::size_t> (name));
-            }
-          }
-        }
-        return std::min (max_name_len, overlong_opt_max);
-      }
-
-      // has_switches
-      // ~~~~~~~~~~~~
-      bool has_switches (option const * const self, option::options_container const & all) {
-        return std::any_of (std::begin (all), std::end (all), [self] (option const * const op) {
-          return op != self && !op->is_alias () && !op->is_positional ();
-        });
-      }
-
-    } // end namespace details
-  }   // end namespace command_line
-} // end namespace pstore
+} // end namespace pstore::command_line::details

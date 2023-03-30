@@ -22,19 +22,17 @@
 
 #include <string>
 
-namespace pstore {
-  namespace command_line {
+namespace pstore::command_line {
 
-    class option_category {
-    public:
-      explicit option_category (std::string const & title);
-      std::string const & title () const noexcept { return title_; }
+  class option_category {
+  public:
+    explicit option_category (std::string const & title);
+    std::string const & title () const noexcept { return title_; }
 
-    private:
-      std::string title_;
-    };
+  private:
+    std::string title_;
+  };
 
-  } // end namespace command_line
-} // end namespace pstore
+} // end namespace pstore::command_line
 
 #endif // PSTORE_COMMAND_LINE_CATEGORY_HPP

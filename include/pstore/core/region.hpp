@@ -90,7 +90,7 @@ namespace pstore {
 
       /// Checks the region-builder's post-condition that all of the regions are sorted
       /// and contiguous starting at an offset of 0.
-      void check_regions_are_contiguous (container_type const & regions);
+      void check_regions_are_contiguous (container_type const & regions) const;
 
       /// The file for which a collection of memory-mapped regions is to be
       /// created.
@@ -102,7 +102,7 @@ namespace pstore {
       std::uint64_t const minimum_size_;
     };
 
-    // region_builder
+    // region builder
     // ~~~~~~~~~~~~~~
     template <typename File, typename MemoryMapper>
     region_builder<File, MemoryMapper>::region_builder (std::shared_ptr<File> file,
@@ -169,7 +169,7 @@ namespace pstore {
     // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     template <typename File, typename MemoryMapper>
     void region_builder<File, MemoryMapper>::check_regions_are_contiguous (
-      container_type const & regions) {
+      container_type const & regions) const {
 #ifdef NDEBUG
       (void) regions;
 #else
@@ -235,12 +235,12 @@ namespace pstore {
       }
 
       template <typename File, typename MemoryMapper>
-      auto create (std::shared_ptr<File> file) -> std::vector<memory_mapper_ptr>;
+      auto create (std::shared_ptr<File> file) const -> std::vector<memory_mapper_ptr>;
 
       template <typename File, typename MemoryMapper>
       void append (std::shared_ptr<File> file,
                    gsl::not_null<std::vector<memory_mapper_ptr> *> regions,
-                   std::uint64_t original_size, std::uint64_t new_size);
+                   std::uint64_t original_size, std::uint64_t new_size) const;
 
     private:
       std::uint64_t const full_size_;
@@ -250,7 +250,7 @@ namespace pstore {
     // create
     // ~~~~~~
     template <typename File, typename MemoryMapper>
-    auto factory::create (std::shared_ptr<File> file) -> std::vector<memory_mapper_ptr> {
+    auto factory::create (std::shared_ptr<File> file) const -> std::vector<memory_mapper_ptr> {
 
       // There's no lock on the file when we call the size() method here. However, the file
       // is only allowed to grow so if it changes then the worst outcome is that we end up
@@ -266,7 +266,7 @@ namespace pstore {
     template <typename File, typename MemoryMapper>
     void factory::append (std::shared_ptr<File> file,
                           gsl::not_null<std::vector<memory_mapper_ptr> *> regions,
-                          std::uint64_t original_size, std::uint64_t new_size) {
+                          std::uint64_t original_size, std::uint64_t new_size) const {
 
       PSTORE_ASSERT (new_size >= original_size);
 

@@ -19,24 +19,22 @@
 #include "pstore/command_line/option.hpp"
 #include "pstore/support/head_revision.hpp"
 
-namespace pstore {
-  namespace command_line {
+namespace pstore::command_line {
 
-    class revision_opt {
-    public:
-      revision_opt & operator= (std::string const & val);
-      explicit constexpr operator unsigned () const noexcept { return r_; }
+  class revision_opt {
+  public:
+    revision_opt & operator= (std::string const & val);
+    explicit constexpr operator unsigned () const noexcept { return r_; }
 
-    private:
-      unsigned r_ = pstore::head_revision;
-    };
+  private:
+    unsigned r_ = pstore::head_revision;
+  };
 
-    template <>
-    struct type_description<revision_opt> {
-      static gsl::czstring value;
-    };
+  template <>
+  struct type_description<revision_opt> {
+    static gsl::czstring value;
+  };
 
-  } // end namespace command_line
-} // end namespace pstore
+} // end namespace pstore::command_line
 
 #endif // PSTORE_COMMAND_LINE_REVISION_OPT_HPP
