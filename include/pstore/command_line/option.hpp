@@ -205,7 +205,7 @@ namespace pstore::command_line {
     explicit operator T () const { return get (); }
     T const & get () const noexcept { return value_; }
 
-    bool empty () const { return value_.empty (); }
+    bool empty () const { return std::empty (value_); }
     bool value (std::string const & v) override;
     bool takes_argument () const override;
     parser_base * get_parser () override;
