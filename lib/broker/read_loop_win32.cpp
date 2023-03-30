@@ -447,78 +447,76 @@ namespace {
 } // end anonymous namespace
 
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    // read_loop
-    // ~~~~~~~~~
-    void read_loop (brokerface::fifo_path & path, std::shared_ptr<recorder> & record_file,
-                    std::shared_ptr<command_processor> cp) {
-      try {
-        log (logger::priority::notice, "listening to named pipe ",
-             logger::quoted (path.get ().c_str ()));
-        auto const pipe_name = utf::win32::to16 (path.get ());
-        // Create one event object for the connect operation.
-        unique_handle connect_event = create_event ();
+  // read_loop
+  // ~~~~~~~~~
+  void read_loop (brokerface::fifo_path & path, std::shared_ptr<recorder> & record_file,
+                  std::shared_ptr<command_processor> cp) {
+    try {
+      log (logger::priority::notice, "listening to named pipe ",
+           logger::quoted (path.get ().c_str ()));
+      auto const pipe_name = utf::win32::to16 (path.get ());
+      // Create one event object for the connect operation.
+      unique_handle connect_event = create_event ();
 
-        OVERLAPPED connect{0};
-        connect.hEvent = connect_event.native_handle ();
+      OVERLAPPED connect{0};
+      connect.hEvent = connect_event.native_handle ();
 
-        // Create a pipe instance and and wait for a the client to connect.
-        bool pending_io;
-        pipe_descriptor pipe;
-        std::tie (pipe, pending_io) = create_and_connect_instance (pipe_name, connect);
+      // Create a pipe instance and and wait for a the client to connect.
+      bool pending_io;
+      pipe_descriptor pipe;
+      std::tie (pipe, pending_io) = create_and_connect_instance (pipe_name, connect);
 
-        request req (cp.get (), record_file.get ());
+      request req (cp.get (), record_file.get ());
 
-        while (!done) {
-          // Wait for a client to connect, or for a read or write operation to be
-          // completed, which causes a completion routine to be queued for execution.
-          auto const cause =
-            ::WaitForSingleObjectEx (connect_event.native_handle (),
-                                     details::timeout_seconds * 1000, true /*alertable wait?*/);
-          switch (cause) {
-          case WAIT_OBJECT_0:
-            // A connect operation has been completed. If an operation is pending, get
-            // the result of the connect operation.
-            if (pending_io) {
-              auto bytes_transferred = DWORD{0};
-              if (!::GetOverlappedResult (pipe.native_handle (), &connect, &bytes_transferred,
-                                          false /*do not wait*/)) {
-                raise (win32_erc (::GetLastError ()), "ConnectNamedPipe");
-              }
+      while (!done) {
+        // Wait for a client to connect, or for a read or write operation to be
+        // completed, which causes a completion routine to be queued for execution.
+        auto const cause =
+          ::WaitForSingleObjectEx (connect_event.native_handle (), details::timeout_seconds * 1000,
+                                   true /*alertable wait?*/);
+        switch (cause) {
+        case WAIT_OBJECT_0:
+          // A connect operation has been completed. If an operation is pending, get
+          // the result of the connect operation.
+          if (pending_io) {
+            auto bytes_transferred = DWORD{0};
+            if (!::GetOverlappedResult (pipe.native_handle (), &connect, &bytes_transferred,
+                                        false /*do not wait*/)) {
+              raise (win32_erc (::GetLastError ()), "ConnectNamedPipe");
             }
-
-            // Start the read operation for this client.
-            req.attach_pipe (std::move (pipe));
-
-            // Create new pipe instance for the next client.
-            std::tie (pipe, pending_io) = create_and_connect_instance (pipe_name, connect);
-            break;
-
-          case WAIT_IO_COMPLETION:
-            // The wait was satisfied by a completed read operation.
-            break;
-          case WAIT_TIMEOUT: log (logger::priority::notice, "wait timeout"); break;
-          default: raise (win32_erc (::GetLastError ()), "WaitForSingleObjectEx");
           }
+
+          // Start the read operation for this client.
+          req.attach_pipe (std::move (pipe));
+
+          // Create new pipe instance for the next client.
+          std::tie (pipe, pending_io) = create_and_connect_instance (pipe_name, connect);
+          break;
+
+        case WAIT_IO_COMPLETION:
+          // The wait was satisfied by a completed read operation.
+          break;
+        case WAIT_TIMEOUT: log (logger::priority::notice, "wait timeout"); break;
+        default: raise (win32_erc (::GetLastError ()), "WaitForSingleObjectEx");
         }
-
-        // Try to cancel any reads that are still in-flight.
-        req.cancel ();
-      } catch (std::exception const & ex) {
-        log (logger::priority::error, "error: ", ex.what ());
-        exit_code = EXIT_FAILURE;
-        notify_quit_thread ();
-      } catch (...) {
-        log (logger::priority::error, "unknown error");
-        exit_code = EXIT_FAILURE;
-        notify_quit_thread ();
       }
-      log (logger::priority::notice, "exiting read loop");
-    }
 
-  } // namespace broker
-} // namespace pstore
+      // Try to cancel any reads that are still in-flight.
+      req.cancel ();
+    } catch (std::exception const & ex) {
+      log (logger::priority::error, "error: ", ex.what ());
+      exit_code = EXIT_FAILURE;
+      notify_quit_thread ();
+    } catch (...) {
+      log (logger::priority::error, "unknown error");
+      exit_code = EXIT_FAILURE;
+      notify_quit_thread ();
+    }
+    log (logger::priority::notice, "exiting read loop");
+  }
+
+} // namespace pstore::broker
 
 #endif // _WIN32

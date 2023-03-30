@@ -18,13 +18,11 @@
 #include "pstore/broker/globals.hpp"
 #include <cstdlib>
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    std::atomic<bool> done;
-    std::atomic<int> exit_code (EXIT_SUCCESS);
+  std::atomic<bool> done;
+  std::atomic<int> exit_code (EXIT_SUCCESS);
 
-    std::mutex iomut;
+  std::mutex iomut;
 
-  } // namespace broker
-} // namespace pstore
+} // namespace pstore::broker

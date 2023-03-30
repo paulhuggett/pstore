@@ -22,59 +22,57 @@
 #include "pstore/broker/message_pool.hpp"
 #include "pstore/support/utf.hpp"
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    //*                        _          *
-    //*  _ _ ___ __ ___ _ _ __| |___ _ _  *
-    //* | '_/ -_) _/ _ \ '_/ _` / -_) '_| *
-    //* |_| \___\__\___/_| \__,_\___|_|   *
-    //*                                   *
-    // (ctor)
-    // ~~~~~~
-    recorder::recorder (std::string path)
-            : file_{std::move (path)} {
-      file_.open (file::file_handle::create_mode::create_new,
-                  file::file_handle::writable_mode::read_write);
-    }
+  //*                        _          *
+  //*  _ _ ___ __ ___ _ _ __| |___ _ _  *
+  //* | '_/ -_) _/ _ \ '_/ _` / -_) '_| *
+  //* |_| \___\__\___/_| \__,_\___|_|   *
+  //*                                   *
+  // (ctor)
+  // ~~~~~~
+  recorder::recorder (std::string path)
+          : file_{std::move (path)} {
+    file_.open (file::file_handle::create_mode::create_new,
+                file::file_handle::writable_mode::read_write);
+  }
 
-    // (dtor)
-    // ~~~~~~
-    recorder::~recorder () = default;
+  // (dtor)
+  // ~~~~~~
+  recorder::~recorder () = default;
 
-    // record
-    // ~~~~~~
-    void recorder::record (brokerface::message_type const & cmd) {
-      std::unique_lock<decltype (mut_)> const lock (mut_);
-      file_.write (cmd);
-    }
+  // record
+  // ~~~~~~
+  void recorder::record (brokerface::message_type const & cmd) {
+    std::unique_lock<decltype (mut_)> const lock (mut_);
+    file_.write (cmd);
+  }
 
 
-    //*       _                    *
-    //*  _ __| |__ _ _  _ ___ _ _  *
-    //* | '_ \ / _` | || / -_) '_| *
-    //* | .__/_\__,_|\_, \___|_|   *
-    //* |_|          |__/          *
-    // (ctor)
-    // ~~~~~~
-    player::player (std::string path)
-            : file_{std::move (path)} {
-      file_.open (file::file_handle::create_mode::open_existing,
-                  file::file_handle::writable_mode::read_only);
-    }
+  //*       _                    *
+  //*  _ __| |__ _ _  _ ___ _ _  *
+  //* | '_ \ / _` | || / -_) '_| *
+  //* | .__/_\__,_|\_, \___|_|   *
+  //* |_|          |__/          *
+  // (ctor)
+  // ~~~~~~
+  player::player (std::string path)
+          : file_{std::move (path)} {
+    file_.open (file::file_handle::create_mode::open_existing,
+                file::file_handle::writable_mode::read_only);
+  }
 
-    // (dtor)
-    // ~~~~~~
-    player::~player () = default;
+  // (dtor)
+  // ~~~~~~
+  player::~player () = default;
 
-    // read
-    // ~~~~
-    brokerface::message_ptr player::read () {
-      brokerface::message_ptr msg = pool.get_from_pool ();
-      std::unique_lock<decltype (mut_)> const lock (mut_);
-      file_.read (msg.get ());
-      return msg;
-    }
+  // read
+  // ~~~~
+  brokerface::message_ptr player::read () {
+    brokerface::message_ptr msg = pool.get_from_pool ();
+    std::unique_lock<decltype (mut_)> const lock (mut_);
+    file_.read (msg.get ());
+    return msg;
+  }
 
-  } // namespace broker
-} // namespace pstore
+} // namespace pstore::broker

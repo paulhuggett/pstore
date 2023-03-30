@@ -23,44 +23,42 @@
 #include "pstore/broker/globals.hpp"
 #include "pstore/os/logging.hpp"
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    // thread_entry
-    // ~~~~~~~~~~~~
-    void scavenger::thread_entry () {
-      try {
-        std::unique_lock<decltype (mut_)> lock (mut_);
-        auto const sleep_time =
-          std::chrono::seconds (10 * 60); // TODO: make this configurable by the user.
-        for (;;) {
-          cv_.wait_for (lock, sleep_time);
-          log (logger::priority::info, "begin scavenging");
-          if (done) {
-            break;
-          }
-
-          // If the command processor still exists, ask it to scavenge any stale records.
-          if (auto const scp = cp_.lock ()) {
-            scp->scavenge ();
-          }
-
-          log (logger::priority::info, "scavenging done");
+  // thread_entry
+  // ~~~~~~~~~~~~
+  void scavenger::thread_entry () {
+    try {
+      std::unique_lock<decltype (mut_)> lock (mut_);
+      auto const sleep_time =
+        std::chrono::seconds (10 * 60); // TODO: make this configurable by the user.
+      for (;;) {
+        cv_.wait_for (lock, sleep_time);
+        log (logger::priority::info, "begin scavenging");
+        if (done) {
+          break;
         }
-      } catch (std::exception const & ex) {
-        log (logger::priority::error, "error:", ex.what ());
-      } catch (...) {
-        log (logger::priority::error, "unknown exception");
+
+        // If the command processor still exists, ask it to scavenge any stale records.
+        if (auto const scp = cp_.lock ()) {
+          scp->scavenge ();
+        }
+
+        log (logger::priority::info, "scavenging done");
       }
-      log (logger::priority::info, "scavenger thread exiting");
+    } catch (std::exception const & ex) {
+      log (logger::priority::error, "error:", ex.what ());
+    } catch (...) {
+      log (logger::priority::error, "unknown exception");
     }
+    log (logger::priority::info, "scavenger thread exiting");
+  }
 
-    // shutdown
-    // ~~~~~~~~
-    void scavenger::shutdown () {
-      std::lock_guard<decltype (mut_)> const lock{mut_};
-      cv_.notify_all ();
-    }
+  // shutdown
+  // ~~~~~~~~
+  void scavenger::shutdown () {
+    std::lock_guard<decltype (mut_)> const lock{mut_};
+    cv_.notify_all ();
+  }
 
-  } // namespace broker
-} // namespace pstore
+} // namespace pstore::broker

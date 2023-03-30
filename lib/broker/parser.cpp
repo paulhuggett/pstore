@@ -64,57 +64,55 @@ namespace {
 } // end anonymous namespace
 
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    std::unique_ptr<broker_command> parse (brokerface::message_type const & msg,
-                                           partial_cmds & cmds) {
+  std::unique_ptr<broker_command> parse (brokerface::message_type const & msg,
+                                         partial_cmds & cmds) {
 
-      if (msg.part_no >= msg.num_parts) {
-        throw part_number_too_large ();
-      }
-
-      auto const now = std::chrono::system_clock::now ();
-
-      auto payload = extract_payload (msg);
-
-      auto const key = std::make_pair (msg.sender_id, msg.message_id);
-      auto it = cmds.find (key);
-      if (it == std::end (cmds)) {
-        it = cmds.insert (std::make_pair (key, pieces{})).first;
-        it->second.s_.resize (msg.num_parts);
-      }
-
-      // Record the arrival time of this newest message of the set.
-      it->second.arrive_time_ = now;
-      auto & value = it->second.s_;
-      if (value.size () != msg.num_parts) {
-        throw number_of_parts_mismatch ();
-      }
-
-      bool const was_missing = value[msg.part_no].get () == nullptr;
-      value[msg.part_no] = std::move (payload);
-
-      if (was_missing) {
-        auto not_null = [] (std::unique_ptr<std::string> const & str) { return str != nullptr; };
-        if (std::all_of (std::begin (value), std::end (value), not_null)) {
-          std::string complete_command;
-          for (auto const & c : value) {
-            PSTORE_ASSERT (c.get () != nullptr);
-            complete_command += *c;
-          }
-
-          cmds.erase (it);
-
-          auto end = std::end (complete_command);
-          auto const verb_parts = extract_word (std::begin (complete_command), end);
-          auto const path_parts = std::make_pair (skip_ws (verb_parts.second, end), end);
-          return std::make_unique<broker_command> (substr (verb_parts), substr (path_parts));
-        }
-      }
-
-      return nullptr;
+    if (msg.part_no >= msg.num_parts) {
+      throw part_number_too_large ();
     }
 
-  } // end namespace broker
-} // end namespace pstore
+    auto const now = std::chrono::system_clock::now ();
+
+    auto payload = extract_payload (msg);
+
+    auto const key = std::make_pair (msg.sender_id, msg.message_id);
+    auto it = cmds.find (key);
+    if (it == std::end (cmds)) {
+      it = cmds.insert (std::make_pair (key, pieces{})).first;
+      it->second.s_.resize (msg.num_parts);
+    }
+
+    // Record the arrival time of this newest message of the set.
+    it->second.arrive_time_ = now;
+    auto & value = it->second.s_;
+    if (value.size () != msg.num_parts) {
+      throw number_of_parts_mismatch ();
+    }
+
+    bool const was_missing = value[msg.part_no].get () == nullptr;
+    value[msg.part_no] = std::move (payload);
+
+    if (was_missing) {
+      auto not_null = [] (std::unique_ptr<std::string> const & str) { return str != nullptr; };
+      if (std::all_of (std::begin (value), std::end (value), not_null)) {
+        std::string complete_command;
+        for (auto const & c : value) {
+          PSTORE_ASSERT (c.get () != nullptr);
+          complete_command += *c;
+        }
+
+        cmds.erase (it);
+
+        auto end = std::end (complete_command);
+        auto const verb_parts = extract_word (std::begin (complete_command), end);
+        auto const path_parts = std::make_pair (skip_ws (verb_parts.second, end), end);
+        return std::make_unique<broker_command> (substr (verb_parts), substr (path_parts));
+      }
+    }
+
+    return nullptr;
+  }
+
+} // end namespace pstore::broker

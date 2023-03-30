@@ -60,67 +60,65 @@ namespace {
 } // end anonymous namespace
 
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    // read loop
-    // ~~~~~~~~~
-    void read_loop (brokerface::fifo_path & fifo, std::shared_ptr<recorder> & record_file,
-                    std::shared_ptr<command_processor> const cp) {
-      try {
-        log (priority::notice, "listening to FIFO ", logger::quoted{fifo.get ().c_str ()});
-        auto const fd = fifo.open_server_pipe ();
+  // read loop
+  // ~~~~~~~~~
+  void read_loop (brokerface::fifo_path & fifo, std::shared_ptr<recorder> & record_file,
+                  std::shared_ptr<command_processor> const cp) {
+    try {
+      log (priority::notice, "listening to FIFO ", logger::quoted{fifo.get ().c_str ()});
+      auto const fd = fifo.open_server_pipe ();
 
-        brokerface::message_ptr readbuf = pool.get_from_pool ();
+      brokerface::message_ptr readbuf = pool.get_from_pool ();
 
-        for (;;) {
-          while (ssize_t const bytes_read =
-                   ::read (fd.native_handle (), readbuf.get (), sizeof (*readbuf))) {
-            if (bytes_read < 0) {
-              int const err = errno;
-              if (err == EAGAIN || err == EWOULDBLOCK) {
-                // Data ran out so wait for more to arrive.
-                break;
-              }
-              raise (errno_erc{err}, "read");
+      for (;;) {
+        while (ssize_t const bytes_read =
+                 ::read (fd.native_handle (), readbuf.get (), sizeof (*readbuf))) {
+          if (bytes_read < 0) {
+            int const err = errno;
+            if (err == EAGAIN || err == EWOULDBLOCK) {
+              // Data ran out so wait for more to arrive.
+              break;
             }
-
-            if (done) {
-              log (priority::notice, "exiting read loop");
-              return;
-            }
-
-            if (bytes_read != brokerface::message_size) {
-              log (priority::error, "Partial message received. Length ", bytes_read);
-            } else {
-              // Push the command buffer on to the queue for processing and pull
-              // an new read buffer from the pool.
-              PSTORE_ASSERT (static_cast<std::size_t> (bytes_read) <= sizeof (*readbuf));
-              cp->push_command (std::move (readbuf), record_file.get ());
-
-              readbuf = pool.get_from_pool ();
-            }
+            raise (errno_erc{err}, "read");
           }
 
-          // This function will return when data is available on the pipe. Be aware that
-          // another thread may also wake in response to its presence. Bear in mind that
-          // that other thread may read the data before this one attempts to do so
-          // (resulting in EWOULDBLOCK).
-          block_for_input (fd.native_handle ());
-        }
-      } catch (std::exception const & ex) {
-        log (priority::error, "error: ", ex.what ());
-        exit_code = EXIT_FAILURE;
-        notify_quit_thread ();
-      } catch (...) {
-        log (priority::error, "unknown error");
-        exit_code = EXIT_FAILURE;
-        notify_quit_thread ();
-      }
-      log (priority::notice, "exiting read loop");
-    }
+          if (done) {
+            log (priority::notice, "exiting read loop");
+            return;
+          }
 
-  } // end namespace broker
-} // end namespace pstore
+          if (bytes_read != brokerface::message_size) {
+            log (priority::error, "Partial message received. Length ", bytes_read);
+          } else {
+            // Push the command buffer on to the queue for processing and pull
+            // an new read buffer from the pool.
+            PSTORE_ASSERT (static_cast<std::size_t> (bytes_read) <= sizeof (*readbuf));
+            cp->push_command (std::move (readbuf), record_file.get ());
+
+            readbuf = pool.get_from_pool ();
+          }
+        }
+
+        // This function will return when data is available on the pipe. Be aware that
+        // another thread may also wake in response to its presence. Bear in mind that
+        // that other thread may read the data before this one attempts to do so
+        // (resulting in EWOULDBLOCK).
+        block_for_input (fd.native_handle ());
+      }
+    } catch (std::exception const & ex) {
+      log (priority::error, "error: ", ex.what ());
+      exit_code = EXIT_FAILURE;
+      notify_quit_thread ();
+    } catch (...) {
+      log (priority::error, "unknown error");
+      exit_code = EXIT_FAILURE;
+      notify_quit_thread ();
+    }
+    log (priority::notice, "exiting read loop");
+  }
+
+} // end namespace pstore::broker
 
 #endif // _WIN32

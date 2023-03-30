@@ -22,33 +22,31 @@
 #include "pstore/os/logging.hpp"
 #include "pstore/os/thread.hpp"
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    descriptor_condition_variable uptime_cv;
-    brokerface::channel<descriptor_condition_variable> uptime_channel (&uptime_cv);
+  descriptor_condition_variable uptime_cv;
+  brokerface::channel<descriptor_condition_variable> uptime_channel (&uptime_cv);
 
-    void uptime (gsl::not_null<std::atomic<bool> *> const done) {
-      log (logger::priority::info, "uptime 1 second tick starting");
+  void uptime (gsl::not_null<std::atomic<bool> *> const done) {
+    log (logger::priority::info, "uptime 1 second tick starting");
 
-      auto seconds = std::uint64_t{0};
-      auto until = std::chrono::system_clock::now ();
-      while (!*done) {
-        until += std::chrono::seconds{1};
-        std::this_thread::sleep_until (until);
-        ++seconds;
+    auto seconds = std::uint64_t{0};
+    auto until = std::chrono::system_clock::now ();
+    while (!*done) {
+      until += std::chrono::seconds{1};
+      std::this_thread::sleep_until (until);
+      ++seconds;
 
-        uptime_channel.publish ([seconds] () {
-          std::ostringstream os;
-          os << "{ \"uptime\": " << seconds << " }";
-          std::string const & str = os.str ();
-          PSTORE_ASSERT (json::is_valid (str));
-          return str;
-        });
-      }
-
-      log (logger::priority::info, "uptime thread exiting");
+      uptime_channel.publish ([seconds] () {
+        std::ostringstream os;
+        os << "{ \"uptime\": " << seconds << " }";
+        std::string const & str = os.str ();
+        PSTORE_ASSERT (json::is_valid (str));
+        return str;
+      });
     }
 
-  } // namespace broker
-} // end namespace pstore
+    log (logger::priority::info, "uptime thread exiting");
+  }
+
+} // end namespace pstore::broker

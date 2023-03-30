@@ -216,26 +216,25 @@ namespace {
 } // end anonymous namespace
 
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    // notify quit thread
-    // ~~~~~~~~~~~~~~~~~~
-    void notify_quit_thread () {
-      quit_info.notify_all (sig_self_quit);
-    }
+  // notify quit thread
+  // ~~~~~~~~~~~~~~~~~~
+  void notify_quit_thread () {
+    quit_info.notify_all (sig_self_quit);
+  }
 
-    // create quit thread
-    // ~~~~~~~~~~~~~~~~~~
-    std::thread create_quit_thread (std::weak_ptr<command_processor> cp,
-                                    std::weak_ptr<scavenger> scav, unsigned num_read_threads,
-                                    gsl::not_null<maybe<pstore::http::server_status> *> http_status,
-                                    gsl::not_null<std::atomic<bool> *> uptime_done) {
-      std::thread quit (quit_thread, std::move (cp), std::move (scav), num_read_threads,
-                        http_status, uptime_done);
+  // create quit thread
+  // ~~~~~~~~~~~~~~~~~~
+  std::thread create_quit_thread (std::weak_ptr<command_processor> cp,
+                                  std::weak_ptr<scavenger> scav, unsigned num_read_threads,
+                                  gsl::not_null<maybe<pstore::http::server_status> *> http_status,
+                                  gsl::not_null<std::atomic<bool> *> uptime_done) {
+    std::thread quit (quit_thread, std::move (cp), std::move (scav), num_read_threads, http_status,
+                      uptime_done);
 
-      register_signal_handler (SIGINT, signal_handler);
-      register_signal_handler (SIGTERM, signal_handler);
+    register_signal_handler (SIGINT, signal_handler);
+    register_signal_handler (SIGTERM, signal_handler);
 #ifdef _WIN32
       register_signal_handler (SIGBREAK, signal_handler); // Ctrl-Break sequence
 #else
@@ -244,5 +243,4 @@ namespace pstore {
       return quit;
     }
 
-  } // end namespace broker
-} // end namespace pstore
+} // end namespace pstore::broker
