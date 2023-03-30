@@ -57,8 +57,8 @@ namespace pstore {
       /// ValueType respectively. Otherwise `value` is false.
       template <typename K, typename V>
       struct pair_types_compatible
-              : std::integral_constant<bool, serialize::is_compatible<KeyType, K>::value &&
-                                               serialize::is_compatible<ValueType, V>::value> {};
+              : std::integral_constant<bool, serialize::is_compatible_v<KeyType, K> &&
+                                               serialize::is_compatible_v<ValueType, V>> {};
 
     public:
       using key_equal = KeyEqual;
@@ -270,8 +270,8 @@ namespace pstore {
       /// \result The bool component is true if the insertion took place and false if the
       /// assignment took place. The iterator component points at the exiting or new element.
       template <typename OtherKeyType, typename OtherValueType,
-                typename = typename std::enable_if<
-                  pair_types_compatible<OtherKeyType, OtherValueType>::value>::type>
+                typename = typename std::enable_if_t<
+                  pair_types_compatible<OtherKeyType, OtherValueType>::value>>
       auto insert (transaction_base & transaction,
                    std::pair<OtherKeyType, OtherValueType> const & value)
         -> std::pair<iterator, bool>;
@@ -290,8 +290,8 @@ namespace pstore {
       /// assignment took place. The iterator component points at the element inserted or
       /// updated.
       template <typename OtherKeyType, typename OtherValueType,
-                typename = typename std::enable_if<
-                  pair_types_compatible<OtherKeyType, OtherValueType>::value>::type>
+                typename = typename std::enable_if_t<
+                  pair_types_compatible<OtherKeyType, OtherValueType>::value>>
       auto insert_or_assign (transaction_base & transaction,
                              std::pair<OtherKeyType, OtherValueType> const & value)
         -> std::pair<iterator, bool>;
@@ -311,8 +311,8 @@ namespace pstore {
       /// assignment took place. The iterator component points at the element inserted or
       /// updated.
       template <typename OtherKeyType, typename OtherValueType,
-                typename = typename std::enable_if<
-                  pair_types_compatible<OtherKeyType, OtherValueType>::value>::type>
+                typename = typename std::enable_if_t<
+                  pair_types_compatible<OtherKeyType, OtherValueType>::value>>
       auto insert_or_assign (transaction_base & transaction, OtherKeyType const & key,
                              OtherValueType const & value) -> std::pair<iterator, bool>;
       ///@}
@@ -328,8 +328,8 @@ namespace pstore {
       /// \param key  The key value of the element to be found.
       /// \return Iterator to an element with key equivalent to key. If not such element is
       ///         found, past-the end iterator it returned.
-      template <typename OtherKeyType, typename = typename std::enable_if<serialize::is_compatible<
-                                         OtherKeyType, KeyType>::value>::type>
+      template <typename OtherKeyType, typename = typename std::enable_if_t<
+                                         serialize::is_compatible_v<OtherKeyType, KeyType>>>
       const_iterator find (database const & db, OtherKeyType const & key) const;
 
       /// Checks if there is an element with key equivalent to \p key in the container.
@@ -339,8 +339,8 @@ namespace pstore {
       /// \param db  The database to which the index belongs.
       /// \param key  The key value of the element to be check.
       /// \return True if the element is present in the container, false otherwise.
-      template <typename OtherKeyType, typename = typename std::enable_if<serialize::is_compatible<
-                                         OtherKeyType, KeyType>::value>::type>
+      template <typename OtherKeyType, typename = typename std::enable_if_t<
+                                         serialize::is_compatible_v<OtherKeyType, KeyType>>>
       bool contains (database const & db, OtherKeyType const & key) const {
         return this->find (db, key) != this->end (db);
       }

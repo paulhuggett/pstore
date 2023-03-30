@@ -27,7 +27,7 @@
 namespace pstore {
 
   /// \returns True if the input value is a power of 2.
-  template <typename Ty, typename = std::enable_if<std::is_unsigned_v<Ty>>>
+  template <typename Ty, typename = std::enable_if_t<std::is_unsigned_v<Ty>>>
   constexpr bool is_power_of_two (Ty const n) noexcept {
     //  if a number n is a power of 2 then bitwise & of n and n-1 will be zero.
     return n > 0U && !(n & (n - 1U));
@@ -50,7 +50,7 @@ namespace pstore {
   /// \returns  The value closest to but greater than or equal to \p v for which \p v modulo
   /// alignof(decltype(v)) is zero.
   template <typename AlignType, typename IntType,
-            typename = std::enable_if<std::is_integral<IntType>::value>>
+            typename = std::enable_if_t<std::is_integral_v<IntType>>>
   constexpr IntType aligned (IntType const v) noexcept {
     return aligned (v, alignof (AlignType));
   }

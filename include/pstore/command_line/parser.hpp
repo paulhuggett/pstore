@@ -75,7 +75,7 @@ namespace pstore::command_line {
   };
 
   template <typename T>
-  class parser<T, typename std::enable_if<std::is_enum<T>::value>::type> : public parser_base {
+  class parser<T, typename std::enable_if_t<std::is_enum_v<T>>> : public parser_base {
   public:
     maybe<T> operator() (std::string const & v) const {
       auto begin = this->begin ();
@@ -90,13 +90,13 @@ namespace pstore::command_line {
 
 
   template <typename T>
-  class parser<T, typename std::enable_if<std::is_integral<T>::value>::type> : public parser_base {
+  class parser<T, typename std::enable_if_t<std::is_integral_v<T>>> : public parser_base {
   public:
     maybe<T> operator() (std::string const & v) const;
   };
 
   template <typename T>
-  maybe<T> parser<T, typename std::enable_if<std::is_integral<T>::value>::type>::operator() (
+  maybe<T> parser<T, typename std::enable_if_t<std::is_integral_v<T>>>::operator() (
     std::string const & v) const {
     PSTORE_ASSERT (std::distance (this->begin (), this->end ()) == 0 &&
                    "Don't specify literal values for an integral option!");

@@ -56,12 +56,11 @@ namespace pstore::command_line {
     static gsl::czstring value;
   };
   template <typename T>
-  struct type_description<T, typename std::enable_if<std::is_enum<T>::value>::type> {
+  struct type_description<T, typename std::enable_if_t<std::is_enum_v<T>>> {
     static gsl::czstring value;
   };
   template <typename T>
-  gsl::czstring type_description<T, typename std::enable_if<std::is_enum<T>::value>::type>::value =
-    "enum";
+  gsl::czstring type_description<T, typename std::enable_if_t<std::is_enum_v<T>>>::value = "enum";
 
   enum class num_occurrences_flag {
     optional,     // Zero or One occurrence

@@ -430,9 +430,9 @@ namespace pstore {
         /// position within the linear node instance of the child record. If not found,
         /// returns the pair index_pointer (), details::not_found.
 
-        template <typename KeyType, typename OtherKeyType, typename KeyEqual,
-                  typename = typename std::enable_if<
-                    serialize::is_compatible<KeyType, OtherKeyType>::value>::type>
+        template <
+          typename KeyType, typename OtherKeyType, typename KeyEqual,
+          typename = typename std::enable_if_t<serialize::is_compatible_v<KeyType, OtherKeyType>>>
         auto lookup (database const & db, OtherKeyType const & key, KeyEqual equal) const
           -> std::pair<index_pointer const, std::size_t>;
 
@@ -532,8 +532,8 @@ namespace pstore {
         ///   allocated instance.
         /// \returns A new instance of internal_node which is owned by *container.
         template <typename SequenceContainer,
-                  typename = typename std::enable_if<std::is_same<
-                    typename SequenceContainer::value_type, internal_node>::value>::type>
+                  typename = typename std::enable_if_t<
+                    std::is_same_v<typename SequenceContainer::value_type, internal_node>>>
         static internal_node * allocate (SequenceContainer * const container,
                                          internal_node const & other) {
           return &container->emplace_back (other);
@@ -549,8 +549,8 @@ namespace pstore {
         /// \param hash The hash associated with the child node.
         /// \returns A new instance of internal_node which is owned by *container.
         template <typename SequenceContainer,
-                  typename = typename std::enable_if<std::is_same<
-                    typename SequenceContainer::value_type, internal_node>::value>::type>
+                  typename = typename std::enable_if_t<
+                    std::is_same_v<typename SequenceContainer::value_type, internal_node>>>
         static internal_node * allocate (SequenceContainer * container, index_pointer const & leaf,
                                          hash_type const hash) {
           return &container->emplace_back (leaf, hash);
@@ -568,8 +568,8 @@ namespace pstore {
         /// \param new_hash  The hash associated with the \p new_leaf node.
         /// \returns A new instance of internal_node which is owned by *container.
         template <typename SequenceContainer,
-                  typename = typename std::enable_if<std::is_same<
-                    typename SequenceContainer::value_type, internal_node>::value>::type>
+                  typename = typename std::enable_if_t<
+                    std::is_same_v<typename SequenceContainer::value_type, internal_node>>>
         static internal_node * allocate (SequenceContainer * container,
                                          index_pointer const & existing_leaf,
                                          index_pointer const & new_leaf,
@@ -611,8 +611,8 @@ namespace pstore {
         /// parameter is in-store then a copy of this value is placed on the heap.
         /// \result  See above.
         template <typename SequenceContainer,
-                  typename = typename std::enable_if<std::is_same<
-                    typename SequenceContainer::value_type, internal_node>::value>::type>
+                  typename = typename std::enable_if_t<
+                    std::is_same_v<typename SequenceContainer::value_type, internal_node>>>
         static internal_node * make_writable (SequenceContainer * const container,
                                               index_pointer const node,
                                               internal_node const & internal) {
