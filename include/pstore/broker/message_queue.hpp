@@ -23,47 +23,45 @@
 #include <queue>
 #include <utility>
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    template <typename T>
-    class message_queue {
-    public:
-      void push (T && message);
-      T pop ();
-      void clear ();
+  template <typename T>
+  class message_queue {
+  public:
+    void push (T && message);
+    T pop ();
+    void clear ();
 
-    private:
-      std::mutex mut_;
-      std::condition_variable cv;
-      std::queue<T> queue_;
-    };
+  private:
+    std::mutex mut_;
+    std::condition_variable cv;
+    std::queue<T> queue_;
+  };
 
-    template <typename T>
-    void message_queue<T>::push (T && message) {
-      std::unique_lock<decltype (mut_)> lock (mut_);
-      queue_.push (std::move (message));
-      cv.notify_one ();
-    }
+  template <typename T>
+  void message_queue<T>::push (T && message) {
+    std::unique_lock<decltype (mut_)> lock (mut_);
+    queue_.push (std::move (message));
+    cv.notify_one ();
+  }
 
-    template <typename T>
-    T message_queue<T>::pop () {
-      std::unique_lock<decltype (mut_)> lock (mut_);
-      cv.wait (lock, [this] () { return !queue_.empty (); });
-      T res = std::move (queue_.front ());
+  template <typename T>
+  T message_queue<T>::pop () {
+    std::unique_lock<decltype (mut_)> lock (mut_);
+    cv.wait (lock, [this] () { return !queue_.empty (); });
+    T res = std::move (queue_.front ());
+    queue_.pop ();
+    return res;
+  }
+
+  template <typename T>
+  void message_queue<T>::clear () {
+    std::unique_lock<decltype (mut_)> lock (mut_);
+    while (!queue_.empty ()) {
       queue_.pop ();
-      return res;
     }
+  }
 
-    template <typename T>
-    void message_queue<T>::clear () {
-      std::unique_lock<decltype (mut_)> lock (mut_);
-      while (!queue_.empty ()) {
-        queue_.pop ();
-      }
-    }
-
-  } // namespace broker
-} // namespace pstore
+} // namespace pstore::broker
 
 #endif // PSTORE_BROKER_MESSAGE_QUEUE_HPP

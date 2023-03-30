@@ -24,13 +24,11 @@
 
 #include "pstore/support/gsl.hpp"
 
-namespace pstore {
-  namespace broker {
+namespace pstore::broker {
 
-    extern gsl::czstring const read_loop_quit_command;
-    extern gsl::czstring const command_loop_quit_command;
+  extern gsl::czstring const read_loop_quit_command;
+  extern gsl::czstring const command_loop_quit_command;
 
-  } // end namespace broker
-} // end namespace pstore
+} // end namespace pstore::broker
 
 #endif // PSTORE_BROKER_INTERNAL_COMMANDS_HPP
