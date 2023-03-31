@@ -334,12 +334,10 @@ namespace pstore::command_line {
   // ~~~~~~~~~~~~~~~
   template <typename T, typename Parser>
   bool list<T, Parser>::comma_separated (std::string const & v) {
-    for (auto const & subvalue : csv (v)) {
-      if (!this->simple_value (subvalue)) {
-        return false;
-      }
-    }
-    return true;
+    std::list<std::string> vl = csv (v);
+    return std::all_of (std::begin (vl), std::end (vl), [this] (std::string const & subvalue) {
+      return this->simple_value (subvalue);
+    });
   }
 
   // simple value
