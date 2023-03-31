@@ -212,8 +212,8 @@ namespace pstore {
       /// a StandardLayoutType.
       /// \param s  A span of instances which may contain zero or more members.
       /// \return The number of bytes read.
-      template <typename SpanType, typename = typename std::enable_if<std::is_standard_layout<
-                                     typename SpanType::element_type>::value>::type>
+      template <typename SpanType, typename = typename std::enable_if_t<
+                                     std::is_standard_layout_v<typename SpanType::element_type>>>
       std::size_t read_span (SpanType const & s) {
         auto const size = s.size_bytes ();
         PSTORE_ASSERT (size >= 0);
@@ -222,8 +222,7 @@ namespace pstore {
       }
 
       /// \brief Reads a series of raw bytes from the file as an instance of type T.
-      template <typename T,
-                typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+      template <typename T, typename = typename std::enable_if_t<std::is_standard_layout_v<T>>>
       void read (T * const t) {
         PSTORE_ASSERT (t != nullptr);
         if (this->read_buffer (t, sizeof (T)) != sizeof (T)) {
@@ -234,8 +233,8 @@ namespace pstore {
 
       ///@{
       /// \brief Writes instances of a standard-layout type to the file.
-      template <typename SpanType, typename = typename std::enable_if<std::is_standard_layout<
-                                     typename SpanType::element_type>::value>::type>
+      template <typename SpanType, typename = typename std::enable_if_t<
+                                     std::is_standard_layout_v<typename SpanType::element_type>>>
       void write_span (SpanType const & s) {
         auto const bytes = s.size_bytes ();
         PSTORE_ASSERT (bytes >= 0);
@@ -245,8 +244,7 @@ namespace pstore {
       }
 
       /// \brief Writes 't' as a series of raw bytes to the file.
-      template <typename T,
-                typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+      template <typename T, typename = typename std::enable_if_t<std::is_standard_layout_v<T>>>
       void write (T const & t) {
         this->write_buffer (&t, sizeof (T));
       }

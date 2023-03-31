@@ -71,14 +71,12 @@ namespace pstore {
       return db ().getro (addr, size);
     }
 
-    template <typename T,
-              typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T const> getro (extent<T> const & ex) {
       return this->getro (ex.addr, ex.size);
     }
 
-    template <typename T,
-              typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T const> getro (typed_address<T> const addr, std::size_t const elements = 1) {
       PSTORE_ASSERT (addr.to_address () >= first_ &&
                      (addr.to_address () + elements * sizeof (T)) <= first_ + size_);
@@ -93,14 +91,12 @@ namespace pstore {
       return db_.getrw (addr, size);
     }
 
-    template <typename T,
-              typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T> getrw (extent<T> const & ex) {
       return db_.getrw (ex);
     }
 
-    template <typename T,
-              typename = typename std::enable_if<std::is_standard_layout<T>::value>::type>
+    template <typename T, typename = typename std::enable_if_t<std::is_standard_layout_v<T>>>
     std::shared_ptr<T> getrw (typed_address<T> const addr, std::size_t const elements = 1) {
       PSTORE_ASSERT (addr.to_address () >= first_ &&
                      (addr.to_address () + elements * sizeof (T)) <= first_ + size_);
@@ -152,8 +148,7 @@ namespace pstore {
     ///           allocated space and the address of that space.
     ///
     /// \note     The newly allocated space it not initialized.
-    template <typename Ty,
-              typename = typename std::enable_if<std::is_standard_layout<Ty>::value>::type>
+    template <typename Ty, typename = typename std::enable_if_t<std::is_standard_layout_v<Ty>>>
     auto alloc_rw (std::size_t const num = 1) -> std::pair<std::shared_ptr<Ty>, typed_address<Ty>> {
       auto result = this->alloc_rw (sizeof (Ty) * num, alignof (Ty));
       return {std::static_pointer_cast<Ty> (result.first), typed_address<Ty> (result.second)};

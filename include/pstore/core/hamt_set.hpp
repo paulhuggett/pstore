@@ -133,8 +133,8 @@ namespace pstore {
       /// \returns A pair consisting of an iterator to the inserted element (or to the element
       /// that prevented the insertion) and a bool value set to true if the insertion took
       /// place.
-      template <typename OtherKeyType, typename = typename std::enable_if<serialize::is_compatible<
-                                         KeyType, OtherKeyType>::value>::type>
+      template <typename OtherKeyType, typename = typename std::enable_if_t<
+                                         serialize::is_compatible_v<KeyType, OtherKeyType>>>
       std::pair<iterator, bool> insert (transaction_base & transaction, OtherKeyType const & key) {
         auto it = map_.insert (transaction, std::make_pair (key, details::empty_class ()));
         return {iterator{it.first}, it.second};
@@ -149,8 +149,8 @@ namespace pstore {
       /// \param key  The key value of the element to search for.
       /// \return Iterator an an element with key equivalent to \p key. If no such element
       /// is found, the past-the-end iterator is returned.
-      template <typename OtherKeyType, typename = typename std::enable_if<serialize::is_compatible<
-                                         KeyType, OtherKeyType>::value>::type>
+      template <typename OtherKeyType, typename = typename std::enable_if_t<
+                                         serialize::is_compatible_v<KeyType, OtherKeyType>>>
       const_iterator find (database const & db, OtherKeyType const & key) const {
         return const_iterator{map_.find (db, key)};
       }

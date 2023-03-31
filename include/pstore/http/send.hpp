@@ -46,7 +46,7 @@ namespace pstore {
     }
 
     template <typename Sender, typename IO, typename T,
-              typename = typename std::enable_if<std::is_integral<T>::value>::type>
+              typename = typename std::enable_if_t<std::is_integral_v<T>>>
     error_or<IO> send (Sender sender, IO io, T v) {
       T const nv = host_to_network (v);
       return send (sender, io, as_bytes (gsl::make_span (&nv, 1)));

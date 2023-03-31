@@ -105,7 +105,7 @@ namespace pstore {
       /// \param a  The value to be aligned.
       /// \returns The value closest to but greater than or equal to \p a which is correctly
       /// aligned for an instance of the type used for an instance of this section kind.
-      template <typename IntType, typename = std::enable_if<std::is_unsigned<IntType>::value>>
+      template <typename IntType, typename = std::enable_if_t<std::is_unsigned_v<IntType>>>
       std::size_t aligned (IntType a) const {
         static_assert (sizeof (std::uintptr_t) >= sizeof (IntType),
                        "sizeof uintptr_t must be at least sizeof IntType");

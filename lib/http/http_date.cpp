@@ -24,7 +24,7 @@
 
 namespace {
 
-  template <typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
+  template <typename T, typename = typename std::enable_if_t<std::is_integral_v<T>>>
   constexpr std::size_t as_index (T const v, std::size_t const size) noexcept {
     return std::min (static_cast<std::size_t> (std::max (v, T{0})), size - std::size_t{1});
   }

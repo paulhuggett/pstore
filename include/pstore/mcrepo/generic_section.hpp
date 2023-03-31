@@ -273,7 +273,7 @@ namespace pstore {
       /// A helper function which returns the distance between two iterators,
       /// clamped to the maximum range of IntType.
       template <typename IntType, typename Iterator,
-                typename = typename std::enable_if<std::is_unsigned<IntType>::value>::type>
+                typename = typename std::enable_if_t<std::is_unsigned_v<IntType>>>
       static IntType set_size (Iterator first, Iterator last);
 
       /// Calculates the size of a region in the section including any necessary

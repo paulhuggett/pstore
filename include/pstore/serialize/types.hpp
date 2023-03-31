@@ -264,7 +264,7 @@ namespace pstore {
 
     /// \brief A serializer for trivial types
     template <typename Ty>
-    struct serializer<Ty, typename std::enable_if<std::is_trivial<Ty>::value>::type> {
+    struct serializer<Ty, typename std::enable_if_t<std::is_trivial_v<Ty>>> {
       /// \brief Writes an individual object to an archive.
       ///
       /// \param archive  The archive to which the span will be written.
