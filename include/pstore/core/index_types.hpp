@@ -133,11 +133,11 @@ namespace pstore {
         if (location == decltype (location)::null ()) {
           if (create) {
             // Create a new (empty) index.
-            dx = std::make_shared<typename std::remove_const<Return>::type> (db);
+            dx = std::make_shared<typename std::remove_const_t<Return>> (db);
           }
         } else {
           // Construct the index from the location.
-          dx = std::make_shared<typename std::remove_const<Return>::type> (db, location);
+          dx = std::make_shared<typename std::remove_const_t<Return>> (db, location);
         }
       }
 

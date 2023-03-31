@@ -55,7 +55,7 @@ namespace pstore {
 
           template <typename Span>
           auto putn (Span sp) -> result_type {
-            using element_type = typename std::remove_const<typename Span::element_type>::type;
+            using element_type = typename std::remove_const_t<typename Span::element_type>;
 
             std::shared_ptr<element_type> ptr;
             auto addr = typed_address<element_type>::null ();

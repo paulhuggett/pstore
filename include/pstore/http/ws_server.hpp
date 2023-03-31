@@ -309,7 +309,7 @@ namespace pstore::http {
         auto const size = span.size ();
         PSTORE_ASSERT (
           size >= 0 &&
-          static_cast<std::make_unsigned<std::remove_const<decltype (size)>::type>::type> (
+          static_cast<std::make_unsigned_t<std::remove_const_t<decltype (size)>>> (
             size) <= std::numeric_limits<LengthType>::max ());
         return send (sender, io2, static_cast<LengthType> (size));
       };

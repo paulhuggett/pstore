@@ -405,7 +405,7 @@ namespace std {
 
     result_type operator() (argument_type const s) const {
       auto const abs = s.absolute ();
-      return std::hash<std::remove_const<decltype (abs)>::type>{}(abs);
+      return std::hash<std::remove_const_t<decltype (abs)>>{}(abs);
     }
   };
 
@@ -416,7 +416,7 @@ namespace std {
 
     result_type operator() (argument_type const s) const {
       auto const addr = s.to_address ();
-      return std::hash<typename std::remove_const<decltype (addr)>::type>{}(addr);
+      return std::hash<typename std::remove_const_t<decltype (addr)>>{}(addr);
     }
   };
 

@@ -66,7 +66,7 @@ namespace {
       auto const expected_size = span.size_bytes ();
       PSTORE_ASSERT (expected_size >= 0);
       if (bytes_read !=
-          static_cast<std::make_unsigned<std::remove_const<decltype (expected_size)>::type>::type> (
+          static_cast<std::make_unsigned_t<std::remove_const_t<decltype (expected_size)>>> (
             expected_size)) {
         error_stream << PSTORE_NATIVE_TEXT ("Did not read the number of bytes requested");
         std::exit (EXIT_FAILURE);

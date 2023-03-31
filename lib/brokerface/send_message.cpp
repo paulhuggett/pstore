@@ -42,7 +42,7 @@ namespace pstore::brokerface {
     }
 
     // Work out the number of pieces into which we need to break this payload.
-    using num_parts_type = std::remove_const<decltype (message_type::num_parts)>::type;
+    using num_parts_type = std::remove_const_t<decltype (message_type::num_parts)>;
     auto const num_parts = static_cast<num_parts_type> (
       (payload.length () + message_type::payload_chars - 1) / message_type::payload_chars);
 

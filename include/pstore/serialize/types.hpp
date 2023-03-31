@@ -402,7 +402,7 @@ namespace pstore {
     /// \brief Read a single value from an archive
     template <typename Ty, typename Archive>
     Ty read (Archive && archive) {
-      using T2 = typename std::remove_const<Ty>::type;
+      using T2 = typename std::remove_const_t<Ty>;
       typename details::aligned_storage<sizeof (T2), alignof (T2)>::type uninit_buffer;
       flood (&uninit_buffer);
 
