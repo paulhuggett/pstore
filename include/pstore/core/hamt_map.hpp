@@ -648,7 +648,7 @@ namespace pstore {
     void hamt_map<KeyType, ValueType, Hash, KeyEqual>::clear (index_pointer node, unsigned shifts) {
       PSTORE_ASSERT (node.is_heap () && !node.is_leaf ());
       if (details::depth_is_internal_node (shifts)) {
-        auto * const internal = node.untag<internal_node *> ();
+        auto const * const internal = node.untag<internal_node *> ();
         // Recursively release the children of this internal node.
         for (auto p : *internal) {
           if (p.is_heap ()) {

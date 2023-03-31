@@ -131,7 +131,7 @@ namespace pstore {
 
 
       // *****************************
-      // *   w r i t e r _ b a s e   *
+      // *   w r i t e r   b a s e   *
       // *****************************
       /// \brief The base class for archive-writer objects.
 
@@ -315,7 +315,7 @@ namespace pstore {
       } // namespace details
 
       // *******************************
-      // *  v e c t o r _ w r i t e r  *
+      // *  v e c t o r   w r i t e r  *
       // *******************************
 
       /// \brief An archive-writer which writes data to a std::vector of std::uint8_t bytes.
@@ -357,7 +357,7 @@ namespace pstore {
 
 
       // *********************************
-      // *   b u f f e r _ w r i t e r   *
+      // *   b u f f e r   w r i t e r   *
       // *********************************
 
       namespace details {
@@ -510,7 +510,7 @@ namespace pstore {
 
 
       // *******************************
-      // *   r a n g e _ r e a d e r   *
+      // *   r a n g e   r e a d e r   *
       // *******************************
 
       /// \brief An archive-reader which consumes data from an iterator.
@@ -533,7 +533,7 @@ namespace pstore {
           static_assert (std::is_standard_layout<Ty>::value,
                          "range_reader can only read standard-layout types");
           auto ptr = reinterpret_cast<std::uint8_t *> (&v);
-          auto const last = ptr + sizeof (Ty);
+          auto const * const last = ptr + sizeof (Ty);
           while (ptr != last) {
             *(ptr++) = *(first_++);
           }
@@ -545,7 +545,7 @@ namespace pstore {
           static_assert (std::is_standard_layout<element_type>::value,
                          "range_reader can only read standard-layout types");
           auto out = reinterpret_cast<std::uint8_t *> (span.data ());
-          auto last = out + span.size_bytes ();
+          auto const * const last = out + span.size_bytes ();
           while (out != last) {
             *(out++) = *(first_++);
           }
@@ -568,7 +568,7 @@ namespace pstore {
 
 
       // *********************************
-      // *   b u f f e r _ r e a d e r   *
+      // *   b u f f e r   r e a d e r   *
       // *********************************
 
       /// \brief An archive-reader which consumes data from a supplied pointer range.
