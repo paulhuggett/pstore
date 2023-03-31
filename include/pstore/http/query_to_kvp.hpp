@@ -82,7 +82,7 @@ namespace pstore {
       return out;
     }
 
-    /// An output iterator which calls insert() on a container when a vaue is assigned to it.
+    /// An output iterator which calls insert() on a container when a value is assigned to it.
     template <typename Container>
     class insert_iterator {
     public:
