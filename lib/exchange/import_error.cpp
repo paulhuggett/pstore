@@ -123,7 +123,7 @@ namespace pstore {
       }
 
       std::error_code make_error_code (error const e) noexcept {
-        static_assert (std::is_same<std::underlying_type<error>::type, int>::value,
+        static_assert (std::is_same_v<std::underlying_type<error>::type, int>,
                        "The underlying type of import error must be int");
         return {static_cast<int> (e), get_error_category ()};
       }

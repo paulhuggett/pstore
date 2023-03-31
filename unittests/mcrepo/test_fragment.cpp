@@ -44,7 +44,7 @@ namespace {
   auto build_sections (Iterator begin, Iterator end)
     -> std::vector<std::unique_ptr<section_creation_dispatcher>> {
     static_assert (
-      (std::is_same<typename std::iterator_traits<Iterator>::value_type, section_content>::value),
+      (std::is_same_v<typename std::iterator_traits<Iterator>::value_type, section_content>),
       "Iterator value_type must be section_content pointer");
     PSTORE_ASSERT (std::distance (begin, end) >= 0);
 
@@ -65,8 +65,8 @@ namespace {
 
   template <typename SectionIterator, typename DefinitionIterator,
             typename = std::enable_if_t<
-              std::is_same<typename std::iterator_traits<DefinitionIterator>::value_type,
-                           pstore::repo::linked_definitions::value_type>::value>>
+              std::is_same_v<typename std::iterator_traits<DefinitionIterator>::value_type,
+                             pstore::repo::linked_definitions::value_type>>>
   pstore::extent<fragment> build_fragment (transaction & transaction, SectionIterator section_begin,
                                            SectionIterator section_end,
                                            DefinitionIterator definition_begin,

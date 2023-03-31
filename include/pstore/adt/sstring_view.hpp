@@ -87,7 +87,7 @@ namespace pstore {
     struct pointer_traits_helper {
       static constexpr bool is_pointer = true;
       using value_type = typename T::element_type;
-      static_assert (std::is_same<std::remove_const_t<value_type>, char>::value,
+      static_assert (std::is_same_v<std::remove_const_t<value_type>, char>,
                      "pointer element type must be char or char const");
       static constexpr char const * as_raw (T const & p) noexcept { return p.get (); }
     };

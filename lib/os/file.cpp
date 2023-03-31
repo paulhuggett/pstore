@@ -231,7 +231,7 @@ namespace pstore {
       auto src_span = gsl::make_span (static_cast<element_type const *> (ptr.get ()),
                                       static_cast<index_type> (nbytes));
 
-      static_assert (std::is_same<decltype (src_span)::index_type, index_type>::value,
+      static_assert (std::is_same_v<decltype (src_span)::index_type, index_type>,
                      "expected index_type of src_span and dest_span to be the same");
 
       std::copy (std::begin (src_span), std::end (src_span), std::begin (dest_span));

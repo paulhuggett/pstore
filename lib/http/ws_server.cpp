@@ -40,7 +40,7 @@ namespace pstore {
     }
 
     auto make_error_code (ws_error const e) -> std::error_code {
-      static_assert (std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
+      static_assert (std::is_same_v<std::underlying_type_t<decltype (e)>, int>,
                      "base type of ws_error must be int to permit safe static cast");
       static ws_error_category const category;
       return {static_cast<int> (e), category};

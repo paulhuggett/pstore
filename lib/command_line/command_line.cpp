@@ -56,8 +56,9 @@ namespace pstore::command_line::details {
   maybe<option *> find_handler (std::string const & name) {
     auto const & all_options = option::all ();
     auto const end = std::end (all_options);
-    auto const it = std::find_if (std::begin (all_options), end,
-                                  [&name] (option * const opt) { return opt->name () == name; });
+    auto const it =
+      std::find_if (std::begin (all_options), end,
+                    [&name] (option const * const opt) { return opt->name () == name; });
     return it != end ? just (*it) : nothing<option *> ();
   }
 

@@ -71,7 +71,7 @@ TEST_F (GenericSection, RoundTripForAnEmptySection) {
   constexpr auto kind = pstore::repo::section_kind::text;
   // The type used to store a text section's properties.
   using section_type = pstore::repo::enum_to_section_t<kind>;
-  static_assert (std::is_same<section_type, pstore::repo::generic_section>::value,
+  static_assert (std::is_same_v<section_type, pstore::repo::generic_section>,
                  "Expected text to map to generic_section");
 
   export_ns::string_mapping exported_names{export_db_, export_ns::name_index_tag ()};
@@ -113,7 +113,7 @@ TEST_F (GenericSection, RoundTripForPopulated) {
 
   // The type used to store a text section's properties.
   using section_type = pstore::repo::enum_to_section_t<kind>;
-  static_assert (std::is_same<section_type, pstore::repo::generic_section>::value,
+  static_assert (std::is_same_v<section_type, pstore::repo::generic_section>,
                  "Expected text to map to generic_section");
 
   // Add names to the store so that external fixups can use then. add_export_strings()

@@ -90,7 +90,7 @@ namespace {
   }
 
   std::error_code make_error_code (dump_error_code e) {
-    static_assert (std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
+    static_assert (std::is_same_v<std::underlying_type_t<decltype (e)>, int>,
                    "base type of error_code must be int to permit safe static cast");
 
     static dump_error_category const cat;

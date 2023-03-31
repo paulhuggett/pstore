@@ -30,9 +30,9 @@ char const * pstore::error_category::name () const noexcept {
 // message
 // ~~~~~~~
 std::string pstore::error_category::message (int const error) const {
-  static_assert (std::is_same<std::underlying_type<error_code>::type,
-                              std::remove_cv<decltype (error)>::type>::value,
-                 "base type of pstore::error_code must be int to permit safe static cast");
+  static_assert (
+    std::is_same_v<std::underlying_type_t<error_code>, std::remove_cv_t<decltype (error)>>,
+    "base type of pstore::error_code must be int to permit safe static cast");
 
   auto const * result = "unknown pstore::category error";
   switch (static_cast<error_code> (error)) {

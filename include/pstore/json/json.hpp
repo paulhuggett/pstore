@@ -1742,9 +1742,8 @@ namespace pstore::json {
   template <typename Callbacks>
   template <typename SpanType>
   auto parser<Callbacks>::input (SpanType const & span) -> parser & {
-    static_assert (
-      std::is_same<typename std::remove_cv<typename SpanType::element_type>::type, char>::value,
-      "span element type must be char");
+    static_assert (std::is_same_v<typename std::remove_cv_t<typename SpanType::element_type>, char>,
+                   "span element type must be char");
     return this->input (std::begin (span), std::end (span));
   }
 

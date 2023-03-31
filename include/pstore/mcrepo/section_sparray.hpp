@@ -113,9 +113,9 @@ namespace pstore {
       /// Returns true if the value_type of Iterator is section_kind.
       template <typename Iterator>
       static constexpr bool is_section_kind_iterator () {
-        return std::is_same<
-          typename std::remove_cv<typename std::iterator_traits<Iterator>::value_type>::type,
-          section_kind>::value;
+        return std::is_same_v<
+          typename std::remove_cv_t<typename std::iterator_traits<Iterator>::value_type>,
+          section_kind>;
       }
 
       using array_type =

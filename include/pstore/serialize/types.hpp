@@ -280,7 +280,7 @@ namespace pstore {
       /// \param span     The span which is to be written.
       template <typename Archive, typename SpanType>
       static auto writen (Archive && archive, SpanType span) -> archive_result_type<Archive> {
-        static_assert (std::is_same<typename SpanType::element_type, Ty>::value,
+        static_assert (std::is_same_v<typename SpanType::element_type, Ty>,
                        "span type does not match the serializer type");
         return archive.putn (span);
       }
@@ -302,7 +302,7 @@ namespace pstore {
       /// \param span     A span pointing to uninitialized memory
       template <typename Archive, typename Span>
       static void readn (Archive && archive, Span span) {
-        static_assert (std::is_same<typename Span::element_type, Ty>::value,
+        static_assert (std::is_same_v<typename Span::element_type, Ty>,
                        "span type does not match the serializer type");
         details::getn_helper::getn (std::forward<Archive> (archive), span);
       }

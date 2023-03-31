@@ -27,7 +27,7 @@ char const * pstore::dump::error_category::name () const noexcept {
 // message
 // ~~~~~~~
 std::string pstore::dump::error_category::message (int const error) const {
-  static_assert (std::is_same<std::underlying_type<error_code>::type, int>::value,
+  static_assert (std::is_same_v<std::underlying_type_t<error_code>, int>,
                  "base type of pstore::error_code must be int to permit safe static cast");
 
   auto * result = "unknown value error";
@@ -46,7 +46,7 @@ std::string pstore::dump::error_category::message (int const error) const {
 }
 
 std::error_code pstore::dump::make_error_code (pstore::dump::error_code const e) {
-  static_assert (std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
+  static_assert (std::is_same_v<std::underlying_type_t<decltype (e)>, int>,
                  "base type of error_code must be int to permit safe static cast");
   static error_category const cat;
   return {static_cast<int> (e), cat};

@@ -41,15 +41,16 @@ namespace {
   auto time_to_string (std::chrono::system_clock::time_point const time,
                        std::array<char, 100> * const buffer) -> pstore::gsl::zstring {
     std::tm const tm = pstore::gm_time (std::chrono::system_clock::to_time_t (time));
+    auto const size = buffer->size ();
+    auto const data = buffer->data ();
     // strftime() returns 0 if the result doesn't fit in the provided buffer;
     // the contents are undefined.
-    if (std::strftime (buffer->data (), buffer->size (), "%FT%TZ", &tm) == 0) {
-      std::strncpy (buffer->data (), "(unknown)", buffer->size ());
+    if (std::strftime (data, size, "%FT%TZ", &tm) == 0) {
+      std::strncpy (data, "(unknown)", size);
     }
     // Guarantee that the string is null terminated.
-    PSTORE_ASSERT (buffer->size () > 0);
-    (*buffer)[buffer->size () - 1] = '\0';
-    return buffer->data ();
+    (*buffer)[size - 1] = '\0';
+    return data;
   }
 
   using priority = pstore::logger::priority;
@@ -206,7 +207,7 @@ namespace pstore::broker {
     return ::pstore::broker::parse (msg, cmds_);
   }
 
-  // thread_entry
+  // thread entry
   // ~~~~~~~~~~~~
   void command_processor::thread_entry (brokerface::fifo_path const & fifo) {
     try {
@@ -225,7 +226,7 @@ namespace pstore::broker {
     pstore::log (priority::info, "Exiting command thread");
   }
 
-  // push_command
+  // push command
   // ~~~~~~~~~~~~
   void command_processor::push_command (brokerface::message_ptr && cmd,
                                         recorder * const record_file) {
@@ -235,7 +236,7 @@ namespace pstore::broker {
     messages_.push (std::move (cmd));
   }
 
-  // clear_queue
+  // clear queue
   // ~~~~~~~~~~~
   void command_processor::clear_queue () {
     messages_.clear ();

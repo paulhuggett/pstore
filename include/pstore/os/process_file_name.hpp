@@ -45,7 +45,7 @@ namespace pstore {
   /// \result The number of valid characters in the 'buffer' container.
   template <typename ProcessPathFunction, typename BufferType>
   std::size_t process_file_name (ProcessPathFunction get_process_path, BufferType & buffer) {
-    static_assert (std::is_same<typename BufferType::value_type, char>::value,
+    static_assert (std::is_same_v<typename BufferType::value_type, char>,
                    "BufferType::value_type must be char");
     constexpr auto const max_reasonable_size = std::size_t{16 * 1024 * 1024};
     auto size = std::size_t{0};
@@ -82,7 +82,7 @@ namespace pstore {
     /// \result The number of valid characters in the 'buffer' container.
     template <typename SpanType, typename SysCtlFunction, typename BufferType>
     std::size_t process_file_name (SpanType mib, SysCtlFunction ctl, BufferType & buffer) {
-      static_assert (std::is_same<typename SpanType::element_type, int>::value,
+      static_assert (std::is_same_v<typename SpanType::element_type, int>,
                      "mib must be a span of integers");
 
       auto read_link = [&mib, &ctl] (gsl::span<char> const b) {

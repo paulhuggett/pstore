@@ -377,7 +377,7 @@ namespace pstore {
       log (logger::priority::info,
            "Sending close frame code=", static_cast<std::uint16_t> (status));
       PSTORE_STATIC_ASSERT (
-        (std::is_same<std::underlying_type<close_status_code>::type, std::uint16_t>::value));
+        (std::is_same_v<std::underlying_type_t<close_status_code>, std::uint16_t>) );
       std::uint16_t const ns = host_to_network (static_cast<std::uint16_t> (status));
       return send_message (sender, io, opcode::close, as_bytes (gsl::make_span (&ns, 1)));
     }

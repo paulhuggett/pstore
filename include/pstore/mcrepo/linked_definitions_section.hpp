@@ -92,8 +92,8 @@ namespace pstore {
       using const_iterator = value_type const *;
 
       template <typename Iterator,
-                typename = typename std::enable_if_t<std::is_same<
-                  typename std::iterator_traits<Iterator>::value_type, value_type>::value>>
+                typename = typename std::enable_if_t<
+                  std::is_same_v<typename std::iterator_traits<Iterator>::value_type, value_type>>>
       linked_definitions (Iterator begin, Iterator end);
 
       linked_definitions (linked_definitions const &) = delete;

@@ -55,7 +55,7 @@ namespace pstore {
 
     inline std::error_code make_error_code (error_code const e) {
       static_assert (
-        std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
+        std::is_same_v<std::underlying_type_t<decltype (e)>, int>,
         "base type of pstore::httpd::error_code must be int to permit safe static cast");
       return {static_cast<int> (e), get_error_category ()};
     }

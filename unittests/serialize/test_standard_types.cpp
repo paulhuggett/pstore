@@ -211,7 +211,7 @@ TEST_F (SetWriter, write) {
 TEST_F (SetWriter, read) {
   auto archive = pstore::serialize::archive::make_reader (std::begin (writer_));
   auto actual = pstore::serialize::read<std::set<int>> (archive);
-  static_assert (std::is_same<decltype (actual), std::set<int>>::value,
+  static_assert (std::is_same_v<decltype (actual), std::set<int>>,
                  "expected return type of serialize::read<std::set<int>> to be std::set<int>");
   EXPECT_EQ (set_, actual);
   EXPECT_EQ (std::end (writer_), archive.iterator ());

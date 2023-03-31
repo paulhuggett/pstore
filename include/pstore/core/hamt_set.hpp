@@ -34,8 +34,8 @@ namespace pstore {
 
       template <typename MapIterator>
       class set_iterator {
-        static_assert (std::is_same<typename MapIterator::value_type::first_type,
-                                    typename std::add_const<KeyType>::type>::value,
+        static_assert (std::is_same_v<typename MapIterator::value_type::first_type,
+                                      typename std::add_const_t<KeyType>>,
                        "hamt_set key type does not match the iterator key type");
 
       public:

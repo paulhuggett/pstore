@@ -377,7 +377,7 @@ namespace pstore {
     OStream & object::writer (OStream & os, indent const & ind,
                               ObjectCharacterTraits const & traits) const {
       static_assert (
-        std::is_same<typename OStream::char_type, typename ObjectCharacterTraits::char_type>::value,
+        std::is_same_v<typename OStream::char_type, typename ObjectCharacterTraits::char_type>,
         "Object character traits char_type does not match stream character type");
       static object_strings<ObjectCharacterTraits> const strings{traits};
 

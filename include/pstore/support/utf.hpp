@@ -210,7 +210,7 @@ namespace pstore {
 
       using value_type =
         typename std::remove_cv<typename std::iterator_traits<InputIterator>::value_type>::type;
-      static_assert (std::is_same<value_type, char16_t>::value, "iterator must produce char16_t");
+      static_assert (std::is_same_v<value_type, char16_t>, "iterator must produce char16_t");
 
       PSTORE_ASSERT (first != last);
       char32_t code_point = 0;

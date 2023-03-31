@@ -54,9 +54,8 @@ namespace {
     error_category () {}
     char const * name () const noexcept override { return "pstore genromfs category"; }
     std::string message (int error) const override {
-      static_assert (
-        std::is_same<std::underlying_type<genromfs_erc>::type, decltype (error)>::value,
-        "base type of genromfs_erc must be int to permit safe static cast");
+      static_assert (std::is_same_v<std::underlying_type_t<genromfs_erc>, decltype (error)>,
+                     "base type of genromfs_erc must be int to permit safe static cast");
       auto * result = "unknown value error";
       switch (static_cast<genromfs_erc> (error)) {
       case genromfs_erc::empty_name_component: result = "Name component is empty"; break;
@@ -66,7 +65,7 @@ namespace {
   };
 
   std::error_code make_error_code (genromfs_erc e) {
-    static_assert (std::is_same<std::underlying_type<decltype (e)>::type, int>::value,
+    static_assert (std::is_same_v<std::underlying_type_t<decltype (e)>, int>,
                    "base type of error_code must be int to permit safe static cast");
     static error_category const cat;
     return {static_cast<int> (e), cat};

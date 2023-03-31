@@ -80,7 +80,7 @@ namespace pstore {
       template <typename S, typename Head, typename... Tail>
       struct is_any_of<S, Head, Tail...>
               : std::integral_constant<
-                  bool, std::is_same<std::remove_cv_t<S>, std::remove_cv_t<Head>>::value ||
+                  bool, std::is_same_v<std::remove_cv_t<S>, std::remove_cv_t<Head>> ||
                           is_any_of<S, Tail...>::value> {};
 
     } // end namespace details

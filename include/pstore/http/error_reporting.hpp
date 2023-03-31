@@ -54,8 +54,8 @@ namespace pstore {
     std::string build_status_line (http_status_code const code, gsl::czstring text);
 
     template <typename InputIterator,
-              typename = std::enable_if_t<std::is_same<
-                typename std::iterator_traits<InputIterator>::value_type, czstring_pair>::value>>
+              typename = std::enable_if_t<std::is_same_v<
+                typename std::iterator_traits<InputIterator>::value_type, czstring_pair>>>
     std::string build_headers (InputIterator first, InputIterator last) {
       std::ostringstream os;
       std::for_each (first, last,
