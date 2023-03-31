@@ -123,14 +123,14 @@ namespace pstore {
         section_ = sec;
       }
 
-      std::size_t size_bytes () const final;
+      std::size_t size_bytes () const override;
 
-      std::uint8_t * write (std::uint8_t * out) const final;
+      std::uint8_t * write (std::uint8_t * out) const override;
 
     private:
       section_content const * section_ = nullptr;
 
-      std::uintptr_t aligned_impl (std::uintptr_t in) const final;
+      std::uintptr_t aligned_impl (std::uintptr_t in) const override;
 
       static void validate (gsl::not_null<section_content const *> const sec) {
         PSTORE_ASSERT (sec->ifixups.empty () && sec->xfixups.empty ());
@@ -164,12 +164,12 @@ namespace pstore {
       bss_section_dispatcher & operator= (bss_section_dispatcher const &) = delete;
       bss_section_dispatcher & operator= (bss_section_dispatcher &&) = delete;
 
-      std::size_t size_bytes () const final { return bss_section::size_bytes (); }
-      unsigned align () const final { return b_.align (); }
-      std::size_t size () const final { return b_.size (); }
-      container<internal_fixup> ifixups () const final { return {}; }
-      container<external_fixup> xfixups () const final { return {}; }
-      container<std::uint8_t> payload () const final { return {}; }
+      std::size_t size_bytes () const override { return bss_section::size_bytes (); }
+      unsigned align () const override { return b_.align (); }
+      std::size_t size () const override { return b_.size (); }
+      container<internal_fixup> ifixups () const override { return {}; }
+      container<external_fixup> xfixups () const override { return {}; }
+      container<std::uint8_t> payload () const override { return {}; }
 
     private:
       bss_section const & b_;
