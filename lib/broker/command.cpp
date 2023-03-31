@@ -40,12 +40,12 @@ namespace {
   /// \returns  A null terminated string. Will always be a pointer to the buffer base address.
   auto time_to_string (std::chrono::system_clock::time_point const time,
                        std::array<char, 100> * const buffer) -> pstore::gsl::zstring {
-    std::tm const tm = pstore::gm_time (std::chrono::system_clock::to_time_t (time));
     auto const size = buffer->size ();
     auto const data = buffer->data ();
     // strftime() returns 0 if the result doesn't fit in the provided buffer;
     // the contents are undefined.
-    if (std::strftime (data, size, "%FT%TZ", &tm) == 0) {
+    if (std::tm const tm = pstore::gm_time (std::chrono::system_clock::to_time_t (time));
+        std::strftime (data, size, "%FT%TZ", &tm) == 0) {
       std::strncpy (data, "(unknown)", size);
     }
     // Guarantee that the string is null terminated.
