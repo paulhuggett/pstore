@@ -1088,8 +1088,7 @@ namespace pstore {
       }
       // It's a leaf node.
       PSTORE_ASSERT (node.is_leaf ());
-      key_type const existing_key = get_key (db, node.to_address ());
-      if (equal_ (existing_key, key)) {
+      if (equal_ (get_key (db, node.to_address ()), key)) {
         parents.push (details::parent_type{node});
         return const_iterator (db, std::move (parents), this);
       }
