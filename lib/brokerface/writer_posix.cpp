@@ -25,21 +25,19 @@
 #  include "pstore/brokerface/message_type.hpp"
 #  include "pstore/support/error.hpp"
 
-namespace pstore {
-  namespace brokerface {
+namespace pstore::brokerface {
 
-    bool writer::write_impl (message_type const & msg) {
-      bool const ok = ::write (fd_.native_handle (), &msg, sizeof (msg)) == sizeof (msg);
-      if (!ok) {
-        int const err = errno;
-        if (err != EAGAIN && err != EWOULDBLOCK && err != EPIPE) {
-          raise (errno_erc{err}, "write to broker pipe");
-        }
+  bool writer::write_impl (message_type const & msg) {
+    bool const ok = ::write (fd_.native_handle (), &msg, sizeof (msg)) == sizeof (msg);
+    if (!ok) {
+      int const err = errno;
+      if (err != EAGAIN && err != EWOULDBLOCK && err != EPIPE) {
+        raise (errno_erc{err}, "write to broker pipe");
       }
-      return ok;
     }
+    return ok;
+  }
 
-  } // end namespace brokerface
-} // end namespace pstore
+} // end namespace pstore::brokerface
 
 #endif // _WIN32

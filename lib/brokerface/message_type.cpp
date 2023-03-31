@@ -40,25 +40,23 @@ namespace {
 
 #endif
 
-namespace pstore {
-  namespace brokerface {
+namespace pstore::brokerface {
 
-    constexpr std::size_t message_type::payload_chars;
+  constexpr std::size_t message_type::payload_chars;
 
-    std::uint32_t const message_type::process_id = static_cast<std::uint32_t> (getpid ());
+  std::uint32_t const message_type::process_id = static_cast<std::uint32_t> (getpid ());
 
-    // (ctor)
-    // ~~~~~~
-    message_type::message_type (std::uint32_t const mid, std::uint16_t const pno,
-                                std::uint16_t const nump, std::string const & content)
-            : message_type (mid, pno, nump, std::begin (content), std::end (content)) {}
+  // (ctor)
+  // ~~~~~~
+  message_type::message_type (std::uint32_t const mid, std::uint16_t const pno,
+                              std::uint16_t const nump, std::string const & content)
+          : message_type (mid, pno, nump, std::begin (content), std::end (content)) {}
 
-    // operator==
-    // ~~~~~~~~~~
-    bool message_type::operator== (message_type const & rhs) const {
-      return sender_id == rhs.sender_id && message_id == rhs.message_id && part_no == rhs.part_no &&
-             num_parts == rhs.num_parts && payload == rhs.payload;
-    }
+  // operator==
+  // ~~~~~~~~~~
+  bool message_type::operator== (message_type const & rhs) const {
+    return sender_id == rhs.sender_id && message_id == rhs.message_id && part_no == rhs.part_no &&
+           num_parts == rhs.num_parts && payload == rhs.payload;
+  }
 
-  } // end namespace brokerface
-} // end namespace pstore
+} // end namespace pstore::brokerface

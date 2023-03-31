@@ -18,31 +18,27 @@
 
 #include "pstore/support/utf.hpp"
 
-namespace pstore {
-  namespace command_line {
+namespace pstore::command_line {
 
-    template <typename T>
-    struct stream_trait {};
+  template <typename T>
+  struct stream_trait {};
 
-    template <>
-    struct stream_trait<char> {
-      static constexpr std::string const & out_string (std::string const & str) noexcept {
-        return str;
-      }
-      static constexpr gsl::czstring out_text (gsl::czstring const str) noexcept { return str; }
-    };
+  template <>
+  struct stream_trait<char> {
+    static constexpr std::string const & out_string (std::string const & str) noexcept {
+      return str;
+    }
+    static constexpr gsl::czstring out_text (gsl::czstring const str) noexcept { return str; }
+  };
 
 #ifdef _WIN32
-    template <>
-    struct stream_trait<wchar_t> {
-      static std::wstring out_string (std::string const & str) {
-        return utf::to_native_string (str);
-      }
-      static std::wstring out_text (gsl::czstring const str) { return utf::to_native_string (str); }
-    };
+  template <>
+  struct stream_trait<wchar_t> {
+    static std::wstring out_string (std::string const & str) { return utf::to_native_string (str); }
+    static std::wstring out_text (gsl::czstring const str) { return utf::to_native_string (str); }
+  };
 #endif // _WIN32
 
-  } // end namespace command_line
-} // end namespace pstore
+} // end namespace pstore::command_line
 
 #endif // PSTORE_COMMAND_LINE_STREAM_TRAITS_HPP

@@ -22,27 +22,24 @@
 #  include <tchar.h>
 #endif
 
-namespace pstore {
-  namespace command_line {
+namespace pstore::command_line {
 
 #ifdef _WIN32
 #  define PSTORE_NATIVE_TEXT(str) _TEXT (str)
-    using tchar = TCHAR;
+  using tchar = TCHAR;
 #else
-    using tchar = char;
+  using tchar = char;
 #  define PSTORE_NATIVE_TEXT(str) str
 #endif
 
 #if defined(_WIN32) && defined(_UNICODE)
-    extern std::wostream & error_stream;
-    extern std::wostream & out_stream;
+  extern std::wostream & error_stream;
+  extern std::wostream & out_stream;
 #else
-    extern std::ostream & error_stream;
-    extern std::ostream & out_stream;
+  extern std::ostream & error_stream;
+  extern std::ostream & out_stream;
 #endif
 
-  } // end namespace command_line
-
-} // end namespace pstore
+} // end namespace pstore::command_line
 
 #endif // PSTORE_COMMAND_LINE_TCHAR_HPP

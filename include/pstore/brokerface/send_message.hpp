@@ -24,27 +24,25 @@
 
 #include "pstore/brokerface/writer.hpp"
 
-namespace pstore {
-  /// Contains the types and functions provided by the broker interface.
-  namespace brokerface {
+/// Contains the types and functions provided by the broker interface.
+namespace pstore::brokerface {
 
-    /// Intended for use in unit tests, returns the ID of the next message that will be
-    /// dispatched by a call to send_message().
-    std::uint32_t next_message_id ();
+  /// Intended for use in unit tests, returns the ID of the next message that will be
+  /// dispatched by a call to send_message().
+  std::uint32_t next_message_id ();
 
-    /// Sends a message consisting of a "verb" and optional "path" to the pstore broker for
-    /// processing.
-    ///
-    /// \param wr A connection to the broker via a named pipe.
-    /// \param error_on_timeout  If true, an error will be raise in the event of a
-    ///    timeout. If false, this condition is silently ignored.
-    /// \param verb  A null-terminated character string which contains the command that the
-    ///   broker should execute.
-    /// \param path  A null-terminated character string which contains the parameter for the
-    ///   broker command. Pass nullptr if no parameter is required for the command.
-    void send_message (writer & wr, bool error_on_timeout, gsl::czstring verb, gsl::czstring path);
+  /// Sends a message consisting of a "verb" and optional "path" to the pstore broker for
+  /// processing.
+  ///
+  /// \param wr A connection to the broker via a named pipe.
+  /// \param error_on_timeout  If true, an error will be raise in the event of a
+  ///    timeout. If false, this condition is silently ignored.
+  /// \param verb  A null-terminated character string which contains the command that the
+  ///   broker should execute.
+  /// \param path  A null-terminated character string which contains the parameter for the
+  ///   broker command. Pass nullptr if no parameter is required for the command.
+  void send_message (writer & wr, bool error_on_timeout, gsl::czstring verb, gsl::czstring path);
 
-  } // end namespace brokerface
-} // end namespace pstore
+} // end namespace pstore::brokerface
 
 #endif // PSTORE_BROKERFACE_SEND_MESSAGE_HPP

@@ -24,27 +24,25 @@
 #  include "pstore/brokerface/message_type.hpp"
 #  include "pstore/support/error.hpp"
 
-namespace pstore {
-  namespace brokerface {
+namespace pstore::brokerface {
 
-    // write_impl
-    // ~~~~~~~~~~
-    bool writer::write_impl (message_type const & msg) {
-      // Send a message to the pipe server.
-      auto bytes_written = DWORD{0};
-      BOOL ok = ::WriteFile (fd_.native_handle (), // pipe handle
-                             &msg,                 // message
-                             sizeof (msg),         // message length
-                             &bytes_written,       // bytes written
-                             nullptr);             // not overlapped
-      if (!ok) {
-        DWORD const errcode = ::GetLastError ();
-        raise (::pstore::win32_erc (errcode), "WriteFile to pipe failed");
-      }
-      return true;
+  // write_impl
+  // ~~~~~~~~~~
+  bool writer::write_impl (message_type const & msg) {
+    // Send a message to the pipe server.
+    auto bytes_written = DWORD{0};
+    BOOL ok = ::WriteFile (fd_.native_handle (), // pipe handle
+                           &msg,                 // message
+                           sizeof (msg),         // message length
+                           &bytes_written,       // bytes written
+                           nullptr);             // not overlapped
+    if (!ok) {
+      DWORD const errcode = ::GetLastError ();
+      raise (::pstore::win32_erc (errcode), "WriteFile to pipe failed");
     }
+    return true;
+  }
 
-  } // end namespace brokerface
-} // end namespace pstore
+} // end namespace pstore::brokerface
 
 #endif // _WIN32

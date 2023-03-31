@@ -23,32 +23,30 @@
 #include "pstore/command_line/str_to_revision.hpp"
 #include "pstore/dump/digest_opt.hpp"
 
-namespace pstore {
-  namespace command_line {
+namespace pstore::command_line {
 
-    // parser<digest_opt>
-    // ~~~~~~~~~~~~~~~~~~
-    template <>
-    class parser<dump::digest_opt> : public parser_base {
-    public:
-      ~parser () noexcept override = default;
-      maybe<dump::digest_opt> operator() (std::string const & v) const {
-        maybe<index::digest> const d = uint128::from_hex_string (v);
-        return d ? just (dump::digest_opt{*d}) : nothing<dump::digest_opt> ();
-      }
-    };
+  // parser<digest_opt>
+  // ~~~~~~~~~~~~~~~~~~
+  template <>
+  class parser<dump::digest_opt> : public parser_base {
+  public:
+    ~parser () noexcept override = default;
+    maybe<dump::digest_opt> operator() (std::string const & v) const {
+      maybe<index::digest> const d = uint128::from_hex_string (v);
+      return d ? just (dump::digest_opt{*d}) : nothing<dump::digest_opt> ();
+    }
+  };
 
-    // type_description<digest_opt>
-    // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    template <>
-    struct type_description<dump::digest_opt> {
-      static gsl::czstring value;
-    };
+  // type_description<digest_opt>
+  // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  template <>
+  struct type_description<dump::digest_opt> {
+    static gsl::czstring value;
+  };
 
-    gsl::czstring type_description<dump::digest_opt>::value = "digest";
+  gsl::czstring type_description<dump::digest_opt>::value = "digest";
 
-  } // end namespace command_line
-} // end namespace pstore
+} // end namespace pstore::command_line
 
 using namespace pstore::command_line;
 
