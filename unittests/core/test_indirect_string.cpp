@@ -28,6 +28,8 @@
 #include "check_for_error.hpp"
 #include "empty_store.hpp"
 
+using namespace std::string_view_literals;
+
 namespace {
 
   class IndirectString : public testing::Test {
@@ -53,7 +55,7 @@ TEST_F (IndirectString, InMemoryEquality) {
   EXPECT_EQ (y.length (), 4U);
 
   pstore::shared_sstring_view owner;
-  EXPECT_EQ (x.as_string_view (&owner), "body");
+  EXPECT_EQ (x.as_string_view (&owner), "body"sv);
   EXPECT_TRUE (x == y);
   EXPECT_FALSE (x != y);
 }

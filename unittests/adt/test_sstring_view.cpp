@@ -23,6 +23,8 @@
 // 3rd party
 #include <gmock/gmock.h>
 
+using namespace std::string_view_literals;
+
 namespace {
 
   std::shared_ptr<char> new_shared (std::string const & s) {
@@ -58,12 +60,12 @@ namespace {
   };
 
   template <typename StringType>
-  class SStringViewInit : public ::testing::Test {};
+  class SStringViewInit : public testing::Test {};
 
   using SStringViewInitTypes =
-    ::testing::Types<string_maker<std::shared_ptr<char>>, string_maker<std::shared_ptr<char const>>,
-                     string_maker<std::unique_ptr<char[]>>,
-                     string_maker<std::unique_ptr<char const[]>>, string_maker<char const *>>;
+    testing::Types<string_maker<std::shared_ptr<char>>, string_maker<std::shared_ptr<char const>>,
+                   string_maker<std::unique_ptr<char[]>>,
+                   string_maker<std::unique_ptr<char const[]>>, string_maker<char const *>>;
 
   // The pstore APIs that return shared_ptr<> and unique_ptr<> sstring_views is named
   // make_shared_sstring_view() and make_unique_sstring_view() respectively to try to avoid
@@ -119,7 +121,7 @@ TEST (SStringView, FromSpan) {
   using namespace pstore;
   std::array<char, 5> const src{{'a', 'r', 'r', 'a', 'y'}};
   auto sv = make_sstring_view (gsl::make_span (src));
-  EXPECT_THAT (sv, ::testing::ElementsAreArray (src));
+  EXPECT_THAT (sv, testing::ElementsAreArray (src));
 }
 
 TEST (SStringView, OperatorIndex) {
@@ -313,10 +315,10 @@ TEST (SStringView, Substr) {
   using sv_type = pstore::sstring_view<char const *>;
   sv_type sv = pstore::make_sstring_view (src.data (), src.length ());
 
-  EXPECT_EQ (sv.substr (0U, 1U), "a");
-  EXPECT_EQ (sv.substr (0U, 4U), "abc");
-  EXPECT_EQ (sv.substr (1U, 1U), "b");
-  EXPECT_EQ (sv.substr (3U, 1U), "");
+  EXPECT_EQ (sv.substr (0U, 1U), "a"sv);
+  EXPECT_EQ (sv.substr (0U, 4U), "abc"sv);
+  EXPECT_EQ (sv.substr (1U, 1U), "b"sv);
+  EXPECT_EQ (sv.substr (3U, 1U), ""sv);
 }
 
 TEST (SStringView, OperatorWrite) {
@@ -334,7 +336,7 @@ TEST (SStringView, OperatorWrite) {
 namespace {
 
   template <typename StringType>
-  class SStringViewRelational : public ::testing::Test {};
+  class SStringViewRelational : public testing::Test {};
 
   class sstringview_maker {
   public:
@@ -347,7 +349,7 @@ namespace {
     pstore::sstring_view<char const *> view_;
   };
 
-  using StringTypes = ::testing::Types<sstringview_maker, sstringview_maker const, char const *>;
+  using StringTypes = testing::Types<sstringview_maker, sstringview_maker const>;
 
 } // end anonymous namespace
 

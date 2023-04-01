@@ -38,31 +38,9 @@ namespace pstore {
   //* /__/\__|_| |_|_||_\__, |  \__|_| \__,_|_|\__/__/ *
   //*                   |___/                          *
   template <typename StringType>
-  struct string_traits {};
-
-  template <>
-  struct string_traits<std::string> {
-    static std::size_t length (std::string const & s) noexcept { return s.length (); }
-    static gsl::czstring data (std::string const & s) noexcept { return s.data (); }
-  };
-  template <>
-  struct string_traits<gsl::czstring> {
-    static std::size_t length (gsl::czstring const s) noexcept { return std::strlen (s); }
-    static gsl::czstring data (gsl::czstring const s) noexcept { return s; }
-  };
-  template <std::size_t Size>
-  struct string_traits<char const [Size]> {
-    static std::size_t length (gsl::czstring const s) noexcept {
-      return std::strlen (s);
-    }
-    static gsl::czstring data (gsl::czstring const s) noexcept {
-      return s;
-    }
-  };
-  template <std::size_t Size>
-  struct string_traits<char[Size]> {
-    static std::size_t length (gsl::czstring const s) noexcept { return std::strlen (s); }
-    static gsl::czstring data (gsl::czstring const s) noexcept { return s; }
+  struct string_traits {
+    static std::size_t length (StringType const & s) noexcept { return s.length (); }
+    static char const * data (StringType const & s) noexcept { return s.data (); }
   };
 
   //*            _     _             _            _ _       *

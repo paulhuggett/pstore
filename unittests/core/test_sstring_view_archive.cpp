@@ -36,6 +36,8 @@
 // local includes
 #include "empty_store.hpp"
 
+using namespace std::string_view_literals;
+
 namespace {
   using shared_sstring_view = pstore::sstring_view<std::shared_ptr<char const>>;
 
@@ -106,7 +108,7 @@ TEST_F (SStringViewArchive, Empty) {
     using namespace pstore::serialize;
     shared_sstring_view const actual =
       read<shared_sstring_view> (archive::database_reader{db_, first.to_address ()});
-    EXPECT_EQ (actual, "");
+    EXPECT_EQ (actual, ""sv);
   }
 }
 
@@ -126,6 +128,6 @@ TEST_F (SStringViewArchive, WriteHello) {
   {
     auto reader = pstore::serialize::archive::database_reader{db_, first.to_address ()};
     shared_sstring_view const actual = pstore::serialize::read<shared_sstring_view> (reader);
-    EXPECT_EQ (actual, "hello");
+    EXPECT_EQ (actual, "hello"sv);
   }
 }
