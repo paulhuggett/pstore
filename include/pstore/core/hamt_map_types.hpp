@@ -70,18 +70,17 @@ namespace pstore {
         heap_node_bit = 1U << 1U,     /// Marks newly allocated internal nodes
       };
 
-      /// Provides the member constant `value` which is equal to true, if S the same as
+      /// Provides the member constant `value` which is equal to true if S the same as
       /// any of the types (after removing const and/or volatile) in the Types list.
       /// Otherwise, value is equal to false.
       template <typename S, typename... Types>
       struct is_any_of;
       template <typename S>
-      struct is_any_of<S> : std::integral_constant<bool, false> {};
+      struct is_any_of<S> : std::bool_constant<false> {};
       template <typename S, typename Head, typename... Tail>
       struct is_any_of<S, Head, Tail...>
-              : std::integral_constant<
-                  bool, std::is_same_v<std::remove_cv_t<S>, std::remove_cv_t<Head>> ||
-                          is_any_of<S, Tail...>::value> {};
+              : std::bool_constant<std::is_same_v<std::remove_cv_t<S>, std::remove_cv_t<Head>> ||
+                                   is_any_of<S, Tail...>::value> {};
 
     } // end namespace details
 

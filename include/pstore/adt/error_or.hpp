@@ -31,8 +31,8 @@
 namespace pstore {
 
   template <typename Error>
-  struct is_error : std::integral_constant<bool, std::is_error_code_enum_v<Error> ||
-                                                   std::is_error_condition_enum_v<Error>> {};
+  struct is_error : std::bool_constant<std::is_error_code_enum_v<Error> ||
+                                       std::is_error_condition_enum_v<Error>> {};
 
   template <typename T>
   class error_or {

@@ -56,9 +56,9 @@ namespace pstore {
       /// types K and V have a serialized representation which is compatible with KeyType and
       /// ValueType respectively. Otherwise `value` is false.
       template <typename K, typename V>
-      struct pair_types_compatible
-              : std::integral_constant<bool, serialize::is_compatible_v<KeyType, K> &&
-                                               serialize::is_compatible_v<ValueType, V>> {};
+      struct pair_types_compatible : std::bool_constant<serialize::is_compatible_v<KeyType, K> &&
+                                                        serialize::is_compatible_v<ValueType, V>> {
+      };
 
     public:
       using key_equal = KeyEqual;
