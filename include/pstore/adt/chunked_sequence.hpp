@@ -480,9 +480,7 @@ namespace pstore {
   void chunked_sequence<T, ElementsPerChunk, ActualSize, ActualAlign>::chunk::shrink (
     std::size_t const new_size) noexcept {
     assert (new_size <= size_);
-    for (auto ctr = new_size; ctr < size_; ++ctr) {
-      (*this)[ctr].~T ();
-    }
+    std::destroy_n (&(*this)[new_size], size_ - new_size);
     size_ = new_size;
   }
 
