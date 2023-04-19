@@ -21,61 +21,57 @@
 
 #include "pstore/exchange/import_rule.hpp"
 
-namespace pstore {
-  namespace exchange {
-    namespace import_ns {
+namespace pstore::exchange::import_ns {
 
-      class bool_rule final : public rule {
-      public:
-        bool_rule (not_null<context *> const ctxt, not_null<bool *> const v) noexcept
-                : rule (ctxt)
-                , v_{v} {}
-        std::error_code boolean_value (bool v) override;
-        gsl::czstring name () const noexcept override;
+  class bool_rule final : public rule {
+  public:
+    bool_rule (not_null<context *> const ctxt, not_null<bool *> const v) noexcept
+            : rule (ctxt)
+            , v_{v} {}
+    std::error_code boolean_value (bool v) override;
+    gsl::czstring name () const noexcept override;
 
-      private:
-        not_null<bool *> const v_;
-      };
+  private:
+    not_null<bool *> const v_;
+  };
 
-      class int64_rule final : public rule {
-      public:
-        int64_rule (not_null<context *> const ctxt, not_null<std::int64_t *> const v) noexcept
-                : rule (ctxt)
-                , v_{v} {}
-        std::error_code int64_value (std::int64_t v) override;
-        std::error_code uint64_value (std::uint64_t v) override;
-        gsl::czstring name () const noexcept override;
+  class int64_rule final : public rule {
+  public:
+    int64_rule (not_null<context *> const ctxt, not_null<std::int64_t *> const v) noexcept
+            : rule (ctxt)
+            , v_{v} {}
+    std::error_code int64_value (std::int64_t v) override;
+    std::error_code uint64_value (std::uint64_t v) override;
+    gsl::czstring name () const noexcept override;
 
-      private:
-        not_null<std::int64_t *> const v_;
-      };
+  private:
+    not_null<std::int64_t *> const v_;
+  };
 
-      class uint64_rule final : public rule {
-      public:
-        uint64_rule (not_null<context *> const ctxt, not_null<std::uint64_t *> const v) noexcept
-                : rule (ctxt)
-                , v_{v} {}
-        std::error_code uint64_value (std::uint64_t v) override;
-        gsl::czstring name () const noexcept override;
+  class uint64_rule final : public rule {
+  public:
+    uint64_rule (not_null<context *> const ctxt, not_null<std::uint64_t *> const v) noexcept
+            : rule (ctxt)
+            , v_{v} {}
+    std::error_code uint64_value (std::uint64_t v) override;
+    gsl::czstring name () const noexcept override;
 
-      private:
-        not_null<std::uint64_t *> const v_;
-      };
+  private:
+    not_null<std::uint64_t *> const v_;
+  };
 
-      class string_rule final : public rule {
-      public:
-        string_rule (not_null<context *> const ctxt, not_null<std::string *> const v) noexcept
-                : rule (ctxt)
-                , v_{v} {}
-        std::error_code string_value (std::string const & v) override;
-        gsl::czstring name () const noexcept override;
+  class string_rule final : public rule {
+  public:
+    string_rule (not_null<context *> const ctxt, not_null<std::string *> const v) noexcept
+            : rule (ctxt)
+            , v_{v} {}
+    std::error_code string_value (std::string const & v) override;
+    gsl::czstring name () const noexcept override;
 
-      private:
-        not_null<std::string *> const v_;
-      };
+  private:
+    not_null<std::string *> const v_;
+  };
 
-    } // end namespace import_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::import_ns
 
 #endif // PSTORE_EXCHANGE_IMPORT_TERMINALS_HPP

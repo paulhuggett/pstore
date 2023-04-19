@@ -25,151 +25,147 @@
 #include "pstore/exchange/import_context.hpp"
 #include "pstore/os/logging.hpp"
 
-namespace pstore {
-  namespace exchange {
-    namespace import_ns {
+namespace pstore::exchange::import_ns {
 
-      template <typename T>
-      using not_null = gsl::not_null<T>;
+  template <typename T>
+  using not_null = gsl::not_null<T>;
 
-      //*           _      *
-      //*  _ _ _  _| |___  *
-      //* | '_| || | / -_) *
-      //* |_|  \_,_|_\___| *
-      //*                  *
-      //-MARK: rule
-      /// This class models a production rule in the import grammar. Subclasses are used to
-      /// specialize for different classes of input (such as compilations, fragments, and so
-      /// on).
-      class rule {
-      public:
-        explicit rule (not_null<context *> const context) noexcept
-                : context_{context} {}
-        rule (rule const &) = delete;
-        rule (rule &&) noexcept = delete;
+  //*           _      *
+  //*  _ _ _  _| |___  *
+  //* | '_| || | / -_) *
+  //* |_|  \_,_|_\___| *
+  //*                  *
+  //-MARK: rule
+  /// This class models a production rule in the import grammar. Subclasses are used to
+  /// specialize for different classes of input (such as compilations, fragments, and so
+  /// on).
+  class rule {
+  public:
+    explicit rule (not_null<context *> const context) noexcept
+            : context_{context} {}
+    rule (rule const &) = delete;
+    rule (rule &&) noexcept = delete;
 
-        virtual ~rule ();
+    virtual ~rule ();
 
-        rule & operator= (rule const &) = delete;
-        rule & operator= (rule &&) noexcept = delete;
+    rule & operator= (rule const &) = delete;
+    rule & operator= (rule &&) noexcept = delete;
 
-        virtual gsl::czstring name () const noexcept = 0;
+    virtual gsl::czstring name () const noexcept = 0;
 
-        virtual std::error_code int64_value (std::int64_t value);
-        virtual std::error_code uint64_value (std::uint64_t value);
-        virtual std::error_code double_value (double value);
-        virtual std::error_code string_value (std::string const & value);
-        virtual std::error_code boolean_value (bool value);
-        virtual std::error_code null_value ();
-        virtual std::error_code begin_array ();
-        virtual std::error_code end_array ();
-        virtual std::error_code begin_object ();
-        virtual std::error_code key (std::string const & key);
-        virtual std::error_code end_object ();
+    virtual std::error_code int64_value (std::int64_t value);
+    virtual std::error_code uint64_value (std::uint64_t value);
+    virtual std::error_code double_value (double value);
+    virtual std::error_code string_value (std::string const & value);
+    virtual std::error_code boolean_value (bool value);
+    virtual std::error_code null_value ();
+    virtual std::error_code begin_array ();
+    virtual std::error_code end_array ();
+    virtual std::error_code begin_object ();
+    virtual std::error_code key (std::string const & key);
+    virtual std::error_code end_object ();
 
-        /// Creates an instance of type T and pushes it onto the parse stack. The provided
-        /// arguments are forwarded to the T constructor in addition to the parse stack
-        /// itself.
-        ///
-        /// \tparam T  The type of the new rule to instantiate.
-        /// \tparam Args The types of the arguments for the constructor of type T.
-        /// \param args The parameters to be passed to the contructor of the new instance of
-        /// type T.
-        template <typename T, typename... Args>
-        std::error_code push (Args... args) {
-          context_->stack.push (std::make_unique<T> (context_, args...));
-          this->log_top (true);
-          return {};
-        }
+    /// Creates an instance of type T and pushes it onto the parse stack. The provided
+    /// arguments are forwarded to the T constructor in addition to the parse stack
+    /// itself.
+    ///
+    /// \tparam T  The type of the new rule to instantiate.
+    /// \tparam Args The types of the arguments for the constructor of type T.
+    /// \param args The parameters to be passed to the contructor of the new instance of
+    /// type T.
+    template <typename T, typename... Args>
+    std::error_code push (Args... args) {
+      context_->stack.push (std::make_unique<T> (context_, args...));
+      this->log_top (true);
+      return {};
+    }
 
-      protected:
-        /// Removes the top-most element from the parse stack and replaces it with a newly
-        /// instantiated object.
-        ///
-        /// \tparam T  The type of the new rule to instantiate.
-        /// \tparam Args The types of the arguments for the constructor of type T.
-        /// \param args The parameters to be passed to the contructor of the new instance of
-        ///   type T.
-        template <typename T, typename... Args>
-        std::error_code replace_top (Args... args) {
-          auto p = std::make_unique<T> (context_, args...);
-          this->log_top (false);
-          // Remember the context pointer before we destroy 'this'.
-          auto * const context = this->get_context ();
-          context->stack.pop (); // Destroys this object.
-          context->stack.push (std::move (p));
-          this->log_top (true);
-          return {};
-        }
+  protected:
+    /// Removes the top-most element from the parse stack and replaces it with a newly
+    /// instantiated object.
+    ///
+    /// \tparam T  The type of the new rule to instantiate.
+    /// \tparam Args The types of the arguments for the constructor of type T.
+    /// \param args The parameters to be passed to the contructor of the new instance of
+    ///   type T.
+    template <typename T, typename... Args>
+    std::error_code replace_top (Args... args) {
+      auto p = std::make_unique<T> (context_, args...);
+      this->log_top (false);
+      // Remember the context pointer before we destroy 'this'.
+      auto * const context = this->get_context ();
+      context->stack.pop (); // Destroys this object.
+      context->stack.push (std::move (p));
+      this->log_top (true);
+      return {};
+    }
 
-        /// Removes the top-most element from the parse stack and returns "no-error".
-        /// This member function is usually called to signal the end of the current grammar
-        /// rule.
-        std::error_code pop () {
-          this->log_top (false);
-          context_->stack.pop ();
-          return {};
-        }
+    /// Removes the top-most element from the parse stack and returns "no-error".
+    /// This member function is usually called to signal the end of the current grammar
+    /// rule.
+    std::error_code pop () {
+      this->log_top (false);
+      context_->stack.pop ();
+      return {};
+    }
 
-        context * get_context () noexcept { return context_; }
+    context * get_context () noexcept { return context_; }
 
-      private:
-        void log_top (bool const is_push) const {
-          if (logging_enabled ()) {
-            this->log_top_impl (is_push);
-          }
-        }
+  private:
+    void log_top (bool const is_push) const {
+      if (logging_enabled ()) {
+        this->log_top_impl (is_push);
+      }
+    }
 
-        void log_top_impl (bool is_push) const;
+    void log_top_impl (bool is_push) const;
 
-        not_null<context *> const context_;
-      };
+    not_null<context *> const context_;
+  };
 
 
-      //-MARK: callbacks
-      /// Implements the callback interface required by the JSON parser. Each member function
-      /// forwards to the top-most element on the parse-stack (an instance of a subclass of
-      /// pstore::exchange::import::rule).
-      class callbacks {
-      public:
-        using result_type = void;
-        result_type result () {}
+  //-MARK: callbacks
+  /// Implements the callback interface required by the JSON parser. Each member function
+  /// forwards to the top-most element on the parse-stack (an instance of a subclass of
+  /// pstore::exchange::import::rule).
+  class callbacks {
+  public:
+    using result_type = void;
+    constexpr result_type result () const { /* There is no result! */ }
 
-        template <typename Rule, typename... Args>
-        static callbacks make (gsl::not_null<database *> const db, Args... args) {
-          auto ctxt = std::make_shared<context> (db);
-          return {ctxt, std::make_unique<Rule> (ctxt.get (), args...)};
-        }
+    template <typename Rule, typename... Args>
+    static callbacks make (gsl::not_null<database *> const db, Args... args) {
+      auto ctxt = std::make_shared<context> (db);
+      return {ctxt, std::make_unique<Rule> (ctxt.get (), args...)};
+    }
 
-        std::shared_ptr<context> & get_context () { return context_; }
+    std::shared_ptr<context> & get_context () { return context_; }
 
-        std::error_code int64_value (std::int64_t const v) { return top ()->int64_value (v); }
-        std::error_code uint64_value (std::uint64_t const v) { return top ()->uint64_value (v); }
-        std::error_code double_value (double const v) { return top ()->double_value (v); }
-        std::error_code string_value (std::string const & v) { return top ()->string_value (v); }
-        std::error_code boolean_value (bool const v) { return top ()->boolean_value (v); }
-        std::error_code null_value () { return top ()->null_value (); }
-        std::error_code begin_array () { return top ()->begin_array (); }
-        std::error_code end_array () { return top ()->end_array (); }
-        std::error_code begin_object () { return top ()->begin_object (); }
-        std::error_code key (std::string const & k) { return top ()->key (k); }
-        std::error_code end_object () { return top ()->end_object (); }
+    std::error_code int64_value (std::int64_t const v) { return top ()->int64_value (v); }
+    std::error_code uint64_value (std::uint64_t const v) { return top ()->uint64_value (v); }
+    std::error_code double_value (double const v) { return top ()->double_value (v); }
+    std::error_code string_value (std::string const & v) { return top ()->string_value (v); }
+    std::error_code boolean_value (bool const v) { return top ()->boolean_value (v); }
+    std::error_code null_value () { return top ()->null_value (); }
+    std::error_code begin_array () { return top ()->begin_array (); }
+    std::error_code end_array () { return top ()->end_array (); }
+    std::error_code begin_object () { return top ()->begin_object (); }
+    std::error_code key (std::string const & k) { return top ()->key (k); }
+    std::error_code end_object () { return top ()->end_object (); }
 
-      private:
-        callbacks (std::shared_ptr<context> const & ctxt, std::unique_ptr<rule> && root)
-                : context_{ctxt} {
-          context_->stack.push (std::move (root));
-        }
+  private:
+    callbacks (std::shared_ptr<context> const & ctxt, std::unique_ptr<rule> && root)
+            : context_{ctxt} {
+      context_->stack.push (std::move (root));
+    }
 
-        std::unique_ptr<rule> & top () {
-          PSTORE_ASSERT (!context_->stack.empty ());
-          return context_->stack.top ();
-        }
-        std::shared_ptr<context> context_;
-      };
+    std::unique_ptr<rule> & top () {
+      PSTORE_ASSERT (!context_->stack.empty ());
+      return context_->stack.top ();
+    }
+    std::shared_ptr<context> context_;
+  };
 
-    } // end namespace import_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::import_ns
 
 #endif // PSTORE_EXCHANGE_IMPORT_RULE_HPP

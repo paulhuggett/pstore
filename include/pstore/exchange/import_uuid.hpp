@@ -19,30 +19,26 @@
 #include "pstore/core/uuid.hpp"
 #include "pstore/exchange/import_rule.hpp"
 
-namespace pstore {
-  namespace exchange {
-    namespace import_ns {
+namespace pstore::exchange::import_ns {
 
-      class uuid_rule final : public rule {
-      public:
-        uuid_rule (not_null<context *> ctxt, not_null<uuid *> v) noexcept;
-        uuid_rule (uuid_rule const &) = delete;
-        uuid_rule (uuid_rule &&) = delete;
+  class uuid_rule final : public rule {
+  public:
+    uuid_rule (not_null<context *> ctxt, not_null<uuid *> v) noexcept;
+    uuid_rule (uuid_rule const &) = delete;
+    uuid_rule (uuid_rule &&) = delete;
 
-        ~uuid_rule () noexcept override = default;
+    ~uuid_rule () noexcept override = default;
 
-        uuid_rule & operator= (uuid_rule const &) = delete;
-        uuid_rule & operator= (uuid_rule &&) = delete;
+    uuid_rule & operator= (uuid_rule const &) = delete;
+    uuid_rule & operator= (uuid_rule &&) = delete;
 
-        std::error_code string_value (std::string const & v) override;
-        gsl::czstring name () const noexcept override;
+    std::error_code string_value (std::string const & v) override;
+    gsl::czstring name () const noexcept override;
 
-      private:
-        not_null<uuid *> const v_;
-      };
+  private:
+    not_null<uuid *> const v_;
+  };
 
-    } // end namespace import_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::import_ns
 
 #endif // PSTORE_EXCHANGE_IMPORT_UUID_HPP
