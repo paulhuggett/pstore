@@ -29,7 +29,7 @@ namespace pstore::romfs {
   public:
     using iterator = gsl::span<dirent const>::const_iterator;
 
-    constexpr directory (gsl::span<dirent const> members) noexcept
+    constexpr explicit directory (gsl::span<dirent const> members) noexcept
             : members_{members} {
       PSTORE_ASSERT (members_.size () >= 0);
     }
