@@ -21,71 +21,58 @@
 #include "pstore/adt/pointer_based_iterator.hpp"
 #include "pstore/support/gsl.hpp"
 
-namespace pstore {
-  namespace romfs {
+namespace pstore::romfs {
 
-    class dirent;
+  class dirent;
 
-    class directory {
-    public:
-      using iterator = pointer_based_iterator<dirent const>;
+  class directory {
+  public:
+    using iterator = gsl::span<dirent const>::const_iterator;
 
-      constexpr directory (std::size_t const size,
-                           gsl::not_null<dirent const *> const members) noexcept
-              : size_{size}
-              , members_{members} {}
-      template <std::size_t N>
-      explicit constexpr directory (dirent const (&members)[N]) noexcept
-              : directory (N, members) {}
+    constexpr directory (gsl::span<dirent const> members) noexcept
+            : members_{members} {}
+    directory (directory const &) = delete;
+    directory (directory &&) noexcept = delete;
 
-      template <typename Container>
-      explicit constexpr directory (Container const & c) noexcept
-              : directory (c.size (), c.data ()) {}
+    ~directory () noexcept = default;
 
-      directory (directory const &) = delete;
-      directory (directory &&) = delete;
+    directory & operator= (directory const &) = delete;
+    directory & operator= (directory &&) noexcept = delete;
 
-      ~directory () noexcept = default;
+    iterator begin () const noexcept { return iterator{members_.begin ()}; }
+    iterator end () const noexcept { return iterator{members_.end ()}; }
 
-      directory & operator= (directory const &) = delete;
-      directory & operator= (directory &&) = delete;
+    std::size_t size () const noexcept { return members_.size (); }
+    dirent const & operator[] (std::size_t pos) const noexcept;
 
-      iterator begin () const noexcept { return iterator{members_.get ()}; }
-      iterator end () const noexcept;
+    /// Search the directory for a member whose name equals \p name.
+    ///
+    /// \param name  The name of the entry to be found.
+    /// \returns  An iterator to the directory entry if found, or end if not.
+    iterator find (std::string_view name) const;
 
-      std::size_t size () const noexcept { return size_; }
-      dirent const & operator[] (std::size_t pos) const noexcept;
+    /// Searchs the directory for a member which references the directory structure \p d.
+    ///
+    /// \param d  The directory to be found.
+    /// \returns  An iterator to the directory entry if found, or end if not.
+    iterator find (gsl::not_null<directory const *> d) const;
 
-      /// Search the directory for a member whose name equals \p name.
-      ///
-      /// \param name  The name of the entry to be found.
-      /// \returns  An iterator to the directory entry if found, or end if not.
-      iterator find (std::string_view name) const;
+    /// Performs basic validity checks on a directory hierarchy.
+    bool check () const;
 
-      /// Searchs the directory for a member which references the directory structure \p d.
-      ///
-      /// \param d  The directory to be found.
-      /// \returns  An iterator to the directory entry if found, or end if not.
-      iterator find (gsl::not_null<directory const *> d) const;
-
-      /// Performs basic validity checks on a directory hierarchy.
-      bool check () const;
-
-    private:
-      struct check_stack_entry {
-        gsl::not_null<directory const *> d;
-        check_stack_entry const * prev;
-      };
-      bool check (gsl::not_null<directory const *> parent, check_stack_entry const * visited) const;
-
-      /// The number of entries in the members_ array.
-      std::size_t const size_;
-      /// An array of directory members.
-      gsl::not_null<dirent const *> const members_;
+  private:
+    struct check_stack_entry {
+      gsl::not_null<directory const *> d;
+      check_stack_entry const * prev;
     };
+    bool check (gsl::not_null<directory const *> parent, check_stack_entry const * visited) const;
 
+    /// The number of entries in the members_ array.
+    //    std::size_t const size_;
+    /// An array of directory members.
+    gsl::span<dirent const> const members_;
+  };
 
-  } // end namespace romfs
-} // end namespace pstore
+} // end namespace pstore::romfs
 
 #endif // PSTORE_ROMFS_DIRECTORY_HPP

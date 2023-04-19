@@ -46,7 +46,7 @@ namespace {
     {"index.html", reinterpret_cast<std::uint8_t const *> (index_html),
      pstore::romfs::stat{index_size, pstore::romfs::mode_t::file, index_mtime}},
   }};
-  pstore::romfs::directory const root_dir{root_dir_membs};
+  pstore::romfs::directory const root_dir{pstore::gsl::make_span (root_dir_membs)};
   pstore::romfs::directory const * const root = &root_dir;
 
 } // end anonymous namespace

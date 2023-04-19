@@ -73,5 +73,6 @@ void dump_tree (std::ostream & os, std::unordered_set<unsigned> & forwards,
   }
 
   os << "}};\n"
-     << "pstore::romfs::directory const " << dir_name << " {" << dirent_array_name << "};\n";
+     << "pstore::romfs::directory const " << dir_name << " {pstore::gsl::make_span("
+     << dirent_array_name << ")};\n";
 }

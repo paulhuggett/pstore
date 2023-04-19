@@ -43,12 +43,6 @@ namespace pstore::romfs {
   //* / _` | | '_/ -_) _|  _/ _ \ '_| || | *
   //* \__,_|_|_| \___\__|\__\___/_|  \_, | *
   //*                                |__/  *
-  // end
-  // ~~~
-  auto directory::end () const noexcept -> iterator {
-    return iterator{members_ + this->size ()};
-  }
-
   // operator[]
   // ~~~~~~~~~~
   auto directory::operator[] (std::size_t const pos) const noexcept -> dirent const & {

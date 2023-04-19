@@ -39,14 +39,14 @@ namespace {
     {"..", &dir3},
     {"foo", file1, pstore::romfs::stat{sizeof (file1), pstore::romfs::mode_t::file, foo_mtime}},
   }};
-  directory const dir0{dir0_membs};
+  directory const dir0{pstore::gsl::make_span (dir0_membs)};
   std::array<dirent, 4> const dir3_membs = {{
     {".", &dir3},
     {"..", &dir3},
     {"dir", &dir0},
     {"hello", file2, pstore::romfs::stat{sizeof (file2), pstore::romfs::mode_t::file, hello_mtime}},
   }};
-  directory const dir3{dir3_membs};
+  directory const dir3{pstore::gsl::make_span (dir3_membs)};
   directory const * const root = &dir3;
 
 
