@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <string_view>
 
 #include "pstore/support/unsigned_cast.hpp"
 
@@ -25,23 +26,19 @@ using pstore::gsl::not_null;
 
 namespace {
 
-  std::pair<czstring, czstring> path_component (czstring const path) {
-    if (path == nullptr) {
-      return {nullptr, nullptr};
-    }
-    czstring p = path;
-    while (*p != '\0' && *p != '/') {
-      ++p;
-    }
-    return {path, p};
+  /// Split the pathname \p path into a pair, (head, tail) where head is the
+  /// first path component and tail is everything after that.
+  std::pair<std::string_view, std::string_view> path_component (std::string_view path) {
+    auto const pos = std::min (path.find_first_of ('/'), path.size ());
+    auto tail = path;
+    tail.remove_prefix (pos);
+    return {std::string_view{path.data (), pos}, tail};
   }
 
-  not_null<czstring> next_component (not_null<czstring> const path) {
-    czstring p = path;
-    while (*p == '/') {
-      ++p;
-    }
-    return p;
+  // Skip over any leading path-separator characters in \p path.
+  std::string_view next_component (std::string_view path) {
+    path.remove_prefix (std::min (path.find_first_not_of ('/'), path.size ()));
+    return path;
   }
 
 } // end anonymous namespace
@@ -249,7 +246,7 @@ namespace pstore {
 
     // open
     // ~~~~
-    auto romfs::open (not_null<czstring> const path) const -> error_or<descriptor> {
+    auto romfs::open (std::string_view const & path) const -> error_or<descriptor> {
       return this->parse_path (path) >>= [] (dirent_ptr const de) {
         auto const file = std::make_shared<open_file> (*de);
         return error_or<descriptor>{descriptor{file}};
@@ -258,7 +255,7 @@ namespace pstore {
 
     // opendir
     // ~~~~~~~
-    error_or<dirent_descriptor> romfs::opendir (not_null<czstring> const path) {
+    error_or<dirent_descriptor> romfs::opendir (std::string_view const & path) {
       auto get_directory = [] (dirent const * const de) {
         using rett = error_or<directory const *>;
         return de->is_directory () ? rett{de->opendir ()}
@@ -275,7 +272,7 @@ namespace pstore {
 
     // stat
     // ~~~~
-    error_or<struct stat> romfs::stat (not_null<czstring> const path) const {
+    error_or<struct stat> romfs::stat (std::string_view const & path) const {
       return this->parse_path (path) >>=
              [] (dirent_ptr const de) { return error_or<struct stat>{de->stat ()}; };
     }
@@ -288,7 +285,7 @@ namespace pstore {
 
     // chdir
     // ~~~~~
-    std::error_code romfs::chdir (not_null<czstring> const path) {
+    std::error_code romfs::chdir (std::string_view const & path) {
       auto const dirent_to_directory = [] (dirent_ptr const de) { return de->opendir (); };
 
       auto const set_cwd = [this] (directory const * const d) {
@@ -310,9 +307,9 @@ namespace pstore {
 
     // parse path
     // ~~~~~~~~~~
-    auto romfs::parse_path (not_null<czstring> const path, not_null<directory const *> dir) const
+    auto romfs::parse_path (std::string_view const & path, not_null<directory const *> dir) const
       -> error_or<dirent_ptr> {
-      if (path.get () == nullptr || dir.get () == nullptr) {
+      if (path.empty () || dir.get () == nullptr) {
         return error_or<dirent_ptr> (make_error_code (error_code::enoent));
       }
 
@@ -324,15 +321,10 @@ namespace pstore {
 
       dirent const * current_de = directory_to_dirent (dir);
       PSTORE_ASSERT (current_de->is_directory ());
-      while (*p != '\0') {
-        char const * component;
-        char const * tail;
-        std::tie (component, tail) = path_component (p);
-        // note that component is not null terminated!
+      while (!p.empty ()) {
+        auto [component, tail] = path_component (p);
         p = next_component (tail);
-
-        PSTORE_ASSERT (tail > component);
-        auto const component_pos = dir->find (component, unsigned_cast (tail - component));
+        auto const component_pos = dir->find (component);
         if (component_pos == dir->end ()) {
           // name not found
           return error_or<dirent_ptr>{make_error_code (error_code::enoent)};
@@ -345,7 +337,7 @@ namespace pstore {
             return error_or<dirent_ptr>{eo_directory.get_error ()};
           }
           dir = eo_directory.get ();
-        } else if (*p != '\0') {
+        } else if (!p.empty ()) {
           // not a directory and wasn't the last component.
           return error_or<dirent_ptr> (make_error_code (error_code::enotdir));
         }

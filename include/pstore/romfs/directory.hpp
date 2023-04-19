@@ -56,20 +56,11 @@ namespace pstore {
       std::size_t size () const noexcept { return size_; }
       dirent const & operator[] (std::size_t pos) const noexcept;
 
-      /// Search the directory for a member whose name equals the string described by \p name
-      /// and \p length.
-      ///
-      /// \note \p name is not a nul terminated string.
+      /// Search the directory for a member whose name equals \p name.
       ///
       /// \param name  The name of the entry to be found.
-      /// \param length  The number of code units in \p name.
       /// \returns  An iterator to the directory entry if found, or end if not.
-      iterator find (gsl::not_null<char const *> name, std::size_t length) const;
-
-      template <std::size_t Size>
-      iterator find (char const (&name)[Size]) const {
-        return this->find (&name[0], Size - 1U);
-      }
+      iterator find (std::string_view name) const;
 
       /// Searchs the directory for a member which references the directory structure \p d.
       ///

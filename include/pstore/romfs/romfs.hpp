@@ -17,6 +17,7 @@
 #define PSTORE_ROMFS_ROMFS_HPP
 
 #include <cerrno>
+#include <string_view>
 
 #include "pstore/romfs/directory.hpp"
 #include "pstore/romfs/dirent.hpp"
@@ -131,12 +132,13 @@ namespace pstore {
       romfs & operator= (romfs const &) = delete;
       romfs & operator= (romfs &&) = delete;
 
-      error_or<descriptor> open (gsl::not_null<gsl::czstring> path) const;
-      error_or<dirent_descriptor> opendir (gsl::not_null<gsl::czstring> path);
-      error_or<struct stat> stat (gsl::not_null<gsl::czstring> path) const;
+      error_or<descriptor> open (std::string_view const & path) const;
+      error_or<dirent_descriptor> opendir (std::string_view const & path);
+      error_or<struct stat> stat (std::string_view const & path) const;
 
       error_or<std::string> getcwd () const;
-      std::error_code chdir (gsl::not_null<gsl::czstring> path);
+      /// Change the current working directory
+      std::error_code chdir (std::string_view const & path);
 
       /// \brief Check that the file system's structures are intact.
       ///
@@ -151,7 +153,7 @@ namespace pstore {
 
       static gsl::not_null<dirent const *> directory_to_dirent (gsl::not_null<directory const *> d);
 
-      error_or<dirent_ptr> parse_path (gsl::not_null<gsl::czstring> const path) const {
+      error_or<dirent_ptr> parse_path (std::string_view const & path) const {
         return parse_path (path, cwd_);
       }
 
@@ -165,7 +167,7 @@ namespace pstore {
       ///   initial character of the \p path argument is a slash.
       /// \returns  The directory entry described by the \p path argument or an error if the
       ///   string was not valid.
-      error_or<dirent_ptr> parse_path (gsl::not_null<gsl::czstring> path,
+      error_or<dirent_ptr> parse_path (std::string_view const & path,
                                        gsl::not_null<directory const *> start_dir) const;
 
       gsl::not_null<directory const *> const root_;

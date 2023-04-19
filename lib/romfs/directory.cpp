@@ -60,28 +60,23 @@ namespace pstore {
     // find
     // ~~~~
     auto directory::find (gsl::not_null<directory const *> const d) const -> iterator {
-      // This is a straightfoward linear search. Could be a performance problem in the future.
+      // This is a straightforward linear search. Could limit performance in the future.
       return std::find_if (this->begin (), this->end (), [d] (dirent const & de) {
         auto const od = de.opendir ();
         return od && od.get () == d;
       });
     }
 
-    auto directory::find (gsl::not_null<char const *> const name, std::size_t length) const
-      -> iterator {
 
+    auto directory::find (std::string_view name) const -> iterator {
       // Directories are sorted by name: we can use a binary search here.
       auto const end = this->end ();
-      auto const it = std::lower_bound (
-        this->begin (), end, std::make_pair (name, length),
-        [] (dirent const & a, std::pair<gsl::not_null<char const *>, std::size_t> const & b) {
-          return std::strncmp (a.name (), b.first, b.second) < 0;
+      auto const pos =
+        std::lower_bound (begin (), end, name, [] (dirent const & a, std::string_view const & b) {
+          return a.name ().get () < b;
         });
-      if (it != end) {
-        gsl::czstring const n = it->name ();
-        if (std::strncmp (n, name, length) == 0 && n[length] == '\0') {
-          return it;
-        }
+      if (pos != end && pos->name ().get () == name) {
+        return pos;
       }
       return end;
     }
