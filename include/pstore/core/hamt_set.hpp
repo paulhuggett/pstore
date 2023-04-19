@@ -168,8 +168,8 @@ namespace pstore {
       ///@{
 
       /// Read a leaf node from a store.
-      value_type load_leaf_node (database const & db, address const addr) const {
-        return map_.load_leaf_node (db, addr).first;
+      value_type load_leaf (database const & db, address const addr) const {
+        return map_.load_leaf (db, addr).first;
       }
 
       index_pointer root () const { return map_.root (); }

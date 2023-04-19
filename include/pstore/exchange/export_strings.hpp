@@ -117,7 +117,7 @@ namespace pstore::exchange::export_ns {
       }
       os << '\n' << member_indent;
 
-      indirect_string const str = names_index->load_leaf_node (db, addr);
+      indirect_string const str = names_index->load_leaf (db, addr);
       shared_sstring_view owner;
       raw_sstring_view const view = str.as_db_string_view (&owner);
       emit_string (os, view);

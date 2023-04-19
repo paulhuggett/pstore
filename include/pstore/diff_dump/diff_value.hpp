@@ -102,7 +102,7 @@ namespace pstore {
 
         diff_out & operator= (pstore::address addr) {
           p_->members_->emplace_back (
-            dump::make_value (get_key (p_->index_->load_leaf_node (*p_->db_, addr))));
+            dump::make_value (get_key (p_->index_->load_leaf (*p_->db_, addr))));
           return *this;
         }
 

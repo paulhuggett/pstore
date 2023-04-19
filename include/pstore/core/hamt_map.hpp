@@ -39,10 +39,10 @@ namespace pstore {
     /// \tparam KeyType  The map key type.
     /// \tparam ValueType  The map value type.
     /// \tparam Hash  A function which produces the hash of a supplied key. The signature must
-    /// be compatible with:
+    ///   be compatible with:
     ///     index::details::hash_type(KeyType)
     /// \tparam KeyEqual  A function used to compare keys for equality. The signature must be
-    /// compatible with:
+    ///   compatible with:
     ///     bool(KeyType, KeyType)
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     class hamt_map final : public index_base {
@@ -156,8 +156,7 @@ namespace pstore {
         /// \return The value of the element to which this iterator is currently pointing.
         value_reference_type operator* () const {
           if (pos_ == nullptr) {
-            pos_ =
-              std::make_unique<value_type> (index_->load_leaf_node (db_, this->get_address ()));
+            pos_ = std::make_unique<value_type> (index_->load_leaf (db_, this->get_address ()));
           }
           return *pos_;
         }
@@ -358,7 +357,7 @@ namespace pstore {
       ///@{
 
       /// Read a leaf node from a store.
-      value_type load_leaf_node (database const & db, address addr) const;
+      value_type load_leaf (database const & db, address addr) const;
 
       /// Returns the index root pointer.
       index_pointer root () const noexcept { return root_; }
@@ -370,8 +369,8 @@ namespace pstore {
 
       /// Stores a key/value data pair.
       template <typename OtherValueType>
-      address store_leaf_node (transaction_base & transaction, OtherValueType const & v,
-                               gsl::not_null<parent_stack *> parents);
+      address store_leaf (transaction_base & transaction, OtherValueType const & v,
+                          gsl::not_null<parent_stack *> parents);
 
       /// If the \p node is a heap internal node, clear its children and itself.
       void clear (index_pointer node, unsigned shifts);
@@ -435,6 +434,7 @@ namespace pstore {
         typename Database, typename HamtMap,
         typename Iterator = typename inherit_const<Database, iterator, const_iterator>::type>
       static Iterator make_begin_iterator (Database && db, HamtMap && m);
+
       template <
         typename Database, typename HamtMap,
         typename Iterator = typename inherit_const<Database, iterator, const_iterator>::type>
@@ -475,12 +475,13 @@ namespace pstore {
       /// memory (minus sizeof (internal_node)).
       ///
       // TODO: we allocate nodes at their maximum size even though they may only contain two
-      // members. This is rather wasteful and will prevent us from moving to larger hash
+      // members. This is extremely wasteful and will prevent us from moving to larger hash
       // sizes due to the bloated memory consumption.
       using internal_nodes_container =
         chunked_sequence<internal_node, internal_nodes_per_chunk,
                          internal_node::size_bytes (details::hash_size)>;
-      std::unique_ptr<internal_nodes_container> internals_container_;
+      std::unique_ptr<internal_nodes_container> internals_container_ =
+        std::make_unique<internal_nodes_container> ();
 
       unsigned revision_;
       index_pointer root_;
@@ -608,13 +609,14 @@ namespace pstore {
     constexpr std::array<std::uint8_t, 8>
       hamt_map<KeyType, ValueType, Hash, KeyEqual>::index_signature;
 
+    // (ctor)
+    // ~~~~~~
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     hamt_map<KeyType, ValueType, Hash, KeyEqual>::hamt_map (database const & db,
                                                             typed_address<header_block> const pos,
                                                             Hash const & hash,
                                                             KeyEqual const & equal)
-            : internals_container_{std::make_unique<internal_nodes_container> ()}
-            , revision_{db.get_current_revision ()}
+            : revision_{db.get_current_revision ()}
             , hash_{hash}
             , equal_{equal} {
 
@@ -628,14 +630,12 @@ namespace pstore {
         }
 #endif
 
-        {
-          auto const root = index_pointer{hb->root};
-          if (root.is_heap () || (hb->size == 0U && !root.is_empty ()) ||
-              (hb->size > 0U && root.is_empty ()) || (hb->size == 1U && !root.is_leaf ()) ||
-              (hb->size > 1U && !root.is_internal ())) {
+        if (auto const root = index_pointer{hb->root};
+            root.is_heap () || (hb->size == 0U && !root.is_empty ()) ||
+            (hb->size > 0U && root.is_empty ()) || (hb->size == 1U && !root.is_leaf ()) ||
+            (hb->size > 1U && !root.is_internal ())) {
 
-            raise (pstore::error_code::index_corrupt);
-          }
+          raise (pstore::error_code::index_corrupt);
         }
         size_ = hb->size;
         root_ = hb->root;
@@ -663,8 +663,8 @@ namespace pstore {
     // load leaf node
     // ~~~~~~~~~~~~~~
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
-    auto hamt_map<KeyType, ValueType, Hash, KeyEqual>::load_leaf_node (database const & db,
-                                                                       address const addr) const
+    auto hamt_map<KeyType, ValueType, Hash, KeyEqual>::load_leaf (database const & db,
+                                                                  address const addr) const
       -> value_type {
 
       return serialize::read<std::pair<KeyType, ValueType>> (
@@ -681,11 +681,11 @@ namespace pstore {
       return serialize::read<KeyType> (serialize::archive::database_reader{db, addr});
     }
 
-    // store leaf node
-    // ~~~~~~~~~~~~~~~
+    // store leaf
+    // ~~~~~~~~~~
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     template <typename OtherValueType>
-    address hamt_map<KeyType, ValueType, Hash, KeyEqual>::store_leaf_node (
+    address hamt_map<KeyType, ValueType, Hash, KeyEqual>::store_leaf (
       transaction_base & transaction, OtherValueType const & v,
       gsl::not_null<parent_stack *> const parents) {
 
@@ -717,7 +717,7 @@ namespace pstore {
         auto const new_hash = hash & details::hash_index_mask;
         auto const old_hash = existing_hash & details::hash_index_mask;
         if (new_hash != old_hash) {
-          address const leaf_addr = this->store_leaf_node (transaction, new_leaf, parents);
+          address const leaf_addr = this->store_leaf (transaction, new_leaf, parents);
           auto const internal_ptr =
             index_pointer{internal_node::allocate (internals_container_.get (), existing_leaf,
                                                    index_pointer{leaf_addr}, old_hash, new_hash)};
@@ -749,7 +749,7 @@ namespace pstore {
       // We ran out of hash bits: create a new linear node.
       auto const linear_ptr =
         index_pointer{linear_node::allocate (existing_leaf.to_address (),
-                                             this->store_leaf_node (transaction, new_leaf, parents))
+                                             this->store_leaf (transaction, new_leaf, parents))
                         .release ()};
       parents->push (details::parent_type{linear_ptr, 1U});
       return linear_ptr;
@@ -796,8 +796,8 @@ namespace pstore {
       if (index == details::not_found) {
         internal_node * const inode =
           internal_node::make_writable (internals_container_.get (), node, *internal);
-        inode->insert_child (
-          hash, index_pointer{this->store_leaf_node (transaction, value, parents)}, parents);
+        inode->insert_child (hash, index_pointer{this->store_leaf (transaction, value, parents)},
+                             parents);
         return {index_pointer{inode}, false};
       }
 
@@ -857,7 +857,7 @@ namespace pstore {
         // Load into memory with space for 1 new child node.
         std::unique_ptr<linear_node> new_node = linear_node::allocate_from (*orig_node, 1U);
         index = orig_node->size ();
-        (*new_node)[index] = this->store_leaf_node (transaction, value, parents);
+        (*new_node)[index] = this->store_leaf (transaction, value, parents);
         result = new_node.release ();
       } else {
         key_exists = true;
@@ -875,7 +875,7 @@ namespace pstore {
             lnode = new_node.get ();
             result = lnode;
           }
-          (*lnode)[index] = this->store_leaf_node (transaction, value, parents);
+          (*lnode)[index] = this->store_leaf (transaction, value, parents);
           new_node.release ();
         } else {
           parents->push (details::parent_type{index_pointer{(*orig_node)[index]}});
@@ -905,7 +905,7 @@ namespace pstore {
         key_type const existing_key = get_key (transaction.db (), node.to_address ()); // Read key.
         if (equal_ (value.first, existing_key)) {
           if (is_upsert) {
-            result = this->store_leaf_node (transaction, value, parents);
+            result = this->store_leaf (transaction, value, parents);
           } else {
             parents->push (details::parent_type{node});
             result = node;
@@ -945,7 +945,7 @@ namespace pstore {
 
       parent_stack parents;
       if (this->empty ()) {
-        root_ = this->store_leaf_node (transaction, value, &parents);
+        root_ = this->store_leaf (transaction, value, &parents);
         size_ = 1;
         return std::make_pair (iterator (db, std::move (parents), this), true);
       }
@@ -1036,11 +1036,11 @@ namespace pstore {
     typed_address<header_block> hamt_map<KeyType, ValueType, Hash, KeyEqual>::write_header_block (
       transaction_base & transaction) {
       PSTORE_ASSERT (this->root ().is_address ());
-      auto const pos = transaction.alloc_rw<header_block> ();
-      pos.first->signature = index_signature;
-      pos.first->size = this->size ();
-      pos.first->root = this->root ().to_address ();
-      return pos.second;
+      auto [header, address] = transaction.alloc_rw<header_block> ();
+      header->signature = index_signature;
+      header->size = this->size ();
+      header->root = this->root ().to_address ();
+      return address;
     }
 
     // find
@@ -1101,7 +1101,7 @@ namespace pstore {
     template <typename Database, typename HamtMap, typename Iterator>
     Iterator hamt_map<KeyType, ValueType, Hash, KeyEqual>::make_begin_iterator (Database && db,
                                                                                 HamtMap && m) {
-      Iterator result{db, parent_stack (), &m};
+      Iterator result{std::forward<Database> (db), parent_stack{}, &m};
       if (!m.root_.is_empty ()) {
         result.move_to_left_most_child (m.root_);
       }
@@ -1114,7 +1114,7 @@ namespace pstore {
     template <typename Database, typename HamtMap, typename Iterator>
     Iterator hamt_map<KeyType, ValueType, Hash, KeyEqual>::make_end_iterator (Database && db,
                                                                               HamtMap && m) {
-      return {db, parent_stack (), &m};
+      return {std::forward<Database> (db), parent_stack{}, &m};
     }
 
   } // namespace index

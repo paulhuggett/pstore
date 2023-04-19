@@ -60,7 +60,7 @@ namespace {
         os << ',';
       }
       os << '\n' << object_indent;
-      auto const & kvp = debug_line_headers->load_leaf_node (db, addr);
+      auto const & kvp = debug_line_headers->load_leaf (db, addr);
       pstore::exchange::export_ns::emit_digest (os, kvp.first);
       os << R"(:")";
       std::shared_ptr<std::uint8_t const> const data = db.getro (kvp.second);

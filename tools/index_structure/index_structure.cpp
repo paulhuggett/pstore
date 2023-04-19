@@ -78,7 +78,7 @@ namespace {
                          pstore::index::hamt_map<KeyType, ValueType, Hash, KeyEqual> const & index,
                          std::ostream & os, pstore::address addr) {
     auto const this_id = "leaf" + std::to_string (addr.absolute ());
-    auto const kvp = index.load_leaf_node (db, addr);
+    auto const kvp = index.load_leaf (db, addr);
 
     std::ostringstream key_stream;
     key_stream << kvp.first;
@@ -97,7 +97,7 @@ namespace {
     auto const this_id = "leaf" + std::to_string (addr.absolute ());
 
     std::ostringstream key_stream;
-    key_stream << index.load_leaf_node (db, addr);
+    key_stream << index.load_leaf (db, addr);
 
     os << this_id << " [shape=record label=\"" << escape (key_stream.str ()) << "\"]\n";
     return this_id;

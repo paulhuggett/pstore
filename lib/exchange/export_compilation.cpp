@@ -92,7 +92,7 @@ namespace pstore {
         auto const * sep = "\n";
 
         auto const out_fn = [&] (address const addr) {
-          auto const & kvp = compilations->load_leaf_node (db, addr);
+          auto const & kvp = compilations->load_leaf (db, addr);
           os << sep << ind;
           emit_digest (os, kvp.first);
           os << ':';

@@ -79,9 +79,8 @@ namespace {
   addresses_to_values (pstore::database const & db, Index const & index, AddressIterator first,
                        AddressIterator last) {
     std::vector<typename Index::value_type> values;
-    std::transform (first, last, std::back_inserter (values), [&db, &index] (pstore::address addr) {
-      return index.load_leaf_node (db, addr);
-    });
+    std::transform (first, last, std::back_inserter (values),
+                    [&db, &index] (pstore::address addr) { return index.load_leaf (db, addr); });
     return values;
   }
 
