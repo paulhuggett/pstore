@@ -45,7 +45,7 @@ namespace pstore {
       /// \tparam T An unsigned integer type.
       /// \param x A value whose population count is to be returned.
       /// \return The population count of \p x.
-      template <typename T, typename = typename std::enable_if_t<std::is_unsigned<T>::value>>
+      template <typename T, typename = typename std::enable_if_t<std::is_unsigned_v<T>>>
       constexpr unsigned cx_pop_count (T const x) noexcept {
         return x == 0U ? 0U : (x & 1U) + cx_pop_count (x >> 1U);
       }

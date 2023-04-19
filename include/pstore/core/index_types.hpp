@@ -129,7 +129,7 @@ namespace pstore {
       if (dx.get () == nullptr) {
         std::shared_ptr<trailer const> const footer = db.get_footer ();
         typed_address<index::header_block> const location = footer->a.index_records.at (
-          static_cast<typename std::underlying_type<decltype (Index)>::type> (Index));
+          static_cast<typename std::underlying_type_t<decltype (Index)>> (Index));
         if (location == decltype (location)::null ()) {
           if (create) {
             // Create a new (empty) index.

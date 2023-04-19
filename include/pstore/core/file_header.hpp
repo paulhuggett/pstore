@@ -224,7 +224,7 @@ namespace pstore {
 #undef X
     using index_records_array =
       std::array<typed_address<index::header_block>,
-                 static_cast<std::underlying_type<indices>::type> (indices::last)>;
+                 static_cast<std::underlying_type_t<indices>> (indices::last)>;
 
     /// Represents the portion of the trailer structure which is covered by the computed CRC
     /// value.

@@ -40,7 +40,7 @@ namespace pstore {
 
       public:
         using iterator_category = std::forward_iterator_tag;
-        using value_type = typename std::add_const<KeyType>::type;
+        using value_type = typename std::add_const_t<KeyType>;
         using difference_type = std::ptrdiff_t;
         using pointer = value_type *;
         using reference = value_type &;
@@ -49,7 +49,6 @@ namespace pstore {
                 : it_ (it) {}
 
         bool operator== (set_iterator const & other) const { return it_ == other.it_; }
-
         bool operator!= (set_iterator const & other) const { return it_ != other.it_; }
 
         /// Dereference operator

@@ -359,7 +359,7 @@ namespace pstore {
     //  database.
     std::shared_ptr<index::index_base> &
     get_mutable_index (enum pstore::trailer::indices const which) const {
-      return indices_[static_cast<std::underlying_type<decltype (which)>::type> (which)];
+      return indices_[static_cast<std::underlying_type_t<decltype (which)>> (which)];
     }
     std::shared_ptr<trailer const> get_footer () const { return this->getro (this->footer_pos ()); }
 
@@ -538,7 +538,7 @@ namespace pstore {
   // ~~~~~~~~~~~~~~
   template <typename File>
   auto database::get_footer_pos (File & file) -> typed_address<trailer> {
-    static_assert (std::is_base_of<file::file_base, File>::value,
+    static_assert (std::is_base_of_v<file::file_base, File>,
                    "File type must be derived from file::file_base");
     PSTORE_ASSERT (file.is_open ());
 
