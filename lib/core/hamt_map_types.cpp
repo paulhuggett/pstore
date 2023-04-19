@@ -171,14 +171,13 @@ namespace pstore {
               , children_{{leaf}} {
 
         static_assert (std::is_standard_layout_v<branch>,
-                       "internal internal_node must be standard-layout");
+                       "internal branch must be standard-layout");
         static_assert (alignof (linear_node) >= 4,
                        "branch must have alignment >= 4 to ensure the bottom two bits are 0");
 
         static_assert (offsetof (branch, signature_) == 0,
-                       "offsetof (internal_node, signature) must be 0");
-        static_assert (offsetof (branch, bitmap_) == 8,
-                       "offsetof (internal_node, bitmap_) must be 8");
+                       "offsetof (branch, signature) must be 0");
+        static_assert (offsetof (branch, bitmap_) == 8, "offsetof (branch, bitmap_) must be 8");
         static_assert (offsetof (branch, children_) == 16, "offset of the first child must be 16.");
       }
 
@@ -242,10 +241,10 @@ namespace pstore {
       // ~~~~~~~~~
       auto branch::read_node (database const & db, typed_address<branch> const addr)
         -> std::shared_ptr<branch const> {
-        /// Sadly, loading an internal_node needs to done in three stages:
-        /// 1. Load the basic structure
-        /// 2. Calculate the actual size of the child pointer array
-        /// 3. Load the complete structure along with its child pointer array
+        /// Sadly, loading a branch node needs to done in three stages:
+        /// 1. Load the basic structure.
+        /// 2. Calculate the actual size of the child pointer array.
+        /// 3. Load the complete structure along with its child pointer array.
         auto base = std::static_pointer_cast<branch const> (
           db.getro (addr.to_address (), sizeof (branch) - sizeof (branch::children_)));
 
@@ -342,13 +341,13 @@ namespace pstore {
             } else { // linear node
               PSTORE_ASSERT (p.is_linear ());
               auto * const linear = p.untag<linear_node *> ();
-              p = linear->flush (transaction) | internal_node_bit;
+              p = linear->flush (transaction) | branch_bit;
               delete linear;
             }
           }
         }
         // Flush itself.
-        return this->store_node (transaction) | internal_node_bit;
+        return this->store_node (transaction) | branch_bit;
       }
 
     } // namespace details

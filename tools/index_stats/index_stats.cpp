@@ -46,7 +46,7 @@ namespace {
   using index_pointer = index::details::index_pointer;
   using branch = index::details::branch;
   using linear_node = index::details::linear_node;
-  constexpr auto max_internal_depth = index::details::max_internal_depth;
+  constexpr auto max_branch_depth = index::details::max_branch_depth;
 
   struct stats {
   public:
@@ -102,7 +102,7 @@ namespace {
 
   void stats::traverse (index_pointer node, unsigned depth) {
     max_depth_ = std::max (max_depth_, depth);
-    if (depth >= max_internal_depth && node.is_linear ()) {
+    if (depth >= max_branch_depth && node.is_linear ()) {
       auto const linear = linear_node::get_node (db_, node);
       return this->visit_linear (*linear.second);
     }

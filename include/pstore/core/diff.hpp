@@ -102,7 +102,7 @@ namespace pstore {
         return out;
       }
 
-      if (index::details::depth_is_internal_node (shifts)) {
+      if (index::details::depth_is_branch (shifts)) {
         return this->visit_intermediate<index::details::branch> (node, shifts, out);
       }
 

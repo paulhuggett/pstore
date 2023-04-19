@@ -35,7 +35,7 @@ using pstore::database;
 // Here it is justified because the tool's purpose is to poke about inside the index
 // internals!
 using pstore::index::details::branch;
-using pstore::index::details::depth_is_internal_node;
+using pstore::index::details::depth_is_branch;
 using pstore::index::details::hash_index_bits;
 using pstore::index::details::index_pointer;
 using pstore::index::details::linear_node;
@@ -135,9 +135,8 @@ namespace {
       PSTORE_ASSERT (node.is_address ());
       return dump_leaf (db, index, os, node.to_address ());
     }
-    return depth_is_internal_node (shifts)
-             ? dump_intermediate<branch> (db, index, os, node, shifts)
-             : dump_intermediate<linear_node> (db, index, os, node, shifts);
+    return depth_is_branch (shifts) ? dump_intermediate<branch> (db, index, os, node, shifts)
+                                    : dump_intermediate<linear_node> (db, index, os, node, shifts);
   }
 
   template <typename IndexType>

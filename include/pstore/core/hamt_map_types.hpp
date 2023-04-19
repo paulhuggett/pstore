@@ -31,8 +31,8 @@ namespace pstore {
 
       using hash_type = std::uint64_t;
 
-      /// The number of bits in hash_type. This is the maximum number of children that an
-      /// internal-node can carry.
+      /// The number of bits in hash_type. This is the maximum number of children that a
+      /// branch can carry.
       constexpr auto const hash_size = sizeof (hash_type) * 8;
 
       // Visual Studio won't allow pop_count to be constexpr. This forces us to have a second
@@ -59,15 +59,15 @@ namespace pstore {
 
       constexpr unsigned max_hash_bits = (hash_size + 7) / hash_index_bits * hash_index_bits;
       constexpr unsigned hash_index_mask = (1U << hash_index_bits) - 1U;
-      constexpr unsigned max_internal_depth = max_hash_bits / hash_index_bits;
+      constexpr unsigned max_branch_depth = max_hash_bits / hash_index_bits;
 
       /// The max depth of the hash trees include several levels internal nodes
       /// (max_internal_depth), one linear node and one leaf node.
-      constexpr unsigned max_tree_depth = max_internal_depth + 2U;
+      constexpr unsigned max_tree_depth = max_branch_depth + 2U;
 
       enum : std::uintptr_t {
-        internal_node_bit = 1U << 0U, /// Using LSB for marking internal nodes
-        heap_node_bit = 1U << 1U,     /// Marks newly allocated internal nodes
+        branch_bit = 1U << 0U, /// Using LSB for marking branches
+        heap_bit = 1U << 1U,   /// Marks newly allocated internal nodes
       };
 
       /// Provides the member constant `value` which is equal to true if S the same as
@@ -111,7 +111,7 @@ namespace pstore {
       class branch;
       class linear_node;
 
-      constexpr bool depth_is_internal_node (unsigned const shift) noexcept {
+      constexpr bool depth_is_branch (unsigned const shift) noexcept {
         return shift < details::max_hash_bits;
       }
 
@@ -194,7 +194,7 @@ namespace pstore {
         /// otherwise.
         /// \sa is_leaf
         bool is_internal () const noexcept {
-          return (reinterpret_cast<std::uintptr_t> (internal_) & internal_node_bit) != 0;
+          return (reinterpret_cast<std::uintptr_t> (internal_) & branch_bit) != 0;
         }
 
         /// Returns true if the index_pointer is pointing to a linear node, false otherwise.
@@ -211,7 +211,7 @@ namespace pstore {
         /// Returns true if the index_pointer is pointing to a heap node, false otherwise.
         /// \sa is_address
         bool is_heap () const noexcept {
-          return (reinterpret_cast<std::uintptr_t> (internal_) & heap_node_bit) != 0U;
+          return (reinterpret_cast<std::uintptr_t> (internal_) & heap_bit) != 0U;
         }
 
         /// Returns true if the index_pointer is pointing to a store node, false otherwise.
@@ -229,15 +229,15 @@ namespace pstore {
         template <typename T,
                   typename = typename std::enable_if_t<is_any_of<T, branch, linear_node>::value>>
         typed_address<T> untag_address () const noexcept {
-          return typed_address<T>::make (to_address ().absolute () & ~internal_node_bit);
+          return typed_address<T>::make (to_address ().absolute () & ~branch_bit);
         }
 
         template <typename Ptr,
                   typename = typename std::enable_if_t<is_any_of<
                     typename std::pointer_traits<Ptr>::element_type, branch, linear_node>::value>>
         Ptr untag () const noexcept {
-          return reinterpret_cast<Ptr> (reinterpret_cast<std::uintptr_t> (internal_) &
-                                        ~internal_node_bit & ~heap_node_bit);
+          return reinterpret_cast<Ptr> (reinterpret_cast<std::uintptr_t> (internal_) & ~branch_bit &
+                                        ~heap_bit);
         }
 
       private:
@@ -245,8 +245,8 @@ namespace pstore {
                   typename = typename std::enable_if_t<is_any_of<
                     typename std::pointer_traits<Ptr>::element_type, branch, linear_node>::value>>
         static Ptr tag (Ptr t) noexcept {
-          return reinterpret_cast<Ptr> (reinterpret_cast<std::uintptr_t> (t) | internal_node_bit |
-                                        heap_node_bit);
+          return reinterpret_cast<Ptr> (reinterpret_cast<std::uintptr_t> (t) | branch_bit |
+                                        heap_bit);
         }
         address addr_;
         branch * internal_;

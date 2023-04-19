@@ -183,11 +183,11 @@ namespace pstore {
         }
 
       private:
-        void increment_internal_node ();
+        void increment_branch ();
 
         /// Walks the iterator's position to point to the deepest, left-most leaf of the
-        /// the current node. The iterator must be positing to an internal node when this
-        /// method is called.
+        /// the current node. The iterator must be pointing to an branch when this
+        /// function is called.
         void move_to_left_most_child (index_pointer node);
 
         unsigned get_shift_bits () const {
@@ -372,7 +372,7 @@ namespace pstore {
       address store_leaf (transaction_base & transaction, OtherValueType const & v,
                           gsl::not_null<parent_stack *> parents);
 
-      /// If the \p node is a heap internal node, clear its children and itself.
+      /// If the \p node is a heap branch, clear its children and itself.
       void clear (index_pointer node, unsigned shifts);
 
       /// Clear the hamt_map when transaction::rollback() function is called.
@@ -387,18 +387,18 @@ namespace pstore {
       key_type get_key (database const & db, address addr) const;
 
       /// Called when the trie's top-level loop has descended as far as a leaf node. We need
-      /// to convert that to an internal node.
+      /// to convert that to a branch.
       template <typename OtherValueType>
       auto insert_into_leaf (transaction_base & transaction, index_pointer const & existing_leaf,
                              OtherValueType const & new_leaf, hash_type existing_hash,
                              hash_type hash, unsigned shifts, gsl::not_null<parent_stack *> parents)
         -> index_pointer;
 
-      /// Inserts a key-value pair into an internal node, potentially traversing to deeper
+      /// Inserts a key-value pair into a branch, potentially traversing to deeper
       /// nodes in the tree.
       ///
       /// \param transaction  The transaction to which new data will be appended.
-      /// \param node  A heap or in-store reference to an existing internal node.
+      /// \param node  A heap or in-store reference to an existing branch.
       /// \param value The key/value pair to be inserted.
       /// \param hash  The key hash.
       /// \param shifts  The number of bits by which the hash value is shifted to reach the
@@ -408,13 +408,13 @@ namespace pstore {
       /// build an iterator instance.
       /// \param is_upsert  True if this is an "upsert" (insert or update) operation, false
       /// otherwise.
-      /// \result  A pair consisting of a reference to the internal node (which will be equal
+      /// \result  A pair consisting of a reference to the branch (which will be equal
       /// to \p node if the nothing was modified by the insert operation) and a bool denoting
       /// whether the key was already present.
       template <typename OtherValueType>
-      auto insert_into_internal (transaction_base & transaction, index_pointer node,
-                                 OtherValueType const & value, hash_type hash, unsigned shifts,
-                                 gsl::not_null<parent_stack *> parents, bool is_upsert)
+      auto insert_into_branch (transaction_base & transaction, index_pointer node,
+                               OtherValueType const & value, hash_type hash, unsigned shifts,
+                               gsl::not_null<parent_stack *> parents, bool is_upsert)
         -> std::pair<index_pointer, bool>;
 
       template <typename OtherValueType>
@@ -422,8 +422,8 @@ namespace pstore {
                                OtherValueType const & value, gsl::not_null<parent_stack *> parents,
                                bool is_upsert) -> std::pair<index_pointer, bool>;
 
-      /// Insert a new key/value pair into a existing node, which could be a leaf node, an
-      /// internal store node or an internal heap node.
+      /// Insert a new key/value pair into a existing node, which could be a leaf node, a
+      /// store branch or a heap branch.
       template <typename OtherValueType>
       auto insert_node (transaction_base & transaction, index_pointer node,
                         OtherValueType const & value, hash_type hash, unsigned shifts,
@@ -450,8 +450,8 @@ namespace pstore {
       ///
       /// \param node  The tree node to be deleted.
       /// \param shifts  The number of bits by which the hash value is shifted to reach the
-      /// current tree level. This is used to determine whether the reference is to an
-      /// internal or linear node.
+      /// current tree level. This is used to determine whether the reference is to a
+      /// branch or linear node.
       void delete_node (index_pointer node, unsigned shifts);
 
       /// \brief Write the index header.
@@ -464,22 +464,22 @@ namespace pstore {
 
       static constexpr auto branches_per_chunk = std::size_t{256} * 1024 / sizeof (branch);
 
-      /// Internal nodes are allocated using a "chunked-sequence". This allocates memory in
-      /// lumps sufficent for internal_nodes_per_chunk entries. This is then consumed as new
-      /// in-heap internal nodes are created.
+      /// Branches are allocated using a "chunked-sequence". This allocates memory in
+      /// lumps sufficent for branches_per_chunk entries. This is then consumed as new
+      /// in-heap branches are created.
       ///
       /// The effect of this is to significantly reduce the number of memory allocations
       /// performed by the index code under heavy insertion pressure and thus give us a little
       /// extra performance. The cost is that we may waste as much as one chunk's worth of
-      /// memory (minus sizeof (internal_node)).
+      /// memory (minus sizeof (branch)).
       ///
       // TODO: we allocate nodes at their maximum size even though they may only contain two
       // members. This is extremely wasteful and will prevent us from moving to larger hash
       // sizes due to the bloated memory consumption.
-      using internal_nodes_container =
+      using branch_container =
         chunked_sequence<branch, branches_per_chunk, branch::size_bytes (details::hash_size)>;
-      std::unique_ptr<internal_nodes_container> internals_container_ =
-        std::make_unique<internal_nodes_container> ();
+      std::unique_ptr<branch_container> internals_container_ =
+        std::make_unique<branch_container> ();
 
       unsigned revision_;
       index_pointer root_;
@@ -507,38 +507,38 @@ namespace pstore {
       -> iterator_base & {
       pos_.reset ();
       PSTORE_ASSERT (!visited_parents_.empty ());
-      this->increment_internal_node ();
+      this->increment_branch ();
       return *this;
     }
 
 
-    // increment internal node
-    // ~~~~~~~~~~~~~~~~~~~~~~~
+    // increment branch
+    // ~~~~~~~~~~~~~~~~
     /// Move the iterator to the next child. If the last of this node is reached we need to:
     /// 1. Move to its parent.
     /// 2. Figure out which of the parent's children we've just completed.
     /// 3. Was that the last of the parent's children? If so, got to step 1.
-    /// 4. If this next node is an internal node, find its deepest, left-most child.
+    /// 4. If this next node is a branch, find its deepest, left-most child.
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     template <bool IsConstIterator>
     void hamt_map<KeyType, ValueType, Hash,
-                  KeyEqual>::iterator_base<IsConstIterator>::increment_internal_node () {
+                  KeyEqual>::iterator_base<IsConstIterator>::increment_branch () {
 
       visited_parents_.pop ();
 
       if (!visited_parents_.empty ()) {
         std::shared_ptr<void const> node;
-        branch const * internal = nullptr;
+        branch const * branch = nullptr;
         linear_node const * linear = nullptr;
 
         details::parent_type parent = visited_parents_.top ();
         unsigned const shifts = this->get_shift_bits ();
-        bool const is_internal_node = details::depth_is_internal_node (shifts);
+        bool const is_branch = details::depth_is_branch (shifts);
         std::size_t size = 0;
-        if (is_internal_node) {
-          std::tie (node, internal) = branch::get_node (db_, parent.node);
-          PSTORE_ASSERT (internal != nullptr);
-          size = internal->size ();
+        if (is_branch) {
+          std::tie (node, branch) = branch::get_node (db_, parent.node);
+          PSTORE_ASSERT (branch != nullptr);
+          size = branch->size ();
         } else {
           std::tie (node, linear) = linear_node::get_node (db_, parent.node);
           PSTORE_ASSERT (linear != nullptr);
@@ -549,14 +549,14 @@ namespace pstore {
         ++parent.position;
 
         if (parent.position >= size) {
-          this->increment_internal_node ();
+          this->increment_branch ();
         } else {
           // Update the parent.
           visited_parents_.top ().position = parent.position;
 
           // Visit the child.
-          if (is_internal_node) {
-            index_pointer child = (*internal)[parent.position];
+          if (is_branch) {
+            index_pointer child = (*branch)[parent.position];
             if (child.is_internal ()) {
               this->move_to_left_most_child (child);
             } else {
@@ -578,7 +578,7 @@ namespace pstore {
 
       while (!node.is_leaf ()) {
         visited_parents_.push (details::parent_type{node, 0});
-        if (visited_parents_.size () <= details::max_internal_depth) {
+        if (visited_parents_.size () <= details::max_branch_depth) {
           auto [store_node, internal] = branch::get_node (db_, node);
           PSTORE_ASSERT (!store_node || store_node.get () == internal);
           node = (*internal)[0];
@@ -640,7 +640,7 @@ namespace pstore {
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     void hamt_map<KeyType, ValueType, Hash, KeyEqual>::clear (index_pointer node, unsigned shifts) {
       PSTORE_ASSERT (node.is_heap () && !node.is_leaf ());
-      if (details::depth_is_internal_node (shifts)) {
+      if (details::depth_is_branch (shifts)) {
         auto const * const internal = node.untag<branch *> ();
         // Recursively release the children of this internal node.
         for (auto p : *internal) {
@@ -685,7 +685,7 @@ namespace pstore {
       // Make sure the alignment of leaf node is 4 to ensure that the two LSB are guaranteed
       // 0. If 'v' has greater alignment, serialize::write() will add additional padding.
       constexpr auto aligned_to = std::size_t{4};
-      static_assert ((details::internal_node_bit | details::heap_node_bit) == aligned_to - 1,
+      static_assert ((details::branch_bit | details::heap_bit) == aligned_to - 1,
                      "expected required alignment to be 4");
       transaction.allocate (0, aligned_to);
 
@@ -706,7 +706,7 @@ namespace pstore {
       OtherValueType const & new_leaf, hash_type existing_hash, hash_type hash, unsigned shifts,
       gsl::not_null<parent_stack *> parents) -> index_pointer {
 
-      if (details::depth_is_internal_node (shifts)) {
+      if (details::depth_is_branch (shifts)) {
         auto const new_hash = hash & details::hash_index_mask;
         auto const old_hash = existing_hash & details::hash_index_mask;
         if (new_hash != old_hash) {
@@ -755,21 +755,21 @@ namespace pstore {
                                                                     unsigned const shifts) {
       if (node.is_heap ()) {
         PSTORE_ASSERT (!node.is_leaf ());
-        if (details::depth_is_internal_node (shifts)) {
-          // Internal nodes are owned by internals_container_. Don't delete them here. If
+        if (details::depth_is_branch (shifts)) {
+          // Branches are owned by internals_container_. Don't delete them here. If
           // this ever changes, then add something like: delete
-          // node.untag<internal_node *> ();
+          // node.untag<branch *> ();
         } else {
           delete node.untag<linear_node *> ();
         }
       }
     }
 
-    // insert into internal
-    // ~~~~~~~~~~~~~~~~~~~~
+    // insert into branch
+    // ~~~~~~~~~~~~~~~~~~
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     template <typename OtherValueType>
-    auto hamt_map<KeyType, ValueType, Hash, KeyEqual>::insert_into_internal (
+    auto hamt_map<KeyType, ValueType, Hash, KeyEqual>::insert_into_branch (
       transaction_base & transaction, index_pointer node, OtherValueType const & value,
       hash_type hash, unsigned shifts, gsl::not_null<parent_stack *> parents, bool is_upsert)
       -> std::pair<index_pointer, bool> {
@@ -904,10 +904,10 @@ namespace pstore {
             this->insert_into_leaf (transaction, node, value, existing_hash, hash, shifts, parents);
         }
       } else {
-        // This node is an internal or a linear node.
-        if (details::depth_is_internal_node (shifts)) {
+        // This node is a branch or a linear node.
+        if (details::depth_is_branch (shifts)) {
           std::tie (result, key_exists) =
-            this->insert_into_internal (transaction, node, value, hash, shifts, parents, is_upsert);
+            this->insert_into_branch (transaction, node, value, hash, shifts, parents, is_upsert);
         } else {
           std::tie (result, key_exists) =
             this->insert_into_linear (transaction, node, value, parents, is_upsert);
@@ -1051,7 +1051,7 @@ namespace pstore {
         index_pointer child_node;
         auto index = std::size_t{0};
 
-        if (details::depth_is_internal_node (bit_shifts)) {
+        if (details::depth_is_branch (bit_shifts)) {
           // It's an internal node.
           branch const * internal = nullptr;
           std::tie (store_node, internal) = branch::get_node (db, node);
