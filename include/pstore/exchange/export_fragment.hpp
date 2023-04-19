@@ -18,19 +18,15 @@
 
 #include "pstore/exchange/export_section.hpp"
 
-namespace pstore {
-  namespace exchange {
-    namespace export_ns {
+namespace pstore::exchange::export_ns {
 
-      void emit_fragment (ostream_base & os, indent ind, class database const & db,
-                          string_mapping const & strings,
-                          std::shared_ptr<repo::fragment const> const & fragment, bool comments);
+  void emit_fragment (ostream_base & os, indent ind, class database const & db,
+                      string_mapping const & strings,
+                      std::shared_ptr<repo::fragment const> const & fragment, bool comments);
 
-      void emit_fragments (ostream & os, indent ind, class database const & db, unsigned generation,
-                           string_mapping const & strings, bool comments);
+  void emit_fragments (ostream & os, indent ind, class database const & db, unsigned generation,
+                       string_mapping const & strings, bool comments);
 
-    } // end namespace export_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::export_ns
 
 #endif // PSTORE_EXCHANGE_EXPORT_FRAGMENT_HPP

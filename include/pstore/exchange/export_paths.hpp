@@ -21,15 +21,11 @@
 
 #include "pstore/exchange/export_strings.hpp"
 
-namespace pstore {
-  namespace exchange {
-    namespace export_ns {
+namespace pstore::exchange::export_ns {
 
-      void emit_paths (ostream_base & os, indent ind, database const & db, unsigned generation,
-                       gsl::not_null<string_mapping *> string_table);
+  void emit_paths (ostream_base & os, indent ind, database const & db, unsigned generation,
+                   gsl::not_null<string_mapping *> string_table);
 
-    } // end namespace export_ns
-  }   // end namespace exchange
-} // namespace pstore
+} // namespace pstore::exchange::export_ns
 
 #endif // PSTORE_EXCHANGE_EXPORT_PATHS_HPP

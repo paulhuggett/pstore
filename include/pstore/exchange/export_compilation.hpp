@@ -28,21 +28,19 @@
 #include "pstore/mcrepo/compilation.hpp"
 
 namespace pstore {
-  namespace exchange {
-    namespace export_ns {
+  namespace exchange::export_ns {
 
-      class ostream_base;
+    class ostream_base;
 
-      void emit_compilation (ostream_base & os, indent ind, database const & db,
-                             repo::compilation const & compilation, string_mapping const & strings,
-                             bool comments);
+    void emit_compilation (ostream_base & os, indent ind, database const & db,
+                           repo::compilation const & compilation, string_mapping const & strings,
+                           bool comments);
 
-      void emit_compilation_index (ostream_base & os, indent ind, database const & db,
-                                   unsigned generation, string_mapping const & strings,
-                                   bool comments);
+    void emit_compilation_index (ostream_base & os, indent ind, database const & db,
+                                 unsigned generation, string_mapping const & strings,
+                                 bool comments);
 
-    } // end namespace export_ns
-  }   // end namespace exchange
+  } // namespace exchange::export_ns
 
   namespace repo {
 

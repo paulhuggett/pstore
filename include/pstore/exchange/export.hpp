@@ -21,17 +21,13 @@
 
 #include "pstore/exchange/export_ostream.hpp"
 
-namespace pstore {
-  namespace exchange {
-    // Note that we'd really like to call this namespace "export", but this is a keyword
-    // in C++ meaning that we're not allowed to do so. The "_ns" suffix is an abbreviation of
-    // "namespace" to work around this restriction.
-    namespace export_ns {
+namespace pstore::exchange::export_ns {
 
-      void emit_database (database & db, ostream & os, bool comments);
+  // Note that I'd really like to call this namespace "export", but this is a keyword
+  // in C++ meaning that we're not allowed to do so. The "_ns" suffix is an abbreviation of
+  // "namespace" to work around this restriction.
+  void emit_database (database & db, ostream & os, bool comments);
 
-    } // end namespace export_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::export_ns
 
 #endif // PSTORE_EXCHANGE_EXPORT_HPP
