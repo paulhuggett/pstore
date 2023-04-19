@@ -125,7 +125,7 @@ namespace pstore::broker {
   // echo
   // ~~~~
   void command_processor::echo (brokerface::fifo_path const &, broker_command const & c) {
-    std::lock_guard<decltype (iomut)> lock{iomut};
+    std::scoped_lock<decltype (iomut)> lock{iomut};
     std::printf ("ECHO:%s\n", c.path.c_str ());
   }
 
@@ -203,7 +203,7 @@ namespace pstore::broker {
   // ~~~~~
   auto command_processor::parse (brokerface::message_type const & msg)
     -> std::unique_ptr<broker_command> {
-    std::lock_guard<decltype (cmds_mut_)> const lock{cmds_mut_};
+    std::scoped_lock<decltype (cmds_mut_)> const lock{cmds_mut_};
     return ::pstore::broker::parse (msg, cmds_);
   }
 
@@ -254,7 +254,7 @@ namespace pstore::broker {
     // Remove all partial messages where the last piece of the message arrived before
     // earliest_time. It's most likely that the sending process gave up/crashed/lost
     // interest before sending the complete message.
-    std::lock_guard<decltype (cmds_mut_)> const lock{cmds_mut_};
+    std::scoped_lock<decltype (cmds_mut_)> const lock{cmds_mut_};
     auto const end = std::end (cmds_);
     auto it = std::begin (cmds_);
     while (it != end) {

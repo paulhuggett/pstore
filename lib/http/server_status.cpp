@@ -38,7 +38,7 @@ namespace pstore {
     // set real port number
     // ~~~~~~~~~~~~~~~~~~~~
     in_port_t server_status::set_real_port_number (socket_descriptor const & descriptor) {
-      std::lock_guard<decltype (mut_)> lock{mut_};
+      std::scoped_lock<decltype (mut_)> lock{mut_};
       if (port_ == 0) {
         sockaddr_in address{};
         socklen_t address_len = sizeof (address);
@@ -57,7 +57,7 @@ namespace pstore {
     // port
     // ~~~~
     in_port_t server_status::port () const {
-      std::lock_guard<decltype (mut_)> lock{mut_};
+      std::scoped_lock<decltype (mut_)> lock{mut_};
       return port_;
     }
 

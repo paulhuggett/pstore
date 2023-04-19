@@ -57,7 +57,7 @@ namespace pstore::broker {
   // shutdown
   // ~~~~~~~~
   void scavenger::shutdown () {
-    std::lock_guard<decltype (mut_)> const lock{mut_};
+    std::scoped_lock<decltype (mut_)> const lock{mut_};
     cv_.notify_all ();
   }
 

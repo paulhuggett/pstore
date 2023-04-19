@@ -43,7 +43,7 @@ namespace {
   };
 
   int counter::increment () {
-    std::lock_guard<std::mutex> _{mut_};
+    std::scoped_lock<std::mutex> _{mut_};
     ++count_;
     cv_.notify_one ();
     return count_;

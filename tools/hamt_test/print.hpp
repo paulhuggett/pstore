@@ -60,7 +60,7 @@ namespace details {
 
   template <typename... Args>
   std::ostream & ios_printer::print (Args &&... args) {
-    std::lock_guard<std::mutex> _{mutex_};
+    std::scoped_lock<std::mutex> _{mutex_};
     if (!cr_) {
       cr_ = true;
       this->print_one ('\n');
@@ -70,7 +70,7 @@ namespace details {
 
   template <typename... Args>
   std::ostream & ios_printer::print_flush (Args &&... args) {
-    std::lock_guard<std::mutex> _{mutex_};
+    std::scoped_lock<std::mutex> _{mutex_};
     cr_ = false;
     return print_one (std::forward<Args> (args)...) << std::flush;
   }

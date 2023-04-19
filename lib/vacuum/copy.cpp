@@ -38,7 +38,7 @@ namespace {
 
     // Wake up the watch thread immediately.
     auto & wst = vacuum::wst;
-    std::lock_guard<decltype (wst.start_watch_mutex)> const lock{wst.start_watch_mutex};
+    std::scoped_lock<decltype (wst.start_watch_mutex)> const lock{wst.start_watch_mutex};
     wst.start_watch_cv.notify_one ();
   }
 
@@ -47,7 +47,7 @@ namespace {
   void start_watching (std::shared_ptr<pstore::database> const & source,
                        vacuum::status * const st) {
     auto & wst = vacuum::wst;
-    std::lock_guard<decltype (wst.start_watch_mutex)> const lock{wst.start_watch_mutex};
+    std::scoped_lock<decltype (wst.start_watch_mutex)> const lock{wst.start_watch_mutex};
     source->sync ();
     wst.start_watch = true;
     st->modified = false;

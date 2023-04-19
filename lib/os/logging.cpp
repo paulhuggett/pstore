@@ -357,7 +357,7 @@ namespace pstore {
     str << time_str << " - " << thread_name_ << " - " << priority_string (p) << " - " << message
         << '\n';
 
-    std::lock_guard<std::mutex> const lock (mutex_);
+    std::scoped_lock<std::mutex> const lock (mutex_);
     this->log_impl (str.str ());
   }
 

@@ -241,7 +241,7 @@ namespace pstore::brokerface {
       // Note that f() is called without the lock held.
       std::string const message = f (std::forward<Args> (args)...);
 
-      std::lock_guard<std::mutex> const lock{mut_};
+      std::scoped_lock<std::mutex> const lock{mut_};
       for (auto & sub : subscribers_) {
         sub->queue_.push (message);
       }
@@ -253,7 +253,7 @@ namespace pstore::brokerface {
   // ~~~~~~~~~~~~~~
   template <typename ConditionVariable>
   bool channel<ConditionVariable>::have_listeners () const {
-    std::lock_guard<std::mutex> const lock{mut_};
+    std::scoped_lock<std::mutex> const lock{mut_};
     return !subscribers_.empty ();
   }
 
@@ -289,7 +289,7 @@ namespace pstore::brokerface {
   // ~~~~~~~~~~~~~~
   template <typename ConditionVariable>
   auto channel<ConditionVariable>::new_subscriber () -> subscriber_pointer {
-    std::lock_guard<std::mutex> const lock{mut_};
+    std::scoped_lock<std::mutex> const lock{mut_};
     auto resl = subscriber_pointer{new subscriber_type (this)};
     subscribers_.insert (resl.get ());
     return resl;
@@ -299,7 +299,7 @@ namespace pstore::brokerface {
   // ~~~~~~
   template <typename ConditionVariable>
   void channel<ConditionVariable>::remove (subscriber_type * sub) noexcept {
-    std::lock_guard<std::mutex> const lock{mut_};
+    std::scoped_lock<std::mutex> const lock{mut_};
     PSTORE_ASSERT (subscribers_.find (sub) != subscribers_.end ());
     subscribers_.erase (sub);
   }

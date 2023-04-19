@@ -36,7 +36,7 @@ inline void say_impl (OStream & os, Arg a, Args... args) {
 template <typename OStream, typename... Args>
 void say (OStream & os, Args... args) {
   static std::mutex io_mut;
-  std::lock_guard<std::mutex> lock{io_mut};
+  std::scoped_lock<std::mutex> lock{io_mut};
   say_impl (os, args...);
   os << std::endl;
 }

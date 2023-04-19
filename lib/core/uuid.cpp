@@ -73,7 +73,7 @@ namespace pstore {
     {
       static std::mutex mutex;
       static random_generator<unsigned short> random;
-      std::lock_guard<std::mutex> _{mutex};
+      std::scoped_lock<std::mutex> _{mutex};
       std::generate (std::begin (data_), std::end (data_), [] () {
         return static_cast<std::uint8_t> (random.get () %
                                           std::numeric_limits<std::uint8_t>::max ());

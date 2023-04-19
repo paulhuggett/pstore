@@ -81,16 +81,16 @@ namespace pstore::broker {
     class atomic_weak_ptr {
     public:
       std::shared_ptr<T> get () {
-        std::lock_guard<decltype (mut_)> const lock{mut_};
+        std::scoped_lock<decltype (mut_)> const lock{mut_};
         return ptr_.lock ();
       }
 
       void set (std::shared_ptr<T> const & t) {
-        std::lock_guard<decltype (mut_)> const lock{mut_};
+        std::scoped_lock<decltype (mut_)> const lock{mut_};
         ptr_ = t;
       }
       void set (std::weak_ptr<T> & t) {
-        std::lock_guard<decltype (mut_)> const lock{mut_};
+        std::scoped_lock<decltype (mut_)> const lock{mut_};
         ptr_ = t;
       }
 

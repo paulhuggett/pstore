@@ -99,7 +99,7 @@ namespace {
 
         http::server (fs, &status->value (), channels, [announce_port] (in_port_t const port) {
           if (announce_port) {
-            std::lock_guard<decltype (broker::iomut)> lock{broker::iomut};
+            std::scoped_lock<decltype (broker::iomut)> lock{broker::iomut};
             std::cout << "HTTP listening on port " << port << std::endl;
           }
         });

@@ -54,7 +54,7 @@ namespace {
     std::mutex mut;
     container out;
     pstore::parallel_for_each (std::begin (src), std::end (src), [&out, &mut] (int v) {
-      std::lock_guard<std::mutex> _{mut};
+      std::scoped_lock<std::mutex> _{mut};
       out.emplace_back (v * 2);
     });
     std::sort (std::begin (out), std::end (out), std::less<int> ());
