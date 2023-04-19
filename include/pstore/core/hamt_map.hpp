@@ -584,7 +584,8 @@ namespace pstore {
           PSTORE_ASSERT (!store_node || store_node.get () == b);
           node = (*b)[0];
         } else {
-          auto const * const linear = linear_node::get_node (db_, node).second;
+          auto [store_node, linear] = linear_node::get_node (db_, node);
+          (void) store_node;
           node = (*linear)[0];
         }
       }
@@ -775,7 +776,8 @@ namespace pstore {
       hash_type hash, unsigned shifts, gsl::not_null<parent_stack *> parents, bool is_upsert)
       -> std::pair<index_pointer, bool> {
 
-      auto const * const b = branch::get_node (transaction.db (), node).second;
+      auto [bptr, b] = branch::get_node (transaction.db (), node);
+      (void) bptr;
       PSTORE_ASSERT (b != nullptr);
 
       // Now work out which of the children we're going to be visiting next.
@@ -794,9 +796,7 @@ namespace pstore {
       hash >>= details::hash_index_bits;
 
       // update child_slot
-      bool key_exists;
-      index_pointer new_child;
-      std::tie (new_child, key_exists) =
+      auto [new_child, key_exists] =
         this->insert_node (transaction, child_slot, value, hash, shifts, parents, is_upsert);
 
       // If the insertion resulted in our child node being reallocated, then this node needs
