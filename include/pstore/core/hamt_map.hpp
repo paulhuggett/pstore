@@ -402,15 +402,15 @@ namespace pstore {
       /// \param value The key/value pair to be inserted.
       /// \param hash  The key hash.
       /// \param shifts  The number of bits by which the hash value is shifted to reach the
-      /// current tree level.
+      ///   current tree level.
       /// \param parents  A stack containing references to the nodes visited during the tree
-      /// traversal (and the positions within each of those nodes). This is later used to
-      /// build an iterator instance.
+      ///   traversal (and the positions within each of those nodes). This is later used to
+      ///   build an iterator instance.
       /// \param is_upsert  True if this is an "upsert" (insert or update) operation, false
-      /// otherwise.
+      ///   otherwise.
       /// \result  A pair consisting of a reference to the branch (which will be equal
-      /// to \p node if the nothing was modified by the insert operation) and a bool denoting
-      /// whether the key was already present.
+      ///   to \p node if the nothing was modified by the insert operation) and a bool
+      ///   denoting whether the key was already present.
       template <typename OtherValueType>
       auto insert_into_branch (transaction_base & transaction, index_pointer node,
                                OtherValueType const & value, hash_type hash, unsigned shifts,
@@ -557,7 +557,7 @@ namespace pstore {
           // Visit the child.
           if (is_branch) {
             index_pointer child = (*branch)[parent.position];
-            if (child.is_internal ()) {
+            if (child.is_branch ()) {
               this->move_to_left_most_child (child);
             } else {
               visited_parents_.push (details::parent_type{child});
@@ -626,7 +626,7 @@ namespace pstore {
         if (auto const root = index_pointer{hb->root};
             root.is_heap () || (hb->size == 0U && !root.is_empty ()) ||
             (hb->size > 0U && root.is_empty ()) || (hb->size == 1U && !root.is_leaf ()) ||
-            (hb->size > 1U && !root.is_internal ())) {
+            (hb->size > 1U && !root.is_branch ())) {
 
           raise (pstore::error_code::index_corrupt);
         }
@@ -998,7 +998,7 @@ namespace pstore {
       // If the root is a leaf, there's nothing to do. If not, we start to recursively flush
       // the tree.
       if (!root_.is_address ()) {
-        PSTORE_ASSERT (root_.is_internal ());
+        PSTORE_ASSERT (root_.is_branch ());
         root_ = root_.untag<branch *> ()->flush (transaction, 0 /*shifts*/);
         PSTORE_ASSERT (root_.is_address ());
         // Don't delete the branch node here. They are owned by internals_container_. If

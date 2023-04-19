@@ -336,14 +336,14 @@ namespace {
   // ~~~~~~~~~~~~~~~~~~~~
   void GenericIndexFixture::check_is_heap_branch (index_pointer node) const {
     EXPECT_TRUE (node.is_heap ());
-    EXPECT_TRUE (node.is_internal ());
+    EXPECT_TRUE (node.is_branch ());
   }
 
   // check is store branch
   // ~~~~~~~~~~~~~~~~~~~~~
   void GenericIndexFixture::check_is_store_branch (index_pointer node) const {
     EXPECT_TRUE (node.is_address ());
-    EXPECT_TRUE (node.is_internal ());
+    EXPECT_TRUE (node.is_branch ());
   }
 
 } // end anonymous namespace
@@ -1624,7 +1624,7 @@ namespace {
     void iterate () const;
     void find () const;
 
-    std::shared_ptr<branch> load_inode (index_pointer ptr);
+    std::shared_ptr<branch> load_branch (index_pointer ptr);
     static constexpr unsigned branch_children = 2U;
 
     std::unique_ptr<test_trie> index_;
@@ -1667,10 +1667,10 @@ namespace {
                      pstore::error_code::index_corrupt);
   }
 
-  // load_inode
-  // ~~~~~~~~~~
-  std::shared_ptr<branch> CorruptInternalNodes::load_inode (index_pointer ptr) {
-    PSTORE_ASSERT (ptr.is_internal ());
+  // load branch
+  // ~~~~~~~~~~~
+  std::shared_ptr<branch> CorruptInternalNodes::load_branch (index_pointer ptr) {
+    PSTORE_ASSERT (ptr.is_branch ());
     return std::static_pointer_cast<branch> (
       db_.getrw (ptr.untag_address<branch> ().to_address (), branch::size_bytes (branch_children)));
   }
@@ -1687,7 +1687,7 @@ TEST_F (CorruptInternalNodes, BitmapIsZero) {
 
     // Corrupt the bitmap field.
     {
-      auto inode = this->load_inode (root);
+      auto inode = this->load_branch (root);
       inode->set_bitmap (0);
     }
 
@@ -1707,7 +1707,7 @@ TEST_F (CorruptInternalNodes, ChildPointsToParent) {
 
     // Corrupt the first child field such that it points back to the root.
     {
-      auto inode = this->load_inode (root);
+      auto inode = this->load_branch (root);
       (*inode)[0] = root;
     }
 
@@ -1727,7 +1727,7 @@ TEST_F (CorruptInternalNodes, ChildClaimsToBeOnHeap) {
 
     // Corrupt the first child field such it claims to be on the heap.
     {
-      std::shared_ptr<branch> inode = this->load_inode (root);
+      std::shared_ptr<branch> inode = this->load_branch (root);
       index_pointer & first = (*inode)[0];
       first = index_pointer{reinterpret_cast<branch *> (first.to_address ().absolute ())};
     }

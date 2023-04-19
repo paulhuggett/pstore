@@ -106,7 +106,7 @@ namespace {
       auto const linear = linear_node::get_node (db_, node);
       return this->visit_linear (*linear.second);
     }
-    if (node.is_internal ()) {
+    if (node.is_branch ()) {
       auto const b = branch::get_node (db_, node);
       return this->visit_branch (*b.second, depth);
     }

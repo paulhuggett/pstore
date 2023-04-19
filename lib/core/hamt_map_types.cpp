@@ -332,7 +332,7 @@ namespace pstore {
           // If it is a heap node, flush its children first (depth-first search).
           if (p.is_heap ()) {
             if (shifts < max_hash_bits) { // internal node
-              PSTORE_ASSERT (p.is_internal ());
+              PSTORE_ASSERT (p.is_branch ());
               auto * const internal = p.untag<branch *> ();
               p = internal->flush (transaction, shifts);
               // This node is owned by a container in the outer HAMT structure. Don't

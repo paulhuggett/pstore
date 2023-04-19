@@ -61,13 +61,13 @@ namespace pstore {
       constexpr unsigned hash_index_mask = (1U << hash_index_bits) - 1U;
       constexpr unsigned max_branch_depth = max_hash_bits / hash_index_bits;
 
-      /// The max depth of the hash trees include several levels internal nodes
-      /// (max_internal_depth), one linear node and one leaf node.
+      /// The max depth of the hash tree includes several levels of branches (max_branch_depth), one
+      /// linear node and one leaf node.
       constexpr unsigned max_tree_depth = max_branch_depth + 2U;
 
       enum : std::uintptr_t {
         branch_bit = 1U << 0U, /// Using LSB for marking branches
-        heap_bit = 1U << 1U,   /// Marks newly allocated internal nodes
+        heap_bit = 1U << 1U,   /// Marks newly allocated branches
       };
 
       /// Provides the member constant `value` which is equal to true if S the same as
@@ -125,21 +125,21 @@ namespace pstore {
       //* |_|_||_\__,_\___/_\_\ | .__/\___/_|_||_\__\___|_|   *
       //*                       |_|                           *
       /// An index pointer is either a database address or a pointer to volatile RAM.
-      /// The type information (whether the record points to either an internal or linear
+      /// The type information (whether the record points to either a branch or linear
       /// node) is carried externally.
       union index_pointer {
-        index_pointer () noexcept
-                : internal_{nullptr} {
+        constexpr index_pointer () noexcept
+                : branch_{nullptr} {
 
           // A belt-and-braces runtime check for cases where pop_count() can't be
           // constexpr.
-          assert (hash_index_bits == bit_count::pop_count (hash_size - 1));
+          PSTORE_ASSERT (hash_index_bits == bit_count::pop_count (hash_size - 1));
 
           PSTORE_STATIC_ASSERT (sizeof (index_pointer) == 8);
           PSTORE_STATIC_ASSERT (alignof (index_pointer) == 8);
           PSTORE_STATIC_ASSERT (offsetof (index_pointer, addr_) == 0);
-          PSTORE_STATIC_ASSERT (sizeof (internal_) == sizeof (addr_));
-          PSTORE_STATIC_ASSERT (offsetof (index_pointer, internal_) == 0);
+          PSTORE_STATIC_ASSERT (sizeof (branch_) == sizeof (addr_));
+          PSTORE_STATIC_ASSERT (offsetof (index_pointer, branch_) == 0);
           PSTORE_STATIC_ASSERT (sizeof (linear_) == sizeof (addr_));
           PSTORE_STATIC_ASSERT (offsetof (index_pointer, linear_) == 0);
         }
@@ -150,7 +150,7 @@ namespace pstore {
         constexpr explicit index_pointer (typed_address<linear_node> const a) noexcept
                 : addr_{a.to_address ()} {}
         explicit index_pointer (branch * const p) noexcept
-                : internal_{tag (p)} {}
+                : branch_{tag (p)} {}
         explicit index_pointer (linear_node * const p) noexcept
                 : linear_{tag (p)} {}
         index_pointer (index_pointer const &) noexcept = default;
@@ -171,7 +171,7 @@ namespace pstore {
           return *this;
         }
         index_pointer & operator= (branch * const p) noexcept {
-          internal_ = tag (p);
+          branch_ = tag (p);
           return *this;
         }
         index_pointer & operator= (linear_node * const l) noexcept {
@@ -188,30 +188,29 @@ namespace pstore {
 
         constexpr explicit operator bool () const noexcept { return !this->is_empty (); }
 
-        void clear () noexcept { internal_ = nullptr; }
+        void clear () noexcept { branch_ = nullptr; }
 
-        /// Returns true if the index_pointer is pointing to an internal node, false
-        /// otherwise.
+        /// Returns true if the index_pointer is pointing to a branch, false otherwise.
         /// \sa is_leaf
-        bool is_internal () const noexcept {
-          return (reinterpret_cast<std::uintptr_t> (internal_) & branch_bit) != 0;
+        bool is_branch () const noexcept {
+          return (reinterpret_cast<std::uintptr_t> (branch_) & branch_bit) != 0;
         }
 
         /// Returns true if the index_pointer is pointing to a linear node, false otherwise.
         /// \sa is_leaf
-        /// \note A linear node is always found at max_internal_depth. This function will
-        /// return true for internal nodes  at lower tree levels.
-        bool is_linear () const noexcept { return is_internal (); }
+        /// \note A linear node is always found at max_branch_depth. This function will
+        /// return true for branches at lower tree levels.
+        bool is_linear () const noexcept { return is_branch (); }
 
         /// Returns true if the index_pointer contains the address of a value in the store,
         /// false otherwise.
         /// \sa is_internal
-        bool is_leaf () const noexcept { return !is_internal (); }
+        bool is_leaf () const noexcept { return !is_branch (); }
 
         /// Returns true if the index_pointer is pointing to a heap node, false otherwise.
         /// \sa is_address
         bool is_heap () const noexcept {
-          return (reinterpret_cast<std::uintptr_t> (internal_) & heap_bit) != 0U;
+          return (reinterpret_cast<std::uintptr_t> (branch_) & heap_bit) != 0U;
         }
 
         /// Returns true if the index_pointer is pointing to a store node, false otherwise.
@@ -219,9 +218,9 @@ namespace pstore {
         bool is_address () const noexcept { return !is_heap (); }
 
         /// Returns true if the pointer is equivalent to "null".
-        constexpr bool is_empty () const noexcept { return internal_ == nullptr; }
+        constexpr bool is_empty () const noexcept { return branch_ == nullptr; }
 
-        address to_address () const noexcept {
+        constexpr address to_address () const noexcept {
           assert (is_address ());
           return addr_;
         }
@@ -236,7 +235,7 @@ namespace pstore {
                   typename = typename std::enable_if_t<is_any_of<
                     typename std::pointer_traits<Ptr>::element_type, branch, linear_node>::value>>
         Ptr untag () const noexcept {
-          return reinterpret_cast<Ptr> (reinterpret_cast<std::uintptr_t> (internal_) & ~branch_bit &
+          return reinterpret_cast<Ptr> (reinterpret_cast<std::uintptr_t> (branch_) & ~branch_bit &
                                         ~heap_bit);
         }
 
@@ -249,7 +248,7 @@ namespace pstore {
                                         heap_bit);
         }
         address addr_;
-        branch * internal_;
+        branch * branch_;
         linear_node * linear_;
       };
 
@@ -261,21 +260,24 @@ namespace pstore {
       /// \brief A class used to keep the pointer to parent node and the child slot.
       class parent_type {
       public:
-        parent_type () noexcept = default;
+        constexpr parent_type () noexcept = default;
 
         /// Constructs a parent type object.
         ///
         /// \param idx  The pointer to either the parent node or a leaf node.
         /// \param pos  If idx is a leaf node address, pos is set to the default value
         ///             (not_found). Otherwise, pos refers to the child slot.
-        explicit parent_type (index_pointer const idx, std::size_t const pos = not_found) noexcept
+        explicit constexpr parent_type (index_pointer const idx,
+                                        std::size_t const pos = not_found) noexcept
                 : node (idx)
                 , position (pos) {}
 
-        bool operator== (parent_type const & other) const {
+        constexpr bool operator== (parent_type const & other) const noexcept {
           return position == other.position && node == other.node;
         }
-        bool operator!= (parent_type const & other) const { return !operator== (other); }
+        constexpr bool operator!= (parent_type const & other) const noexcept {
+          return !operator== (other);
+        }
 
         index_pointer node;
         std::size_t position = 0;
@@ -518,32 +520,31 @@ namespace pstore {
         branch & operator= (branch const & rhs) = delete;
         branch & operator= (branch && rhs) = delete;
 
-        /// Construct an internal node from existing internal-node instance. This may be
+        /// Construct a branch node from existing branch instance. This may be
         /// used, for example, when copying an in-store node into memory in preparation for
         /// modifying it.
         ///
-        /// \tparam SequenceContainer A container of internal_node instances which supports
+        /// \tparam SequenceContainer A container of branch instances which supports
         ///   emplace_back().
-        /// \param container Points to the container which will own the new internal node
+        /// \param container Points to the container which will own the new branch
         ///   instance.
-        /// \param other A existing internal_node whose contents are copied into the newly
+        /// \param other A existing branch whose contents are copied into the newly
         ///   allocated instance.
-        /// \returns A new instance of internal_node which is owned by *container.
+        /// \returns A new instance of branch which is owned by *container.
         template <typename SequenceContainer, typename = typename std::enable_if_t<std::is_same_v<
                                                 typename SequenceContainer::value_type, branch>>>
         static branch * allocate (SequenceContainer * const container, branch const & other) {
           return &container->emplace_back (other);
         }
 
-        /// Construct an internal node with a single child.
+        /// Construct an branch with a single child.
         ///
-        /// \tparam SequenceContainer A container of internal_node instances which supports
+        /// \tparam SequenceContainer A container of branch instances which supports
         ///   emplace_back().
-        /// \param container Points to the container which will own the new internal node
-        ///   instance.
-        /// \param leaf The child of the newly allocated internal node.
+        /// \param container Points to the container which will own the new branch instance.
+        /// \param leaf The child of the newly allocated branch.
         /// \param hash The hash associated with the child node.
-        /// \returns A new instance of internal_node which is owned by *container.
+        /// \returns A new instance of branch which is owned by *container.
         template <typename SequenceContainer, typename = typename std::enable_if_t<std::is_same_v<
                                                 typename SequenceContainer::value_type, branch>>>
         static branch * allocate (SequenceContainer * container, index_pointer const & leaf,
@@ -551,17 +552,16 @@ namespace pstore {
           return &container->emplace_back (leaf, hash);
         }
 
-        /// Construct an internal node with two children.
+        /// Construct a branch with two children.
         ///
-        /// \tparam SequenceContainer A container of internal_node instances which supports
+        /// \tparam SequenceContainer A container of branch instances which supports
         ///   emplace_back().
-        /// \param container Points to the container which will own the new internal node
-        ///   instance.
-        /// \param existing_leaf  One of the two child nodes of the new internal node.
-        /// \param new_leaf  One of the two child nodes of the new internal node.
+        /// \param container Points to the container which will own the new branch instance.
+        /// \param existing_leaf  One of the two child nodes of the new branch.
+        /// \param new_leaf  One of the two child nodes of the new branch.
         /// \param existing_hash  The hash associated with the \p existing_leaf node.
         /// \param new_hash  The hash associated with the \p new_leaf node.
-        /// \returns A new instance of internal_node which is owned by *container.
+        /// \returns A new instance of branch which is owned by *container.
         template <typename SequenceContainer, typename = typename std::enable_if_t<std::is_same_v<
                                                 typename SequenceContainer::value_type, branch>>>
         static branch * allocate (SequenceContainer * container,
@@ -571,8 +571,8 @@ namespace pstore {
           return &container->emplace_back (existing_leaf, new_leaf, existing_hash, new_hash);
         }
 
-        /// Return a pointer to an internal node. If the node is in-store, it is loaded and
-        /// the internal heap node pointer if \p node is a heap internal node.
+        /// Return a pointer to a branch. If the node is in-store, it is loaded and
+        /// the internal heap node pointer if \p node is a heap branch.
         /// Otherwise return the pointer which is pointed to the store node.
         ///
         /// \param db  The database containing the node.
@@ -584,37 +584,37 @@ namespace pstore {
         static auto get_node (database const & db, index_pointer node)
           -> std::pair<std::shared_ptr<branch const>, branch const *>;
 
-        /// Load an internal node from the store.
+        /// Load a branch from the store.
         static auto read_node (database const & db, typed_address<branch> addr)
           -> std::shared_ptr<branch const>;
 
-        /// Returns a writable reference to an internal node. If the \p node parameter
+        /// Returns a writable reference to a branch. If the \p node parameter
         /// references an in-heap node, then this pointer is returned otherwise a copy of
         /// the \p internal parameter is placed in heap-allocated memory.
         ///
         /// \note It is expected that both \p node and \p internal are references to the
         /// same node.
         ///
-        /// \tparam SequenceContainer A container of internal_node instances which supports
+        /// \tparam SequenceContainer A container of branch instances which supports
         ///   emplace_back().
         /// \param container Points to the container which will own the new internal node
         ///   instance.
         /// \param node A reference to an internal node. This may be either in-store on the
-        /// heap. If on the heap the returned value is the underlying pointer.
-        /// \param internal  A read-only instance of an internal node. If the \p node
-        /// parameter is in-store then a copy of this value is placed on the heap.
+        ///   heap. If on the heap the returned value is the underlying pointer.
+        /// \param b  A read-only instance of a branch. If the \p node
+        ///   parameter is in-store then a copy of this value is placed on the heap.
         /// \result  See above.
         template <typename SequenceContainer, typename = typename std::enable_if_t<std::is_same_v<
                                                 typename SequenceContainer::value_type, branch>>>
         static branch * make_writable (SequenceContainer * const container,
-                                       index_pointer const node, branch const & internal) {
+                                       index_pointer const node, branch const & b) {
           if (node.is_heap ()) {
             auto * const inode = node.untag<branch *> ();
             PSTORE_ASSERT (inode->signature_ == node_signature_);
             return inode;
           }
 
-          return allocate (container, internal);
+          return allocate (container, b);
         }
 
         /// Returns the number of bytes occupied by an in-store internal node with the given
