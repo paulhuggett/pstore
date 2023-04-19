@@ -48,7 +48,7 @@ namespace pstore {
     class hamt_map final : public index_base {
       using hash_type = details::hash_type;
       using index_pointer = details::index_pointer;
-      using internal_node = details::internal_node;
+      using branch = details::branch;
       using linear_node = details::linear_node;
       using parent_stack = details::parent_stack;
 
@@ -462,8 +462,7 @@ namespace pstore {
       /// \result  The address at which the header block was written.
       typed_address<header_block> write_header_block (transaction_base & transaction);
 
-      static constexpr auto internal_nodes_per_chunk =
-        std::size_t{256} * 1024 / sizeof (internal_node);
+      static constexpr auto branches_per_chunk = std::size_t{256} * 1024 / sizeof (branch);
 
       /// Internal nodes are allocated using a "chunked-sequence". This allocates memory in
       /// lumps sufficent for internal_nodes_per_chunk entries. This is then consumed as new
@@ -478,8 +477,7 @@ namespace pstore {
       // members. This is extremely wasteful and will prevent us from moving to larger hash
       // sizes due to the bloated memory consumption.
       using internal_nodes_container =
-        chunked_sequence<internal_node, internal_nodes_per_chunk,
-                         internal_node::size_bytes (details::hash_size)>;
+        chunked_sequence<branch, branches_per_chunk, branch::size_bytes (details::hash_size)>;
       std::unique_ptr<internal_nodes_container> internals_container_ =
         std::make_unique<internal_nodes_container> ();
 
@@ -516,13 +514,11 @@ namespace pstore {
 
     // increment internal node
     // ~~~~~~~~~~~~~~~~~~~~~~~
-    /// Move the iterator points to the next child.
-    /// If the last child of this node is reached, so we need to:
-    /// 1. Move to its parent
-    /// 2. Figure out which of the parent's children we've just completed
+    /// Move the iterator to the next child. If the last of this node is reached we need to:
+    /// 1. Move to its parent.
+    /// 2. Figure out which of the parent's children we've just completed.
     /// 3. Was that the last of the parent's children? If so, got to step 1.
-    /// 4. If this next node is an internal node, find the its deepest, left-most
-    ///    child.
+    /// 4. If this next node is an internal node, find its deepest, left-most child.
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     template <bool IsConstIterator>
     void hamt_map<KeyType, ValueType, Hash,
@@ -532,7 +528,7 @@ namespace pstore {
 
       if (!visited_parents_.empty ()) {
         std::shared_ptr<void const> node;
-        internal_node const * internal = nullptr;
+        branch const * internal = nullptr;
         linear_node const * linear = nullptr;
 
         details::parent_type parent = visited_parents_.top ();
@@ -540,7 +536,7 @@ namespace pstore {
         bool const is_internal_node = details::depth_is_internal_node (shifts);
         std::size_t size = 0;
         if (is_internal_node) {
-          std::tie (node, internal) = internal_node::get_node (db_, parent.node);
+          std::tie (node, internal) = branch::get_node (db_, parent.node);
           PSTORE_ASSERT (internal != nullptr);
           size = internal->size ();
         } else {
@@ -580,17 +576,14 @@ namespace pstore {
     void hamt_map<KeyType, ValueType, Hash, KeyEqual>::iterator_base<
       IsConstIterator>::move_to_left_most_child (index_pointer node) {
 
-      std::shared_ptr<void const> store_node;
       while (!node.is_leaf ()) {
         visited_parents_.push (details::parent_type{node, 0});
         if (visited_parents_.size () <= details::max_internal_depth) {
-          internal_node const * internal = nullptr;
-          std::tie (store_node, internal) = internal_node::get_node (db_, node);
+          auto [store_node, internal] = branch::get_node (db_, node);
           PSTORE_ASSERT (!store_node || store_node.get () == internal);
           node = (*internal)[0];
         } else {
-          linear_node const * linear = nullptr;
-          std::tie (store_node, linear) = linear_node::get_node (db_, node);
+          auto [store_node, linear] = linear_node::get_node (db_, node);
           node = (*linear)[0];
         }
       }
@@ -648,7 +641,7 @@ namespace pstore {
     void hamt_map<KeyType, ValueType, Hash, KeyEqual>::clear (index_pointer node, unsigned shifts) {
       PSTORE_ASSERT (node.is_heap () && !node.is_leaf ());
       if (details::depth_is_internal_node (shifts)) {
-        auto const * const internal = node.untag<internal_node *> ();
+        auto const * const internal = node.untag<branch *> ();
         // Recursively release the children of this internal node.
         for (auto p : *internal) {
           if (p.is_heap ()) {
@@ -719,10 +712,10 @@ namespace pstore {
         if (new_hash != old_hash) {
           address const leaf_addr = this->store_leaf (transaction, new_leaf, parents);
           auto const internal_ptr =
-            index_pointer{internal_node::allocate (internals_container_.get (), existing_leaf,
-                                                   index_pointer{leaf_addr}, old_hash, new_hash)};
+            index_pointer{branch::allocate (internals_container_.get (), existing_leaf,
+                                            index_pointer{leaf_addr}, old_hash, new_hash)};
           parents->push (
-            details::parent_type{internal_ptr, internal_node::get_new_index (new_hash, old_hash)});
+            details::parent_type{internal_ptr, branch::get_new_index (new_hash, old_hash)});
           return internal_ptr;
         }
 
@@ -741,7 +734,7 @@ namespace pstore {
         index_pointer const leaf_ptr = this->insert_into_leaf (
           transaction, existing_leaf, new_leaf, existing_hash, hash, shifts, parents);
         auto const internal_ptr =
-          index_pointer{internal_node::allocate (internals_container_.get (), leaf_ptr, old_hash)};
+          index_pointer{branch::allocate (internals_container_.get (), leaf_ptr, old_hash)};
         parents->push (details::parent_type{internal_ptr, 0U});
         return internal_ptr;
       }
@@ -781,21 +774,16 @@ namespace pstore {
       hash_type hash, unsigned shifts, gsl::not_null<parent_stack *> parents, bool is_upsert)
       -> std::pair<index_pointer, bool> {
 
-      std::shared_ptr<internal_node const> iptr;
-      internal_node const * internal = nullptr;
-      std::tie (iptr, internal) = internal_node::get_node (transaction.db (), node);
+      auto [iptr, internal] = branch::get_node (transaction.db (), node);
       PSTORE_ASSERT (internal != nullptr);
 
       // Now work out which of the children we're going to be visiting next.
-      index_pointer child_slot;
-      auto index = std::size_t{0};
-      std::tie (child_slot, index) = internal->lookup (hash & details::hash_index_mask);
+      auto [child_slot, index] = internal->lookup (hash & details::hash_index_mask);
 
       // If this slot isn't used, then ensure the node is on the heap, write the new leaf node
       // and point to it.
       if (index == details::not_found) {
-        internal_node * const inode =
-          internal_node::make_writable (internals_container_.get (), node, *internal);
+        branch * const inode = branch::make_writable (internals_container_.get (), node, *internal);
         inode->insert_child (hash, index_pointer{this->store_leaf (transaction, value, parents)},
                              parents);
         return {index_pointer{inode}, false};
@@ -814,14 +802,13 @@ namespace pstore {
       // to be heap-allocated and the child reference updated. The original child pointer may
       // also need to be freed.
       if (new_child != child_slot) {
-        internal_node * const inode =
-          internal_node::make_writable (internals_container_.get (), node, *internal);
+        branch * const b = branch::make_writable (internals_container_.get (), node, *internal);
 
         // Release a previous heap-allocated instance.
-        index_pointer & child = (*inode)[index];
+        index_pointer & child = (*b)[index];
         this->delete_node (child, shifts);
         child = new_child;
-        node = inode;
+        node = b;
       }
 
       parents->push (details::parent_type{node, index});
@@ -1012,9 +999,9 @@ namespace pstore {
       // the tree.
       if (!root_.is_address ()) {
         PSTORE_ASSERT (root_.is_internal ());
-        root_ = root_.untag<internal_node *> ()->flush (transaction, 0 /*shifts*/);
+        root_ = root_.untag<branch *> ()->flush (transaction, 0 /*shifts*/);
         PSTORE_ASSERT (root_.is_address ());
-        // Don't delete the internal node here. They are owned by internals_container_. If
+        // Don't delete the branch node here. They are owned by internals_container_. If
         // this ever changes, then use something like 'delete internal' here.
       }
 
@@ -1066,8 +1053,8 @@ namespace pstore {
 
         if (details::depth_is_internal_node (bit_shifts)) {
           // It's an internal node.
-          internal_node const * internal = nullptr;
-          std::tie (store_node, internal) = internal_node::get_node (db, node);
+          branch const * internal = nullptr;
+          std::tie (store_node, internal) = branch::get_node (db, node);
           std::tie (child_node, index) = internal->lookup (hash & details::hash_index_mask);
         } else {
           // It's a linear node.

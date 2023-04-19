@@ -156,40 +156,36 @@ namespace pstore {
         return result;
       }
 
-      //*  _     _                     _                _      *
-      //* (_)_ _| |_ ___ _ _ _ _  __ _| |  _ _  ___  __| |___  *
-      //* | | ' \  _/ -_) '_| ' \/ _` | | | ' \/ _ \/ _` / -_) *
-      //* |_|_||_\__\___|_| |_||_\__,_|_| |_||_\___/\__,_\___| *
-      //*                                                      *
-
-      internal_node::signature_type const internal_node::node_signature_ = {
+      //*  _                     _     *
+      //* | |__ _ _ __ _ _ _  __| |_   *
+      //* | '_ \ '_/ _` | ' \/ _| ' \  *
+      //* |_.__/_| \__,_|_||_\__|_||_| *
+      //*                              *
+      branch::signature_type const branch::node_signature_ = {
         {'I', 'n', 't', 'e', 'r', 'n', 'a', 'l'}};
 
       // ctor (one child)
       // ~~~~~~~~~~~~~~~~
-      internal_node::internal_node (index_pointer const & leaf, hash_type const hash)
+      branch::branch (index_pointer const & leaf, hash_type const hash)
               : bitmap_{hash_type{1} << hash}
               , children_{{leaf}} {
 
-        static_assert (std::is_standard_layout<internal_node>::value,
+        static_assert (std::is_standard_layout_v<branch>,
                        "internal internal_node must be standard-layout");
-        static_assert (alignof (linear_node) >= 4, "internal_node must have alignment "
-                                                   ">= 4 to ensure the bottom two bits "
-                                                   "are 0");
+        static_assert (alignof (linear_node) >= 4,
+                       "branch must have alignment >= 4 to ensure the bottom two bits are 0");
 
-        static_assert (offsetof (internal_node, signature_) == 0,
+        static_assert (offsetof (branch, signature_) == 0,
                        "offsetof (internal_node, signature) must be 0");
-        static_assert (offsetof (internal_node, bitmap_) == 8,
+        static_assert (offsetof (branch, bitmap_) == 8,
                        "offsetof (internal_node, bitmap_) must be 8");
-        static_assert (offsetof (internal_node, children_) == 16,
-                       "offset of the first child must be 16.");
+        static_assert (offsetof (branch, children_) == 16, "offset of the first child must be 16.");
       }
 
       // ctor (two children)
       // ~~~~~~~~~~~~~~~~~~~
-      internal_node::internal_node (index_pointer const & existing_leaf,
-                                    index_pointer const & new_leaf, hash_type const existing_hash,
-                                    hash_type const new_hash)
+      branch::branch (index_pointer const & existing_leaf, index_pointer const & new_leaf,
+                      hash_type const existing_hash, hash_type const new_hash)
               : bitmap_ (hash_type{1} << existing_hash | hash_type{1} << new_hash) {
 
         auto const index_a = get_new_index (new_hash, existing_hash);
@@ -205,17 +201,16 @@ namespace pstore {
 
       // copy ctor
       // ~~~~~~~~~
-      internal_node::internal_node (internal_node const & rhs)
+      branch::branch (branch const & rhs)
               : bitmap_{rhs.bitmap_} {
 
         auto const * const first = std::begin (rhs.children_);
         std::copy (first, first + rhs.size (), std::begin (children_));
       }
 
-      // validate_after_load
+      // validate after load
       // ~~~~~~~~~~~~~~~~~~~
-      /// Perform crude validation of the internal node that we've just read from the
-      /// store.
+      /// Perform crude validation of the branch that we've just read from the store.
       ///
       /// - We know that if this node is not on the heap then none of its immediate
       ///   children can be on the heap because creating a heap node causes all of its
@@ -228,43 +223,41 @@ namespace pstore {
       /// \param internal  The node to be validated.
       /// \param addr  The address from which this node was loaded.
       /// \return  A boolean indicating whether the validation was successful.
-
-      bool internal_node::validate_after_load (internal_node const & internal,
-                                               typed_address<internal_node> const addr) {
+      bool branch::validate_after_load (branch const & internal, typed_address<branch> const addr) {
 #if PSTORE_SIGNATURE_CHECKS_ENABLED
         if (internal.signature_ != node_signature_) {
           return false;
         }
 #endif
-        return std::all_of (
-          std::begin (internal), std::end (internal), [addr] (index_pointer const & child) {
-            if (child.is_heap () || child.untag_address<internal_node> () >= addr) {
-              return false;
-            }
-            return true;
-          });
+        return std::all_of (std::begin (internal), std::end (internal),
+                            [addr] (index_pointer const & child) {
+                              if (child.is_heap () || child.untag_address<branch> () >= addr) {
+                                return false;
+                              }
+                              return true;
+                            });
       }
 
-      // read_node [static]
+      // read node [static]
       // ~~~~~~~~~
-      auto internal_node::read_node (database const & db, typed_address<internal_node> const addr)
-        -> std::shared_ptr<internal_node const> {
+      auto branch::read_node (database const & db, typed_address<branch> const addr)
+        -> std::shared_ptr<branch const> {
         /// Sadly, loading an internal_node needs to done in three stages:
         /// 1. Load the basic structure
         /// 2. Calculate the actual size of the child pointer array
         /// 3. Load the complete structure along with its child pointer array
-        auto base = std::static_pointer_cast<internal_node const> (db.getro (
-          addr.to_address (), sizeof (internal_node) - sizeof (internal_node::children_)));
+        auto base = std::static_pointer_cast<branch const> (
+          db.getro (addr.to_address (), sizeof (branch) - sizeof (branch::children_)));
 
         if (base->get_bitmap () == 0) {
           raise (error_code::index_corrupt, db.path ());
         }
-        std::size_t const actual_size = internal_node::size_bytes (base->size ());
+        std::size_t const actual_size = branch::size_bytes (base->size ());
         base.reset ();
 
-        PSTORE_ASSERT (actual_size > sizeof (internal_node) - sizeof (internal_node::children_));
-        auto resl = std::static_pointer_cast<internal_node const> (
-          db.getro (addr.to_address (), actual_size));
+        PSTORE_ASSERT (actual_size > sizeof (branch) - sizeof (branch::children_));
+        auto resl =
+          std::static_pointer_cast<branch const> (db.getro (addr.to_address (), actual_size));
 
         if (!validate_after_load (*resl, addr)) {
           raise (error_code::index_corrupt, db.path ());
@@ -273,25 +266,24 @@ namespace pstore {
         return resl;
       }
 
-      // get_node [static]
+      // get node [static]
       // ~~~~~~~~
-      auto internal_node::get_node (database const & db, index_pointer const node)
-        -> std::pair<std::shared_ptr<internal_node const>, internal_node const *> {
+      auto branch::get_node (database const & db, index_pointer const node)
+        -> std::pair<std::shared_ptr<branch const>, branch const *> {
 
         if (node.is_heap ()) {
-          return {nullptr, node.untag<internal_node *> ()};
+          return {nullptr, node.untag<branch *> ()};
         }
 
-        std::shared_ptr<internal_node const> store_internal =
-          internal_node::read_node (db, node.untag_address<internal_node> ());
-        auto const * const p = store_internal.get ();
-        return {std::move (store_internal), p};
+        std::shared_ptr<branch const> store_branch =
+          branch::read_node (db, node.untag_address<branch> ());
+        return {std::move (store_branch), store_branch.get ()};
       }
 
-      // insert_child
+      // insert child
       // ~~~~~~~~~~~~
-      void internal_node::insert_child (hash_type const hash, index_pointer const leaf,
-                                        gsl::not_null<parent_stack *> const parents) {
+      void branch::insert_child (hash_type const hash, index_pointer const leaf,
+                                 gsl::not_null<parent_stack *> const parents) {
         auto const hash_index = hash & details::hash_index_mask;
         auto const bit_pos = hash_type{1} << hash_index;
         PSTORE_ASSERT (bit_pos != 0); // guarantee that we didn't shift the bit to oblivion
@@ -323,28 +315,26 @@ namespace pstore {
         parents->push (parent_type{index_pointer{this}, index});
       }
 
-      // store_node
+      // store node
       // ~~~~~~~~~~
-      address internal_node::store_node (transaction_base & transaction) const {
-        std::size_t const num_bytes = internal_node::size_bytes (this->size ());
+      address branch::store_node (transaction_base & transaction) const {
+        std::size_t const num_bytes = branch::size_bytes (this->size ());
 
-        std::shared_ptr<void> ptr;
-        address result;
-        std::tie (ptr, result) = transaction.alloc_rw (num_bytes, alignof (internal_node));
-        new (ptr.get ()) internal_node (*this);
-        return result;
+        auto [ptr, addr] = transaction.alloc_rw (num_bytes, alignof (branch));
+        new (ptr.get ()) branch (*this);
+        return addr;
       }
 
       // flush
       // ~~~~~
-      address internal_node::flush (transaction_base & transaction, unsigned shifts) {
+      address branch::flush (transaction_base & transaction, unsigned shifts) {
         shifts += hash_index_bits;
         for (auto & p : *this) {
           // If it is a heap node, flush its children first (depth-first search).
           if (p.is_heap ()) {
             if (shifts < max_hash_bits) { // internal node
               PSTORE_ASSERT (p.is_internal ());
-              auto * const internal = p.untag<internal_node *> ();
+              auto * const internal = p.untag<branch *> ();
               p = internal->flush (transaction, shifts);
               // This node is owned by a container in the outer HAMT structure. Don't
               // delete it here. If this ever changes, then add a 'delete internal;'

@@ -34,10 +34,10 @@ using pstore::database;
 // Note that using these internal "details" namespace is not, in general, good practice.
 // Here it is justified because the tool's purpose is to poke about inside the index
 // internals!
+using pstore::index::details::branch;
 using pstore::index::details::depth_is_internal_node;
 using pstore::index::details::hash_index_bits;
 using pstore::index::details::index_pointer;
-using pstore::index::details::internal_node;
 using pstore::index::details::linear_node;
 
 namespace {
@@ -45,10 +45,10 @@ namespace {
   struct node_type_name {};
 
   template <>
-  struct node_type_name<internal_node> {
+  struct node_type_name<branch> {
     static char const * name;
   };
-  char const * node_type_name<internal_node>::name = "internal";
+  char const * node_type_name<branch>::name = "branch";
 
   template <>
   struct node_type_name<linear_node> {
@@ -136,7 +136,7 @@ namespace {
       return dump_leaf (db, index, os, node.to_address ());
     }
     return depth_is_internal_node (shifts)
-             ? dump_intermediate<internal_node> (db, index, os, node, shifts)
+             ? dump_intermediate<branch> (db, index, os, node, shifts)
              : dump_intermediate<linear_node> (db, index, os, node, shifts);
   }
 

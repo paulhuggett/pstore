@@ -27,7 +27,7 @@ namespace pstore {
     template <typename Index>
     class traverser {
       using index_pointer = index::details::index_pointer;
-      using internal_node = index::details::internal_node;
+      using branch = index::details::branch;
 
     public:
       /// \param db  The owning database instance.
@@ -66,7 +66,7 @@ namespace pstore {
                                          OutputIterator out) const;
 
       bool is_new (index_pointer const node) const noexcept {
-        return node.is_heap () || node.untag_address<internal_node> ().to_address () >= threshold_;
+        return node.is_heap () || node.untag_address<branch> ().to_address () >= threshold_;
       }
 
       database const & db_;
@@ -103,7 +103,7 @@ namespace pstore {
       }
 
       if (index::details::depth_is_internal_node (shifts)) {
-        return this->visit_intermediate<index::details::internal_node> (node, shifts, out);
+        return this->visit_intermediate<index::details::branch> (node, shifts, out);
       }
 
       return this->visit_intermediate<index::details::linear_node> (node, shifts, out);

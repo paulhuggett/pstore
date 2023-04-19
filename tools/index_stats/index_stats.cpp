@@ -44,7 +44,7 @@ namespace {
 namespace {
 
   using index_pointer = index::details::index_pointer;
-  using internal_node = index::details::internal_node;
+  using branch = index::details::branch;
   using linear_node = index::details::linear_node;
   constexpr auto max_internal_depth = index::details::max_internal_depth;
 
@@ -86,8 +86,8 @@ namespace {
     void traverse (index_pointer root);
     void traverse (index_pointer node, unsigned depth);
     void visit_linear (linear_node const & linear);
-    void visit_leaf_node (unsigned depth);
-    void visit_internal (internal_node const & internal, unsigned depth);
+    void visit_leaf (unsigned depth);
+    void visit_branch (branch const & internal, unsigned depth);
   };
 
   stats::stats (database const & db) noexcept
@@ -107,10 +107,10 @@ namespace {
       return this->visit_linear (*linear.second);
     }
     if (node.is_internal ()) {
-      auto const internal = internal_node::get_node (db_, node);
-      return this->visit_internal (*internal.second, depth);
+      auto const b = branch::get_node (db_, node);
+      return this->visit_branch (*b.second, depth);
     }
-    return this->visit_leaf_node (depth);
+    return this->visit_leaf (depth);
   }
 
   void stats::visit_linear (linear_node const & linear) {
@@ -118,15 +118,15 @@ namespace {
     ++internal_visited_;
   }
 
-  void stats::visit_leaf_node (unsigned depth) {
+  void stats::visit_leaf (unsigned depth) {
     leaf_depth_ += depth;
     ++leaves_visited_;
   }
 
-  void stats::visit_internal (internal_node const & internal, unsigned depth) {
-    internal_out_edges_ += internal.size ();
+  void stats::visit_branch (branch const & b, unsigned depth) {
+    internal_out_edges_ += b.size ();
     ++internal_visited_;
-    for (index_pointer child : internal) {
+    for (index_pointer child : b) {
       this->traverse (child, depth + 1U);
     }
   }
