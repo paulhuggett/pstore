@@ -30,7 +30,9 @@ namespace pstore::romfs {
     using iterator = gsl::span<dirent const>::const_iterator;
 
     constexpr directory (gsl::span<dirent const> members) noexcept
-            : members_{members} {}
+            : members_{members} {
+      PSTORE_ASSERT (members_.size () >= 0);
+    }
     directory (directory const &) = delete;
     directory (directory &&) noexcept = delete;
 
@@ -42,7 +44,7 @@ namespace pstore::romfs {
     iterator begin () const noexcept { return iterator{members_.begin ()}; }
     iterator end () const noexcept { return iterator{members_.end ()}; }
 
-    std::size_t size () const noexcept { return members_.size (); }
+    std::size_t size () const noexcept { return static_cast<std::size_t> (members_.size ()); }
     dirent const & operator[] (std::size_t pos) const noexcept;
 
     /// Search the directory for a member whose name equals \p name.

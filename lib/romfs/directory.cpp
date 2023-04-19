@@ -46,20 +46,18 @@ namespace pstore::romfs {
   // operator[]
   // ~~~~~~~~~~
   auto directory::operator[] (std::size_t const pos) const noexcept -> dirent const & {
-    PSTORE_ASSERT (pos < this->size ());
-    return members_[pos];
+    using index_type = decltype (members_)::index_type;
+    PSTORE_ASSERT (pos < std::numeric_limits<index_type>::max ());
+    return members_[static_cast<index_type> (pos)];
   }
 
   // find
   // ~~~~
   auto directory::find (gsl::not_null<directory const *> const d) const -> iterator {
     // This is a straightforward linear search. Could limit performance in the future.
-    return std::find_if (this->begin (), this->end (), [d] (dirent const & de) {
-      auto const od = de.opendir ();
-      return od && od.get () == d;
-    });
+    return std::find_if (this->begin (), this->end (),
+                         [d] (dirent const & de) { return is_expected_dir (de, d); });
   }
-
 
   auto directory::find (std::string_view name) const -> iterator {
     // Directories are sorted by name: we can use a binary search here.
