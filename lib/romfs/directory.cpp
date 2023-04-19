@@ -36,104 +36,97 @@ namespace {
 
 } // end anonymous namespace
 
-namespace pstore {
-  namespace romfs {
+namespace pstore::romfs {
 
-    //*     _ _            _                 *
-    //*  __| (_)_ _ ___ __| |_ ___ _ _ _  _  *
-    //* / _` | | '_/ -_) _|  _/ _ \ '_| || | *
-    //* \__,_|_|_| \___\__|\__\___/_|  \_, | *
-    //*                                |__/  *
-    // end
-    // ~~~
-    auto directory::end () const noexcept -> iterator {
-      return iterator{members_ + this->size ()};
-    }
+  //*     _ _            _                 *
+  //*  __| (_)_ _ ___ __| |_ ___ _ _ _  _  *
+  //* / _` | | '_/ -_) _|  _/ _ \ '_| || | *
+  //* \__,_|_|_| \___\__|\__\___/_|  \_, | *
+  //*                                |__/  *
+  // end
+  // ~~~
+  auto directory::end () const noexcept -> iterator {
+    return iterator{members_ + this->size ()};
+  }
 
-    // operator[]
-    // ~~~~~~~~~~
-    auto directory::operator[] (std::size_t const pos) const noexcept -> dirent const & {
-      PSTORE_ASSERT (pos < this->size ());
-      return members_[pos];
-    }
+  // operator[]
+  // ~~~~~~~~~~
+  auto directory::operator[] (std::size_t const pos) const noexcept -> dirent const & {
+    PSTORE_ASSERT (pos < this->size ());
+    return members_[pos];
+  }
 
-    // find
-    // ~~~~
-    auto directory::find (gsl::not_null<directory const *> const d) const -> iterator {
-      // This is a straightforward linear search. Could limit performance in the future.
-      return std::find_if (this->begin (), this->end (), [d] (dirent const & de) {
-        auto const od = de.opendir ();
-        return od && od.get () == d;
+  // find
+  // ~~~~
+  auto directory::find (gsl::not_null<directory const *> const d) const -> iterator {
+    // This is a straightforward linear search. Could limit performance in the future.
+    return std::find_if (this->begin (), this->end (), [d] (dirent const & de) {
+      auto const od = de.opendir ();
+      return od && od.get () == d;
+    });
+  }
+
+
+  auto directory::find (std::string_view name) const -> iterator {
+    // Directories are sorted by name: we can use a binary search here.
+    auto const end = this->end ();
+    auto const pos =
+      std::lower_bound (begin (), end, name, [] (dirent const & a, std::string_view const & b) {
+        return a.name ().get () < b;
       });
+    if (pos != end && pos->name ().get () == name) {
+      return pos;
+    }
+    return end;
+  }
+
+  // check
+  // ~~~~~
+  bool directory::check (gsl::not_null<directory const *> const parent,
+                         check_stack_entry const * const visited) const {
+    auto const end = this->end ();
+
+    // This stops us from looping forever if we follow a directory pointer to a directory
+    // that we have already visited.
+    for (auto const * v = visited; v != nullptr; v = v->prev) {
+      if (v->d == parent) {
+        return true;
+      }
     }
 
-
-    auto directory::find (std::string_view name) const -> iterator {
-      // Directories are sorted by name: we can use a binary search here.
-      auto const end = this->end ();
-      auto const pos =
-        std::lower_bound (begin (), end, name, [] (dirent const & a, std::string_view const & b) {
-          return a.name ().get () < b;
-        });
-      if (pos != end && pos->name ().get () == name) {
-        return pos;
-      }
-      return end;
+    // Check that the directory entries are sorted by name.
+    if (!std::is_sorted (begin (), end, [] (dirent const & a, dirent const & b) {
+          return std::strcmp (a.name (), b.name ()) < 0;
+        })) {
+      return false;
     }
 
-    // check
-    // ~~~~~
-    bool directory::check (gsl::not_null<directory const *> const parent,
-                           check_stack_entry const * const visited) const {
-      auto const end = this->end ();
-
-      // This stops us from looping forever if we follow a directory pointer to a directory
-      // that we have already visited.
-      for (auto const * v = visited; v != nullptr; v = v->prev) {
-        if (v->d == parent) {
-          return true;
-        }
-      }
-
-      // Check that the directory entries are sorted by name.
-      if (!std::is_sorted (begin (), end, [] (dirent const & a, dirent const & b) {
-            return std::strcmp (a.name (), b.name ()) < 0;
-          })) {
-        return false;
-      }
-
-      // Look for the '.' and '..' entries and check that they point where we expect.
-      iterator const dot = this->find (".");
-      iterator const dot_dot = this->find ("..");
-      if (dot == end || dot_dot == end) {
-        return false;
-      }
-      if (!is_expected_dir (*dot, this) || !is_expected_dir (*dot_dot, parent)) {
-        return false;
-      }
-
-      // Recursively check any directories contained by this one.
-      for (dirent const & de : *this) {
-        if (de.is_directory ()) {
-          if (auto const od = de.opendir ()) {
-            check_stack_entry const me{*od, visited};
-            if (!(*od)->check (this, &me)) {
-              // Error: recursive check failed.
-              return false;
-            }
-          } else {
-            // Error: this entry claimed to be a directory but opendir() failed.
-            return false;
-          }
-        }
-      }
-
-      return true;
+    // Look for the '.' and '..' entries and check that they point where we expect.
+    iterator const dot = this->find (".");
+    iterator const dot_dot = this->find ("..");
+    if (dot == end || dot_dot == end) {
+      return false;
+    }
+    if (!is_expected_dir (*dot, this) || !is_expected_dir (*dot_dot, parent)) {
+      return false;
     }
 
-    bool directory::check () const {
-      return this->check (this, nullptr);
-    }
+    // Recursively check any directories contained by this one.
+    return std::all_of (std::begin (*this), std::end (*this), [&visited, this] (dirent const & de) {
+      if (!de.is_directory ()) {
+        return true;
+      }
+      if (auto const od = de.opendir ()) {
+        check_stack_entry const me{*od, visited};
+        return (*od)->check (this, &me);
+      }
+      // Error: this entry claimed to be a directory but opendir() failed.
+      return false;
+    });
+  }
 
-  } // end namespace romfs
-} // end namespace pstore
+  bool directory::check () const {
+    return this->check (this, nullptr);
+  }
+
+} // end namespace pstore::romfs
