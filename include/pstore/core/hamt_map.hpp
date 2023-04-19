@@ -579,11 +579,12 @@ namespace pstore {
       while (!node.is_leaf ()) {
         visited_parents_.push (details::parent_type{node, 0});
         if (visited_parents_.size () <= details::max_branch_depth) {
-          auto [store_node, internal] = branch::get_node (db_, node);
-          PSTORE_ASSERT (!store_node || store_node.get () == internal);
-          node = (*internal)[0];
+          auto [store_node, b] = branch::get_node (db_, node);
+          (void) store_node;
+          PSTORE_ASSERT (!store_node || store_node.get () == b);
+          node = (*b)[0];
         } else {
-          auto [store_node, linear] = linear_node::get_node (db_, node);
+          auto const * const linear = linear_node::get_node (db_, node).second;
           node = (*linear)[0];
         }
       }
