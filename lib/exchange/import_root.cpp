@@ -99,34 +99,30 @@ namespace {
 
 } // end anonymous namespace
 
-namespace pstore {
-  namespace exchange {
-    namespace import_ns {
+namespace pstore::exchange::import_ns {
 
-      //*               _    *
-      //*  _ _ ___  ___| |_  *
-      //* | '_/ _ \/ _ \  _| *
-      //* |_| \___/\___/\__| *
-      //*                    *
-      // name
-      // ~~~~
-      gsl::czstring root::name () const noexcept {
-        return "root";
-      }
+  //*               _    *
+  //*  _ _ ___  ___| |_  *
+  //* | '_/ _ \/ _ \  _| *
+  //* |_| \___/\___/\__| *
+  //*                    *
+  // name
+  // ~~~~
+  gsl::czstring root::name () const noexcept {
+    return "root";
+  }
 
-      // begin object
-      // ~~~~~~~~~~~~
-      std::error_code root::begin_object () {
-        return this->push<root_object> ();
-      }
+  // begin object
+  // ~~~~~~~~~~~~
+  std::error_code root::begin_object () {
+    return this->push<root_object> ();
+  }
 
 
-      // create parser
-      // ~~~~~~~~~~~~~
-      json::parser<callbacks> create_parser (database & db) {
-        return json::make_parser (callbacks::make<root> (&db), json::extensions::all);
-      }
+  // create parser
+  // ~~~~~~~~~~~~~
+  json::parser<callbacks> create_parser (database & db) {
+    return json::make_parser (callbacks::make<root> (&db), json::extensions::all);
+  }
 
-    } // end namespace import_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::import_ns

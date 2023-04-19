@@ -15,22 +15,18 @@
 //===----------------------------------------------------------------------===//
 #include "pstore/exchange/export_fixups.hpp"
 
-namespace pstore {
-  namespace exchange {
-    namespace export_ns {
+namespace pstore::exchange::export_ns {
 
-      gsl::czstring emit_section_name (repo::section_kind const section) noexcept {
-        auto const * result = "unknown";
+  gsl::czstring emit_section_name (repo::section_kind const section) noexcept {
+    auto const * result = "unknown";
 #define X(a)                                                                                       \
   case pstore::repo::section_kind::a: result = #a; break;
-        switch (section) {
-          PSTORE_MCREPO_SECTION_KINDS
-        case pstore::repo::section_kind::last: break;
-        }
+    switch (section) {
+      PSTORE_MCREPO_SECTION_KINDS
+    case pstore::repo::section_kind::last: break;
+    }
 #undef X
-        return result;
-      }
+    return result;
+  }
 
-    } // end namespace export_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::export_ns

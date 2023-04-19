@@ -16,26 +16,22 @@
 #include "pstore/exchange/import_uuid.hpp"
 #include "pstore/exchange/import_error.hpp"
 
-namespace pstore {
-  namespace exchange {
-    namespace import_ns {
+namespace pstore::exchange::import_ns {
 
-      uuid_rule::uuid_rule (not_null<context *> const ctxt, not_null<uuid *> const v) noexcept
-              : rule (ctxt)
-              , v_{v} {}
+  uuid_rule::uuid_rule (not_null<context *> const ctxt, not_null<uuid *> const v) noexcept
+          : rule (ctxt)
+          , v_{v} {}
 
-      std::error_code uuid_rule::string_value (std::string const & v) {
-        if (maybe<uuid> const value = uuid::from_string (v)) {
-          *v_ = *value;
-          return pop ();
-        }
-        return error::bad_uuid;
-      }
+  std::error_code uuid_rule::string_value (std::string const & v) {
+    if (maybe<uuid> const value = uuid::from_string (v)) {
+      *v_ = *value;
+      return pop ();
+    }
+    return error::bad_uuid;
+  }
 
-      gsl::czstring uuid_rule::name () const noexcept {
-        return "uuid";
-      }
+  gsl::czstring uuid_rule::name () const noexcept {
+    return "uuid";
+  }
 
-    } // end namespace import_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::import_ns

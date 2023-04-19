@@ -84,58 +84,53 @@ namespace {
 
 } // end anonymous namespace
 
-namespace pstore {
-  namespace exchange {
-    namespace export_ns {
+namespace pstore::exchange::export_ns {
 
-      void emit_database (database & db, ostream & os, bool const comments) {
-        string_mapping string_table{db, name_index_tag ()};
-        string_mapping path_table{db, path_index_tag ()};
+  void emit_database (database & db, ostream & os, bool const comments) {
+    string_mapping string_table{db, name_index_tag ()};
+    string_mapping path_table{db, path_index_tag ()};
 
-        auto const ind = indent{}.next ();
-        os << "{\n";
-        os << ind << R"("version":1,)" << '\n';
-        os << ind << R"("id":")" << db.get_header ().id ().str () << "\",\n";
-        os << ind << R"("transactions":)";
+    auto const ind = indent{}.next ();
+    os << "{\n";
+    os << ind << R"("version":1,)" << '\n';
+    os << ind << R"("id":")" << db.get_header ().id ().str () << "\",\n";
+    os << ind << R"("transactions":)";
 
-        auto const f = footers (db);
-        PSTORE_ASSERT (std::distance (std::begin (f), std::end (f)) >= 1);
-        emit_array (os, ind, std::next (std::begin (f)), std::end (f),
-                    [&] (ostream & os1, indent const ind1,
-                         pstore::typed_address<pstore::trailer> const footer_pos) {
-                      auto const footer = db.getro (footer_pos);
-                      unsigned const generation = footer->a.generation;
-                      db.sync (generation);
-                      os1 << ind1 << "{\n";
-                      auto const object_indent = ind1.next ();
-                      if (comments) {
-                        os1 << object_indent << "// transaction #" << generation << '\n';
-                      }
-                      bool const names_emitted = emit_strings<trailer::indices::name> (
-                        os1, object_indent, db, generation, prefix (false, object_indent, "names"),
-                        &string_table, comments);
-                      bool const paths_emitted = emit_strings<trailer::indices::path> (
-                        os1, object_indent, db, generation,
-                        prefix (names_emitted, object_indent, "paths"), &path_table, comments);
-                      if (paths_emitted || names_emitted) {
-                        os1 << ",\n";
-                      }
-                      if (emit_debug_line_headers (os1, object_indent, db, generation)) {
-                        os1 << ",\n";
-                      }
-                      os1 << object_indent << R"("fragments":{)";
-                      emit_fragments (os1, object_indent.next (), db, generation, string_table,
-                                      comments);
-                      os1 << '\n' << object_indent << "},\n";
-                      os1 << object_indent << R"("compilations":{)";
-                      emit_compilation_index (os1, object_indent.next (), db, generation,
-                                              string_table, comments);
-                      os1 << '\n' << object_indent << "}\n";
-                      os1 << ind1 << '}';
-                    });
-        os << "\n}\n";
-      }
+    auto const f = footers (db);
+    PSTORE_ASSERT (std::distance (std::begin (f), std::end (f)) >= 1);
+    emit_array (
+      os, ind, std::next (std::begin (f)), std::end (f),
+      [&] (ostream & os1, indent const ind1,
+           pstore::typed_address<pstore::trailer> const footer_pos) {
+        auto const footer = db.getro (footer_pos);
+        unsigned const generation = footer->a.generation;
+        db.sync (generation);
+        os1 << ind1 << "{\n";
+        auto const object_indent = ind1.next ();
+        if (comments) {
+          os1 << object_indent << "// transaction #" << generation << '\n';
+        }
+        bool const names_emitted = emit_strings<trailer::indices::name> (
+          os1, object_indent, db, generation, prefix (false, object_indent, "names"), &string_table,
+          comments);
+        bool const paths_emitted = emit_strings<trailer::indices::path> (
+          os1, object_indent, db, generation, prefix (names_emitted, object_indent, "paths"),
+          &path_table, comments);
+        if (paths_emitted || names_emitted) {
+          os1 << ",\n";
+        }
+        if (emit_debug_line_headers (os1, object_indent, db, generation)) {
+          os1 << ",\n";
+        }
+        os1 << object_indent << R"("fragments":{)";
+        emit_fragments (os1, object_indent.next (), db, generation, string_table, comments);
+        os1 << '\n' << object_indent << "},\n";
+        os1 << object_indent << R"("compilations":{)";
+        emit_compilation_index (os1, object_indent.next (), db, generation, string_table, comments);
+        os1 << '\n' << object_indent << "}\n";
+        os1 << ind1 << '}';
+      });
+    os << "\n}\n";
+  }
 
-    } // end namespace export_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::export_ns

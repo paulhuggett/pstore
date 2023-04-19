@@ -47,60 +47,56 @@ namespace {
 
 } // end anonymous namespace
 
-namespace pstore {
-  namespace exchange {
-    namespace import_ns {
+namespace pstore::exchange::import_ns {
 
-      rule::~rule () = default;
+  rule::~rule () = default;
 
-      std::error_code rule::int64_value (std::int64_t const value) {
-        (void) value;
-        return error::unexpected_number;
-      }
-      std::error_code rule::uint64_value (std::uint64_t const value) {
-        (void) value;
-        return error::unexpected_number;
-      }
-      std::error_code rule::double_value (double const value) {
-        (void) value;
-        return error::unexpected_number;
-      }
-      std::error_code rule::boolean_value (bool const value) {
-        (void) value;
-        return error::unexpected_boolean;
-      }
-      std::error_code rule::null_value () {
-        return error::unexpected_null;
-      }
-      std::error_code rule::begin_array () {
-        return error::unexpected_array;
-      }
-      std::error_code rule::string_value (std::string const & value) {
-        (void) value;
-        return error::unexpected_string;
-      }
-      std::error_code rule::end_array () {
-        return error::unexpected_end_array;
-      }
-      std::error_code rule::begin_object () {
-        return error::unexpected_object;
-      }
-      std::error_code rule::key (std::string const & key) {
-        (void) key;
-        return error::unexpected_object_key;
-      }
-      std::error_code rule::end_object () {
-        return error::unexpected_end_object;
-      }
+  std::error_code rule::int64_value (std::int64_t const value) {
+    (void) value;
+    return error::unexpected_number;
+  }
+  std::error_code rule::uint64_value (std::uint64_t const value) {
+    (void) value;
+    return error::unexpected_number;
+  }
+  std::error_code rule::double_value (double const value) {
+    (void) value;
+    return error::unexpected_number;
+  }
+  std::error_code rule::boolean_value (bool const value) {
+    (void) value;
+    return error::unexpected_boolean;
+  }
+  std::error_code rule::null_value () {
+    return error::unexpected_null;
+  }
+  std::error_code rule::begin_array () {
+    return error::unexpected_array;
+  }
+  std::error_code rule::string_value (std::string const & value) {
+    (void) value;
+    return error::unexpected_string;
+  }
+  std::error_code rule::end_array () {
+    return error::unexpected_end_array;
+  }
+  std::error_code rule::begin_object () {
+    return error::unexpected_object;
+  }
+  std::error_code rule::key (std::string const & key) {
+    (void) key;
+    return error::unexpected_object_key;
+  }
+  std::error_code rule::end_object () {
+    return error::unexpected_end_object;
+  }
 
-      void rule::log_top_impl (bool const is_push) const {
-        PSTORE_ASSERT (logging_enabled ());
-        std::ostringstream str;
-        auto const & stack = context_->stack;
-        str << indent{stack.size ()} << (is_push ? '+' : '-') << stack.top ()->name ();
-        log (logger::priority::notice, str.str ().c_str ());
-      }
+  void rule::log_top_impl (bool const is_push) const {
+    PSTORE_ASSERT (logging_enabled ());
+    std::ostringstream str;
+    auto const & stack = context_->stack;
+    str << indent{stack.size ()} << (is_push ? '+' : '-') << stack.top ()->name ();
+    log (logger::priority::notice, str.str ().c_str ());
+  }
 
-    } // end namespace import_ns
-  }   // end namespace exchange
-} // end namespace pstore
+} // end namespace pstore::exchange::import_ns
