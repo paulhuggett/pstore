@@ -116,7 +116,7 @@ namespace pstore {
       std::size_t size_bytes () const override;
 
       // Write the section data to the memory pointed to by \p out.
-      std::uint8_t * write (std::uint8_t * out) const final;
+      std::uint8_t * write (std::uint8_t * out) const override;
 
     private:
       std::uintptr_t aligned_impl (std::uintptr_t in) const override;
@@ -135,14 +135,14 @@ namespace pstore {
     public:
       explicit constexpr debug_line_dispatcher (debug_line_section const & d) noexcept
               : d_{d} {}
-      ~debug_line_dispatcher () noexcept final;
+      ~debug_line_dispatcher () noexcept override;
 
-      std::size_t size_bytes () const final { return d_.size_bytes (); }
-      unsigned align () const final { return d_.align (); }
-      std::size_t size () const final { return d_.size (); }
-      container<internal_fixup> ifixups () const final { return d_.ifixups (); }
-      container<external_fixup> xfixups () const final { return d_.xfixups (); }
-      container<std::uint8_t> payload () const final { return d_.payload (); }
+      std::size_t size_bytes () const override { return d_.size_bytes (); }
+      unsigned align () const override { return d_.align (); }
+      std::size_t size () const override { return d_.size (); }
+      container<internal_fixup> ifixups () const override { return d_.ifixups (); }
+      container<external_fixup> xfixups () const override { return d_.xfixups (); }
+      container<std::uint8_t> payload () const override { return d_.payload (); }
 
     private:
       debug_line_section const & d_;
