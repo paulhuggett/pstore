@@ -220,7 +220,7 @@ namespace pstore {
         /// Returns true if the pointer is equivalent to "null".
         constexpr bool is_empty () const noexcept { return branch_ == nullptr; }
 
-        constexpr address to_address () const noexcept {
+        address to_address () const noexcept {
           assert (is_address ());
           return addr_;
         }
