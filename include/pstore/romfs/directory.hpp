@@ -69,9 +69,7 @@ namespace pstore::romfs {
     };
     bool check (gsl::not_null<directory const *> parent, check_stack_entry const * visited) const;
 
-    /// The number of entries in the members_ array.
-    //    std::size_t const size_;
-    /// An array of directory members.
+    /// The directory members.
     gsl::span<dirent const> const members_;
   };
 
