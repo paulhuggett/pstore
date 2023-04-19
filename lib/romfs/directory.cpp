@@ -47,7 +47,8 @@ namespace pstore::romfs {
   // ~~~~~~~~~~
   auto directory::operator[] (std::size_t const pos) const noexcept -> dirent const & {
     using index_type = decltype (members_)::index_type;
-    PSTORE_ASSERT (pos < std::numeric_limits<index_type>::max ());
+    PSTORE_ASSERT (pos <= static_cast<std::make_unsigned_t<index_type>> (
+                            std::numeric_limits<index_type>::max ()));
     return members_[static_cast<index_type> (pos)];
   }
 
