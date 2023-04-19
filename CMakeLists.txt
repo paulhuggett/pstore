@@ -14,7 +14,7 @@
 #
 #===----------------------------------------------------------------------===//
 
-cmake_minimum_required (VERSION 3.4)
+cmake_minimum_required (VERSION 3.12)
 
 include (CheckCSourceCompiles)
 include (CMakeDependentOption)
@@ -214,10 +214,8 @@ endif (PSTORE_IS_INSIDE_LLVM)
 
 # On Windows, I have to explicitly run python to ensure that lit.py is treated as
 # a python program rather than something to be opened with a random text editor.
-find_program (PYTHON_EXECUTABLE
-    NAMES python
-    DOC "python executable location"
-)
+find_package (Python COMPONENTS Interpreter Development)
+
 set (LIT_PARAMS "")
 # Add the examples to the collection of tests.
 if (PSTORE_EXAMPLES)
@@ -251,53 +249,58 @@ if (npm_executable)
     list (APPEND LIT_PARAMS --param "npm=${npm_executable}")
 endif (npm_executable)
 
-
+if (PSTORE_EXAMPLES)
+    set_target_properties (pstore-examples PROPERTIES FOLDER "pstore examples")
+    set_target_properties (pstore-examples-serialize PROPERTIES FOLDER "pstore examples")
+endif ()
 
 # Add a target to the build which will run the system tests.
-add_custom_target (pstore-system-tests
-    COMMAND "${PYTHON_EXECUTABLE}"
-        "${LIT_EXECUTABLE}"
-        ${LIT_PARAMS}
-        --echo-all-commands
-        "$<TARGET_FILE_DIR:pstore-write>"
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-    COMMENT "Running system tests with LIT"
-    VERBATIM
-)
-set_target_properties (pstore-system-tests PROPERTIES FOLDER "pstore tests")
-
-if (PSTORE_IS_INSIDE_LLVM)
-    add_dependencies (pstore-system-tests
-        FileCheck
-        llc
-        opt
+if (NOT Python_FOUND)
+    message (WARNING "Python was not found so the pstore-system-tests target is not available.")
+else ()
+    add_custom_target (pstore-system-tests
+        COMMAND "${Python_EXECUTABLE}"
+                "${LIT_EXECUTABLE}"
+                ${LIT_PARAMS}
+                --echo-all-commands
+                "$<TARGET_FILE_DIR:pstore-write>"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+        COMMENT "Running system tests with LIT"
+        VERBATIM
     )
-endif ()
+    set_target_properties (pstore-system-tests PROPERTIES FOLDER "pstore tests")
 
-add_dependencies (pstore-system-tests
-    pstore-broker-poker
-    pstore-dump
-    pstore-export
-    pstore-hamt-test
-    pstore-import
-    pstore-lock-test
-    pstore-mangle
-    pstore-read
-    pstore-sieve
-    pstore-vacuumd
-    pstore-write
-)
-if (PSTORE_ENABLE_BROKER)
-    add_dependencies (pstore-system-tests pstore-brokerd)
-endif (PSTORE_ENABLE_BROKER)
+    if (PSTORE_IS_INSIDE_LLVM)
+        add_dependencies (pstore-system-tests
+            FileCheck
+            llc
+            opt
+        )
+    endif ()
+
+    add_dependencies (pstore-system-tests
+        pstore-broker-poker
+        pstore-dump
+        pstore-export
+        pstore-hamt-test
+        pstore-import
+        pstore-lock-test
+        pstore-mangle
+        pstore-read
+        pstore-sieve
+        pstore-vacuumd
+        pstore-write
+    )
+    if (PSTORE_ENABLE_BROKER)
+        add_dependencies (pstore-system-tests pstore-brokerd)
+    endif (PSTORE_ENABLE_BROKER)
+    if (PSTORE_EXAMPLES)
+        add_dependencies (pstore-system-tests pstore-examples)
+    endif (PSTORE_EXAMPLES)
+endif (NOT Python_FOUND)
 
 
 
-if (PSTORE_EXAMPLES)
-   set_target_properties (pstore-examples PROPERTIES FOLDER "pstore examples")
-   set_target_properties (pstore-examples-serialize PROPERTIES FOLDER "pstore examples")
-   add_dependencies (pstore-system-tests pstore-examples)
-endif ()
 
 
 
