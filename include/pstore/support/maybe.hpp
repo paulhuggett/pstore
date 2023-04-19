@@ -24,6 +24,7 @@
 #ifndef PSTORE_SUPPORT_MAYBE_HPP
 #define PSTORE_SUPPORT_MAYBE_HPP
 
+#include <algorithm>
 #include <new>
 #include <stdexcept>
 
