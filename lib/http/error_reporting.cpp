@@ -88,7 +88,7 @@ namespace pstore {
         case error_code::string_too_long:
         case error_code::refill_out_of_range: break;
         }
-      } else if (cat == romfs::get_romfs_error_category ()) {
+      } else if (cat == romfs::category) {
         switch (static_cast<romfs::error_code> (error.value ())) {
         case romfs::error_code::enoent:
         case romfs::error_code::enotdir: return report (http_status_code::not_found, "Not found");
