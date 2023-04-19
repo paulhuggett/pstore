@@ -774,16 +774,16 @@ namespace pstore {
       hash_type hash, unsigned shifts, gsl::not_null<parent_stack *> parents, bool is_upsert)
       -> std::pair<index_pointer, bool> {
 
-      auto [iptr, internal] = branch::get_node (transaction.db (), node);
-      PSTORE_ASSERT (internal != nullptr);
+      auto const * const b = branch::get_node (transaction.db (), node).second;
+      PSTORE_ASSERT (b != nullptr);
 
       // Now work out which of the children we're going to be visiting next.
-      auto [child_slot, index] = internal->lookup (hash & details::hash_index_mask);
+      auto [child_slot, index] = b->lookup (hash & details::hash_index_mask);
 
       // If this slot isn't used, then ensure the node is on the heap, write the new leaf node
       // and point to it.
       if (index == details::not_found) {
-        branch * const inode = branch::make_writable (internals_container_.get (), node, *internal);
+        branch * const inode = branch::make_writable (internals_container_.get (), node, *b);
         inode->insert_child (hash, index_pointer{this->store_leaf (transaction, value, parents)},
                              parents);
         return {index_pointer{inode}, false};
@@ -802,13 +802,13 @@ namespace pstore {
       // to be heap-allocated and the child reference updated. The original child pointer may
       // also need to be freed.
       if (new_child != child_slot) {
-        branch * const b = branch::make_writable (internals_container_.get (), node, *internal);
+        branch * const wb = branch::make_writable (internals_container_.get (), node, *b);
 
         // Release a previous heap-allocated instance.
-        index_pointer & child = (*b)[index];
+        index_pointer & child = (*wb)[index];
         this->delete_node (child, shifts);
         child = new_child;
-        node = b;
+        node = wb;
       }
 
       parents->push (details::parent_type{node, index});
