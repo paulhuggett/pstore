@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ===- utils/boilerplate/all.py -------------------------------------------===//
 # *        _ _  *
 # *   __ _| | | *

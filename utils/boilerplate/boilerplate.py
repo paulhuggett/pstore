@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ===- utils/boilerplate/boilerplate.py -----------------------------------===//
 # *  _           _ _                 _       _        *
 # * | |__   ___ (_) | ___ _ __ _ __ | | __ _| |_ ___  *

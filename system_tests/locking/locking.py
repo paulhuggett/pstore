@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ===- system_tests/locking/locking.py ------------------------------------===//
 # *  _            _    _              *
 # * | | ___   ___| | _(_)_ __   __ _  *

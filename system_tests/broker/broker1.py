@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ===- system_tests/broker/broker1.py -------------------------------------===//
 # *  _               _             _  *
 # * | |__  _ __ ___ | | _____ _ __/ | *

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ===- system_tests/broker/httpd.py ---------------------------------------===//
 # *  _     _   _             _  *
 # * | |__ | |_| |_ _ __   __| | *

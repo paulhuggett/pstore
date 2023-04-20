@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ===- system_tests/fuzzing/fuzz.py ---------------------------------------===//
 # *   __                *
 # *  / _|_   _ ________ *
