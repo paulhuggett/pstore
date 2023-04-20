@@ -154,6 +154,7 @@ TEST_F (StringWriter, WriteTwoStrings) {
 
 
 namespace {
+
   class SetWriter : public ::testing::Test {
   public:
     SetWriter ()
@@ -168,30 +169,30 @@ namespace {
   };
 
   std::set<int> const SetWriter::set_{5, 3, 2};
-} // namespace
 
-// Teach the serializer how to read and write std::set<int>
-namespace pstore {
-  namespace serialize {
-    template <>
-    struct serializer<std::set<int>> {
-      using value_type = std::set<int>;
+} // end anonymous namespace
 
-      template <typename Archive>
-      static auto write (Archive && archive, value_type const & ty)
-        -> archive_result_type<Archive> {
-        return container_archive_helper<value_type>::write (std::forward<Archive> (archive), ty);
-      }
+namespace pstore::serialize {
 
-      template <typename Archive>
-      static void read (Archive && archive, value_type & out) {
-        new (&out) value_type;
-        auto inserter = [&out] (int v) { out.insert (v); };
-        container_archive_helper<value_type>::read (std::forward<Archive> (archive), inserter);
-      }
-    };
-  } // namespace serialize
-} // namespace pstore
+  // Teach the serializer how to read and write std::set<int>
+  template <>
+  struct serializer<std::set<int>> {
+    using value_type = std::set<int>;
+
+    template <typename Archive>
+    static auto write (Archive && archive, value_type const & ty) -> archive_result_type<Archive> {
+      return container_archive_helper<value_type>::write (std::forward<Archive> (archive), ty);
+    }
+
+    template <typename Archive>
+    static void read (Archive && archive, value_type & out) {
+      new (&out) value_type;
+      auto inserter = [&out] (int v) { out.insert (v); };
+      container_archive_helper<value_type>::read (std::forward<Archive> (archive), inserter);
+    }
+  };
+
+} // end namespace pstore::serialize
 
 TEST_F (SetWriter, write) {
   std::vector<std::uint8_t> bytes;
@@ -217,9 +218,8 @@ TEST_F (SetWriter, read) {
   EXPECT_EQ (std::end (writer_), archive.iterator ());
 }
 
-
-
 namespace {
+
   class MapWriter : public ::testing::Test {
   public:
     using map_type = std::map<std::string, std::string>;
@@ -238,52 +238,50 @@ namespace {
     {"k1", "First key"},
     {"k2", "Second key"},
   };
-} // namespace
 
-namespace pstore {
-  namespace serialize {
-    template <>
-    struct serializer<MapWriter::map_type::value_type> {
-      using value_type = MapWriter::map_type::value_type;
+} // end anonymous namespace
 
-      template <typename Archive>
-      static auto write (Archive && archive, value_type const & ty)
-        -> archive_result_type<Archive> {
-        auto result = serialize::write (archive, ty.first);
-        serialize::write (std::forward<Archive> (archive), ty.second);
-        return result;
-      }
+namespace pstore::serialize {
 
-      template <typename Archive>
-      static void read (Archive && archive, value_type & out) {
-        auto const first = serialize::read<decltype (value_type::first)> (archive);
-        auto const second =
-          serialize::read<decltype (value_type::second)> (std::forward<Archive> (archive));
-        new (&out) value_type (first, second);
-      }
-    };
+  template <>
+  struct serializer<MapWriter::map_type::value_type> {
+    using value_type = MapWriter::map_type::value_type;
 
-    // Teach the serializer how to read and write std::map<std::string, std::string>
-    template <>
-    struct serializer<MapWriter::map_type> {
-      using value_type = MapWriter::map_type;
+    template <typename Archive>
+    static auto write (Archive && archive, value_type const & ty) -> archive_result_type<Archive> {
+      auto result = serialize::write (archive, ty.first);
+      serialize::write (std::forward<Archive> (archive), ty.second);
+      return result;
+    }
 
-      template <typename Archive>
-      static auto write (Archive && archive, value_type const & ty)
-        -> archive_result_type<Archive> {
-        return container_archive_helper<value_type>::write (std::forward<Archive> (archive), ty);
-      }
+    template <typename Archive>
+    static void read (Archive && archive, value_type & out) {
+      auto const first = serialize::read<decltype (value_type::first)> (archive);
+      auto const second =
+        serialize::read<decltype (value_type::second)> (std::forward<Archive> (archive));
+      new (&out) value_type (first, second);
+    }
+  };
 
-      template <typename Archive>
-      static void read (Archive && archive, value_type & out) {
-        new (&out) value_type;
-        auto inserter = [&out] (MapWriter::map_type::value_type const & v) { out.insert (v); };
-        return container_archive_helper<value_type>::read (std::forward<Archive> (archive),
-                                                           inserter);
-      }
-    };
-  } // namespace serialize
-} // namespace pstore
+  // Teach the serializer how to read and write std::map<std::string, std::string>
+  template <>
+  struct serializer<MapWriter::map_type> {
+    using value_type = MapWriter::map_type;
+
+    template <typename Archive>
+    static auto write (Archive && archive, value_type const & ty) -> archive_result_type<Archive> {
+      return container_archive_helper<value_type>::write (std::forward<Archive> (archive), ty);
+    }
+
+    template <typename Archive>
+    static void read (Archive && archive, value_type & out) {
+      new (&out) value_type;
+      auto inserter = [&out] (MapWriter::map_type::value_type const & v) { out.insert (v); };
+      return container_archive_helper<value_type>::read (std::forward<Archive> (archive), inserter);
+    }
+  };
+
+} // end namespace pstore::serialize
 
 TEST_F (MapWriter, write) {
   std::vector<std::uint8_t> expected_bytes;

@@ -24,6 +24,7 @@
 #include "pstore/support/ios_state.hpp"
 
 namespace {
+
   template <typename InputIterator>
   std::ostream & hex_dump (std::ostream & os, InputIterator first, InputIterator last) {
     pstore::ios_flags_saver const flags{os};
@@ -38,40 +39,32 @@ namespace {
     });
     return os;
   }
+
 } // end anonymous namespace
 
+namespace pstore::serialize::archive {
 
-namespace pstore {
-  namespace serialize {
-    namespace archive {
+  // ****
+  // null
+  // ****
+  null::~null () noexcept = default;
 
-      // ****
-      // null
-      // ****
-      null::~null () noexcept = default;
+  // *************
+  // vector_writer
+  // *************
+  vector_writer::~vector_writer () noexcept = default;
 
+  std::ostream & operator<< (std::ostream & os, vector_writer const & writer) {
+    return hex_dump (os, std::begin (writer), std::end (writer));
+  }
 
-      // *************
-      // vector_writer
-      // *************
+  // *************
+  // buffer_writer
+  // *************
+  buffer_writer::~buffer_writer () noexcept = default;
 
-      vector_writer::~vector_writer () noexcept = default;
+  std::ostream & operator<< (std::ostream & os, buffer_writer const & writer) {
+    return hex_dump (os, std::begin (writer), std::end (writer));
+  }
 
-      std::ostream & operator<< (std::ostream & os, vector_writer const & writer) {
-        return hex_dump (os, std::begin (writer), std::end (writer));
-      }
-
-
-      // *************
-      // buffer_writer
-      // *************
-
-      buffer_writer::~buffer_writer () noexcept = default;
-
-      std::ostream & operator<< (std::ostream & os, buffer_writer const & writer) {
-        return hex_dump (os, std::begin (writer), std::end (writer));
-      }
-
-    } // namespace archive
-  }   // namespace serialize
-} // namespace pstore
+} // end namespace pstore::serialize::archive

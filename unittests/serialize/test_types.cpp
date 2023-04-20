@@ -27,6 +27,7 @@
 #include "pstore/serialize/archive.hpp"
 
 namespace {
+
   class NonIntrusiveSerializer : public ::testing::Test {
   public:
     struct non_standard_layout_type {
@@ -44,26 +45,27 @@ namespace {
                    "expected non_standard_layout_type to be, well..., non-standard-layout");
   };
 
-} // namespace
-// A non-intrusive serializer for non_standard_layout_type
-namespace pstore {
-  namespace serialize {
-    template <>
-    struct serializer<NonIntrusiveSerializer::non_standard_layout_type> {
-      using value_type = NonIntrusiveSerializer::non_standard_layout_type;
+} // end anonymous namespace
 
-      template <typename Archive>
-      static auto write (Archive && archive, value_type const & p) -> archive_result_type<Archive> {
-        return serialize::write (std::forward<Archive> (archive), p.a);
-      }
+namespace pstore::serialize {
 
-      template <typename Archive>
-      static void read (Archive && archive, value_type & out) {
-        new (&out) value_type (serialize::read<int> (std::forward<Archive> (archive)));
-      }
-    };
-  } // namespace serialize
-} // namespace pstore
+  // A non-intrusive serializer for non_standard_layout_type
+  template <>
+  struct serializer<NonIntrusiveSerializer::non_standard_layout_type> {
+    using value_type = NonIntrusiveSerializer::non_standard_layout_type;
+
+    template <typename Archive>
+    static auto write (Archive && archive, value_type const & p) -> archive_result_type<Archive> {
+      return serialize::write (std::forward<Archive> (archive), p.a);
+    }
+
+    template <typename Archive>
+    static void read (Archive && archive, value_type & out) {
+      new (&out) value_type (serialize::read<int> (std::forward<Archive> (archive)));
+    }
+  };
+
+} // end namespace pstore::serialize
 
 TEST_F (NonIntrusiveSerializer, WriteAndRead) {
   non_standard_layout_type const expected{42};
@@ -78,9 +80,8 @@ TEST_F (NonIntrusiveSerializer, WriteAndRead) {
   EXPECT_EQ (std::end (writer), reader.iterator ());
 }
 
-
-
 namespace {
+
   class SerializeSpanFallback : public ::testing::Test {
   public:
     struct simple_struct {
@@ -97,26 +98,27 @@ namespace {
       MOCK_METHOD1 (read, void (simple_struct &));
     };
   };
-} // namespace
 
-namespace pstore {
-  namespace serialize {
-    template <>
-    struct serializer<SerializeSpanFallback::simple_struct> {
-      using value_type = SerializeSpanFallback::simple_struct;
+} // end anonymous namespace
 
-      template <typename Archive>
-      static auto write (Archive && archive, value_type const & p) -> archive_result_type<Archive> {
-        return archive.write (p);
-      }
+namespace pstore::serialize {
 
-      template <typename Archive>
-      static void read (Archive && archive, value_type & out) {
-        archive.read (out);
-      }
-    };
-  } // namespace serialize
-} // namespace pstore
+  template <>
+  struct serializer<SerializeSpanFallback::simple_struct> {
+    using value_type = SerializeSpanFallback::simple_struct;
+
+    template <typename Archive>
+    static auto write (Archive && archive, value_type const & p) -> archive_result_type<Archive> {
+      return archive.write (p);
+    }
+
+    template <typename Archive>
+    static void read (Archive && archive, value_type & out) {
+      archive.read (out);
+    }
+  };
+
+} // end namespace pstore::serialize
 
 TEST_F (SerializeSpanFallback, Write) {
   using ::testing::_;
@@ -139,9 +141,8 @@ TEST_F (SerializeSpanFallback, Read) {
   pstore::serialize::read (arch, pstore::gsl::span<simple_struct>{arr});
 }
 
-
-
 namespace {
+
   class SerializeSpan : public ::testing::Test {
   public:
     struct simple_struct {
@@ -158,26 +159,29 @@ namespace {
       MOCK_METHOD1 (readn, void (pstore::gsl::span<simple_struct>));
     };
   };
-} // namespace
-namespace pstore {
-  namespace serialize {
-    // Note that read() and write() are not implemented ensuring that if the
-    // code wants to call it, then we'll get a compilation failure.
-    template <>
-    struct serializer<SerializeSpan::simple_struct> {
-      using value_type = SerializeSpan::simple_struct;
 
-      template <typename Archive, typename SpanType>
-      static auto writen (Archive && mock, SpanType sp) -> archive_result_type<Archive> {
-        return mock.writen (sp);
-      }
-      template <typename Archive, typename SpanType>
-      static void readn (Archive && mock, SpanType sp) {
-        mock.readn (sp);
-      }
-    };
-  } // namespace serialize
-} // namespace pstore
+} // end anonymous namespace
+
+namespace pstore::serialize {
+
+  // Note that read() and write() are not implemented ensuring that if the
+  // code wants to call it, then we'll get a compilation failure.
+  template <>
+  struct serializer<SerializeSpan::simple_struct> {
+    using value_type = SerializeSpan::simple_struct;
+
+    template <typename Archive, typename SpanType>
+    static auto writen (Archive && mock, SpanType sp) -> archive_result_type<Archive> {
+      return mock.writen (sp);
+    }
+    template <typename Archive, typename SpanType>
+    static void readn (Archive && mock, SpanType sp) {
+      mock.readn (sp);
+    }
+  };
+
+} // namespace pstore::serialize
+
 TEST_F (SerializeSpan, Write) {
   using ::testing::_;
   using ::testing::Return;
@@ -205,6 +209,7 @@ TEST_F (SerializeSpan, Read) {
 
 
 namespace {
+
   class ArchiveSpanFallback : public ::testing::Test {
   protected:
     // This mock class is used to monitor the serializer's use of
@@ -228,7 +233,9 @@ namespace {
       MOCK_METHOD1 (get, void (int &));
     };
   };
-} // namespace
+
+} // end anonymous namespace
+
 TEST_F (ArchiveSpanFallback, Write) {
   using ::testing::_;
   using ::testing::Return;
@@ -263,6 +270,7 @@ TEST_F (ArchiveSpanFallback, Read) {
 
 
 namespace {
+
   class ArchiveSpan : public ::testing::Test {
   protected:
     // This mock class is used to monitor the serializer's use of
@@ -291,7 +299,8 @@ namespace {
       }
     };
   };
-} // namespace
+
+} // end anonymous namespace
 
 TEST_F (ArchiveSpan, WriteSpan) {
   using ::testing::_;
