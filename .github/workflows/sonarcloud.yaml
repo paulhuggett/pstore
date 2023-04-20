@@ -106,6 +106,7 @@ jobs:
                         --define sonar.projectKey=paulhuggett_pstore                    \
                         --define sonar.projectName=pstore                               \
                         --define sonar.projectVersion="$GITHUB_SHA"                     \
+                        --define sonar.python.version=3.7,3.8,3.9,3.10,3.11             \
                         --define sonar.sourceEncoding=UTF-8                             \
                         --define sonar.sources=include,lib,examples                     \
                         --define sonar.tests=system_tests,unittests
