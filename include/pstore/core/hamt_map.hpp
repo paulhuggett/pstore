@@ -19,6 +19,8 @@
 #ifndef PSTORE_CORE_HAMT_MAP_HPP
 #define PSTORE_CORE_HAMT_MAP_HPP
 
+#include <variant>
+
 #include "pstore/core/hamt_map_types.hpp"
 #include "pstore/serialize/standard_types.hpp"
 
@@ -184,6 +186,12 @@ namespace pstore {
 
       private:
         void increment_branch ();
+
+        template <typename>
+        inline static bool always_false_v = false;
+
+        std::pair<std::shared_ptr<void const>, std::variant<branch const *, linear_node const *>>
+        get_non_leaf () const;
 
         /// Walks the iterator's position to point to the deepest, left-most leaf of the
         /// the current node. The iterator must be pointing to an branch when this
@@ -433,12 +441,12 @@ namespace pstore {
       template <
         typename Database, typename HamtMap,
         typename Iterator = typename inherit_const<Database, iterator, const_iterator>::type>
-      static Iterator make_begin_iterator (Database && db, HamtMap && m);
+      static Iterator make_begin_iterator (Database & db, HamtMap & m);
 
       template <
         typename Database, typename HamtMap,
         typename Iterator = typename inherit_const<Database, iterator, const_iterator>::type>
-      static Iterator make_end_iterator (Database && db, HamtMap && m);
+      static Iterator make_end_iterator (Database & db, HamtMap & m);
 
       /// Insert or insert_or_assign a node into a hamt_map.
       /// \tparam OtherValueType  A type whose serialization is compatible with value_type.
@@ -511,6 +519,22 @@ namespace pstore {
       return *this;
     }
 
+    // get non leaf
+    // ~~~~~~~~~~~~
+    // Loads a store-based tree record (i.e. a branch or linear node) returning both the store's
+    // (untyped) shared_ptr<> and the (typed) pointer to the loaded instance.
+    template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
+    template <bool IsConstIterator>
+    auto
+    hamt_map<KeyType, ValueType, Hash, KeyEqual>::iterator_base<IsConstIterator>::get_non_leaf ()
+      const
+      -> std::pair<std::shared_ptr<void const>, std::variant<branch const *, linear_node const *>> {
+      auto const & parent = visited_parents_.top ();
+      if (details::depth_is_branch (this->get_shift_bits ())) {
+        return branch::get_node (db_, parent.node);
+      }
+      return linear_node::get_node (db_, parent.node);
+    }
 
     // increment branch
     // ~~~~~~~~~~~~~~~~
@@ -525,48 +549,41 @@ namespace pstore {
                   KeyEqual>::iterator_base<IsConstIterator>::increment_branch () {
 
       visited_parents_.pop ();
+      if (visited_parents_.empty ()) {
+        return;
+      }
 
-      if (!visited_parents_.empty ()) {
-        std::shared_ptr<void const> node;
-        branch const * branch = nullptr;
-        linear_node const * linear = nullptr;
+      auto [store_ptr, ptr] = this->get_non_leaf ();
+      (void) store_ptr;
 
-        details::parent_type parent = visited_parents_.top ();
-        unsigned const shifts = this->get_shift_bits ();
-        bool const is_branch = details::depth_is_branch (shifts);
-        std::size_t size = 0;
-        if (is_branch) {
-          std::tie (node, branch) = branch::get_node (db_, parent.node);
-          PSTORE_ASSERT (branch != nullptr);
-          size = branch->size ();
-        } else {
-          std::tie (node, linear) = linear_node::get_node (db_, parent.node);
-          PSTORE_ASSERT (linear != nullptr);
-          size = linear->size ();
-        }
+      details::parent_type & parent = visited_parents_.top ();
+      auto const size = std::visit ([] (auto & arg) -> std::size_t { return arg->size (); }, ptr);
+      PSTORE_ASSERT (!parent.node.is_leaf () && parent.position < size);
+      if (parent.position + 1U >= size) {
+        return this->increment_branch ();
+      }
 
-        PSTORE_ASSERT (!parent.node.is_leaf () && parent.position < size);
-        ++parent.position;
+      // Update the parent.
+      ++parent.position;
 
-        if (parent.position >= size) {
-          this->increment_branch ();
-        } else {
-          // Update the parent.
-          visited_parents_.top ().position = parent.position;
-
-          // Visit the child.
-          if (is_branch) {
-            index_pointer child = (*branch)[parent.position];
+      // Visit the child.
+      std::visit (
+        [this, &parent] (auto & arg) {
+          using T = std::decay_t<decltype (arg)>;
+          if constexpr (std::is_same_v<T, branch const *>) {
+            index_pointer const child = (*arg)[parent.position];
             if (child.is_branch ()) {
               this->move_to_left_most_child (child);
             } else {
               visited_parents_.push (details::parent_type{child});
             }
+          } else if constexpr (std::is_same_v<T, linear_node const *>) {
+            visited_parents_.push (details::parent_type{index_pointer{(*arg)[parent.position]}});
           } else {
-            visited_parents_.push (details::parent_type{index_pointer{(*linear)[parent.position]}});
+            static_assert (always_false_v<T>, "non-exhaustive visitor!");
           }
-        }
-      }
+        },
+        ptr);
     }
 
     // move to left most child
@@ -578,16 +595,11 @@ namespace pstore {
 
       while (!node.is_leaf ()) {
         visited_parents_.push (details::parent_type{node, 0});
-        if (visited_parents_.size () <= details::max_branch_depth) {
-          auto [store_node, b] = branch::get_node (db_, node);
-          (void) store_node;
-          PSTORE_ASSERT (!store_node || store_node.get () == b);
-          node = (*b)[0];
-        } else {
-          auto [store_node, linear] = linear_node::get_node (db_, node);
-          (void) store_node;
-          node = (*linear)[0];
-        }
+
+        auto [store_ptr, ptr] = this->get_non_leaf ();
+        (void) store_ptr;
+        node =
+          std::visit ([] (auto & arg) -> index_pointer { return index_pointer{(*arg)[0]}; }, ptr);
       }
 
       // Push the leaf on the stack.
@@ -1087,9 +1099,9 @@ namespace pstore {
     // ~~~~~~~~~~~~~~~~~~~
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     template <typename Database, typename HamtMap, typename Iterator>
-    Iterator hamt_map<KeyType, ValueType, Hash, KeyEqual>::make_begin_iterator (Database && db,
-                                                                                HamtMap && m) {
-      Iterator result{std::forward<Database> (db), parent_stack{}, &m};
+    Iterator hamt_map<KeyType, ValueType, Hash, KeyEqual>::make_begin_iterator (Database & db,
+                                                                                HamtMap & m) {
+      Iterator result{db, parent_stack{}, &m};
       if (!m.root_.is_empty ()) {
         result.move_to_left_most_child (m.root_);
       }
@@ -1100,9 +1112,9 @@ namespace pstore {
     // ~~~~~~~~~~~~~~~~~
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     template <typename Database, typename HamtMap, typename Iterator>
-    Iterator hamt_map<KeyType, ValueType, Hash, KeyEqual>::make_end_iterator (Database && db,
-                                                                              HamtMap && m) {
-      return {std::forward<Database> (db), parent_stack{}, &m};
+    Iterator hamt_map<KeyType, ValueType, Hash, KeyEqual>::make_end_iterator (Database & db,
+                                                                              HamtMap & m) {
+      return {db, parent_stack{}, &m};
     }
 
   } // namespace index
