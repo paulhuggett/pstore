@@ -512,7 +512,7 @@ namespace pstore::serialize {
   ///          element copied.
   template <typename Ty, typename Archive, typename OutputIterator>
   OutputIterator read_range (Archive && archive, OutputIterator output) {
-    auto distance = read<std::size_t> (std::forward<Archive> (archive));
+    auto distance = read<std::size_t> (archive);
     while (distance-- > 0) {
       *output = read<Ty> (archive);
       ++output;

@@ -366,53 +366,14 @@ namespace pstore {
     return std::get<I> (*eon);
   }
 
-
-  namespace details {
-
-    template <std::size_t N>
-    struct applier {
-      template <typename Function, typename Tuple, typename... Args>
-      static auto apply (Function && f, Tuple && t, Args &&... a)
-        -> decltype (applier<N - 1U>::apply (std::forward<Function> (f), std::forward<Tuple> (t),
-                                             std::get<N - 1U> (std::forward<Tuple> (t)),
-                                             std::forward<Args> (a)...)) {
-
-        return applier<N - 1U>::apply (std::forward<Function> (f), std::forward<Tuple> (t),
-                                       std::get<N - 1U> (std::forward<Tuple> (t)),
-                                       std::forward<Args> (a)...);
-      }
-    };
-
-    template <>
-    struct applier<std::size_t{0}> {
-      template <typename Function, typename Tuple, typename... Args>
-      static auto apply (Function && f, Tuple && t, Args &&... a)
-        -> decltype (std::forward<Function> (f) (std::forward<Args> (a)...)) {
-        (void) t;
-        return std::forward<Function> (f) (std::forward<Args> (a)...);
-      }
-    };
-
-    template <typename Function, typename Tuple>
-    inline auto apply (Function && f, Tuple && t)
-      -> decltype (applier<std::tuple_size_v<std::decay_t<Tuple>>>::apply (
-        std::forward<Function> (f), std::forward<Tuple> (t))) {
-
-      return applier<std::tuple_size_v<std::decay_t<Tuple>>>::apply (std::forward<Function> (f),
-                                                                     std::forward<Tuple> (t));
-    }
-
-  } // end namespace details
-
-
   template <typename Function, typename... Args>
   auto operator>>= (error_or_n<Args...> const & t, Function && f)
-    -> decltype (details::apply (f, t.get ())) {
+    -> decltype (std::apply (std::forward<Function> (f), t.get ())) {
 
     if (t) {
-      return details::apply (std::forward<Function> (f), t.get ());
+      return std::apply (std::forward<Function> (f), t.get ());
     }
-    return decltype (details::apply (f, t.get ())){t.get_error ()};
+    return decltype (std::apply (std::forward<Function> (f), t.get ())){t.get_error ()};
   }
 
 } // end namespace pstore

@@ -169,7 +169,7 @@ namespace pstore::command_line {
 
   template <typename Option, typename M0, typename... Mods>
   void apply_to_option (Option && opt, M0 && m0, Mods &&... mods) {
-    make_modifier (std::forward<M0> (m0)).apply (std::forward<Option> (opt));
+    make_modifier (std::forward<M0> (m0)).apply (opt);
     apply_to_option (std::forward<Option> (opt), std::forward<Mods> (mods)...);
   }
 

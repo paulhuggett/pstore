@@ -68,7 +68,7 @@ namespace pstore::serialize {
   private:
     template <typename DBReader>
     static void readsv (DBReader && archive, value_type & str) {
-      std::size_t const length = string_helper::read_length (std::forward<DBReader> (archive));
+      std::size_t const length = string_helper::read_length (archive);
       new (&str) value_type (
         read_string_view (archive.get_db (), typed_address<char> (archive.get_address ()), length));
       archive.skip (length);
