@@ -97,7 +97,6 @@ jobs:
                         --define sonar.host.url="${{ env.SONAR_SERVER_URL }}"           \
                         --define sonar.branch.name="$(git rev-parse --abbrev-ref HEAD)" \
                         --define sonar.cfamily.build-wrapper-output="$BW_PATH"          \
-                        --define sonar.cfamily.cache.enabled=false                      \
                         --define sonar.cfamily.gcov.reportsPath="$BUILD_PATH"           \
                         --define sonar.cfamily.threads="$THREADS"                       \
                         --define sonar.coverage.exclusions='system_tests/**/*'          \
