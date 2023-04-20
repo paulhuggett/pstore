@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # ===- utils/make_build.py ------------------------------------------------===//
 # *                  _          _           _ _     _  *
 # *  _ __ ___   __ _| | _____  | |__  _   _(_) | __| | *
@@ -18,7 +18,7 @@ import argparse
 import json
 import logging
 import os
-import pipes
+import shlex
 import shutil
 import subprocess
 import stat
@@ -154,7 +154,7 @@ def _as_command_line(cmd):
     :return: A string containing the space-separated arguments with quoting as necessary for the shell.
     """
 
-    return ' '.join((pipes.quote(x) for x in cmd))
+    return ' '.join((shlex.quote(x) for x in cmd))
 
 
 def _as_native_path_cygwin(path):
@@ -275,7 +275,8 @@ def create_build_directory(options):
                 os.chmod(path, stat.S_IWRITE)
                 function(path)
 
-            shutil.rmtree(options.directory, onerror=rmtree_error)
+            shutil.rmtree(options.directory, ignore_errors=False,
+                          onerror=rmtree_error)
 
     if not os.path.exists(options.directory):
         _logger.info('mkdir:%s', options.directory)
