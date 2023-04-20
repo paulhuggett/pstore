@@ -461,11 +461,11 @@ namespace pstore {
         /// Allocates a new linear node in memory.
         ///
         /// \param num_children Sufficient space is allocated for the number of child nodes
-        /// specified in this parameter.
+        ///   specified in this parameter.
         /// \param from_node A node whose contents will be copied into the new node. If the
-        /// number of children requested is greater than the number of children in
-        /// from_node, the remaining entries are zeroed; if less then the child node
-        /// collection is truncated after the specified number of entries.
+        ///   number of children requested is greater than the number of children in
+        ///   from_node, the remaining entries are zeroed; if less then the child node
+        ///   collection is truncated after the specified number of entries.
         /// \result A pointer to the newly allocated linear node.
         static std::unique_ptr<linear_node> allocate (std::size_t num_children,
                                                       linear_node const & from_node);
@@ -578,9 +578,9 @@ namespace pstore {
         /// \param db  The database containing the node.
         /// \param node  The node's location: either in-store or in-heap.
         /// \return A pair of which the first element is a in-store pointer to the node
-        /// body. This may be null if called on a heap-resident node. The second element is
-        /// the raw node pointer, that is, the address of a heap node or the result of
-        /// calling .get() on the store-pointer.
+        ///   body. This may be null if called on a heap-resident node. The second element
+        ///   is the raw node pointer, that is, the address of a heap node or the result
+        ///   of calling .get() on the store-pointer.
         static auto get_node (database const & db, index_pointer node)
           -> std::pair<std::shared_ptr<branch const>, branch const *>;
 
@@ -622,9 +622,9 @@ namespace pstore {
         /// node with the same number of children may be greater.
         ///
         /// \param num_children  The number of children to assume for the purpose of
-        /// computing the number of bytes occupied.
+        ///   computing the number of bytes occupied.
         /// \return The number of bytes occupied by an in-store internal node with the given
-        /// number of child nodes.
+        ///   number of child nodes.
         static constexpr std::size_t size_bytes (std::size_t const num_children) noexcept {
           PSTORE_ASSERT (num_children > 0 && num_children <= hash_size);
           return sizeof (branch) - sizeof (branch::children_) +
@@ -709,8 +709,8 @@ namespace pstore {
       inline auto branch::lookup (hash_type const hash_index) const
         -> std::pair<index_pointer, std::size_t> {
         PSTORE_ASSERT (hash_index < (hash_type{1} << hash_index_bits));
-        auto const bit_pos = hash_type{1} << hash_index;
-        if ((bitmap_ & bit_pos) != 0) { //! OCLINT(PH - bitwise in conditional is ok)
+        if (auto const bit_pos = hash_type{1} << hash_index;
+            (bitmap_ & bit_pos) != 0) { //! OCLINT(PH - bitwise in conditional is ok)
           std::size_t const index = bit_count::pop_count (bitmap_ & (bit_pos - 1U));
           return {children_[index], index};
         }
