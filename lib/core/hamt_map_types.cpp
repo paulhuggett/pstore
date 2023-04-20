@@ -274,8 +274,7 @@ namespace pstore {
           return {nullptr, node.untag<branch *> ()};
         }
 
-        std::shared_ptr<branch const> store_branch =
-          branch::read_node (db, node.untag_address<branch> ());
+        auto store_branch = branch::read_node (db, node.untag_address<branch> ());
         return {std::move (store_branch), store_branch.get ()};
       }
 
