@@ -197,7 +197,7 @@ namespace pstore {
         template <typename Archive, typename SpanType>
         static void invoke (Archive && archive, SpanType span, ...) {
           for (auto & v : span) {
-            serializer<typename SpanType::element_type>::read (std::forward<Archive> (archive), v);
+            serializer<typename SpanType::element_type>::read (archive, v);
           }
         }
 
@@ -242,8 +242,7 @@ namespace pstore {
           // write() for each element.
           sticky_assign<archive_result_type<Archive>> r;
           for (auto & v : span) {
-            r = serializer<typename SpanType::element_type>::write (std::forward<Archive> (archive),
-                                                                    v);
+            r = serializer<typename SpanType::element_type>::write (archive, v);
           }
           return r.get ();
         }
@@ -464,7 +463,7 @@ namespace pstore {
     template <typename Archive, typename Ty, typename... Args>
     auto write (Archive && archive, Ty const & ty, Args const &... args)
       -> archive_result_type<Archive> {
-      auto result = write (std::forward<Archive> (archive), ty);
+      auto result = write (archive, ty);
       write (std::forward<Archive> (archive), args...);
       return result;
     }
@@ -474,12 +473,13 @@ namespace pstore {
 } // namespace pstore
 
 
-///@{
-/// \name Reading and writing object ranges
-/// These functions provide a simple interface for reading and writing object sequences as defined
-/// by an iterator range.
 namespace pstore {
   namespace serialize {
+
+    ///@{
+    /// \name Reading and writing object ranges
+    /// These functions provide a simple interface for reading and writing object sequences as
+    /// defined by an iterator range.
 
     /// \brief Writes a range of values [first, last) to the supplied archive.
     ///
@@ -487,21 +487,19 @@ namespace pstore {
     /// two iterators so that the number of following values is known by the equivalent reader.
     /// This is followed by a sequence of the actual values.
     ///
+    /// \tparam Archive  The type of the archive object.
+    /// \tparam InputIterator  An input iterator type.
     /// \param archive The archive to which the range of values is to be written
     /// \param begin   The beginning of the iterator range to be written
     /// \param end     The end of the iterator range to be written
-
     template <typename Archive, typename InputIterator>
     void write_range (Archive && archive, InputIterator begin, InputIterator end) {
-
       auto const distance = std::distance (begin, end);
       PSTORE_ASSERT (distance >= 0);
       write (archive, static_cast<std::size_t> (distance));
 
       using value_type = typename std::iterator_traits<InputIterator>::value_type;
-      std::for_each (begin, end, [&archive] (value_type const & value) {
-        write (std::forward<Archive> (archive), value);
-      });
+      std::for_each (begin, end, [&archive] (value_type const & value) { write (archive, value); });
     }
 
     /// \brief Reads a sequence of values from the given archive and adds them to an iterator
@@ -511,22 +509,26 @@ namespace pstore {
     /// following values and that an array of serialized `OutputIterator::value_type` instances
     /// follows immediately.
     ///
-    /// \param archive  The archive from which the range of values will be read
+    /// \tparam Ty  The type of the values to be read.
+    /// \tparam Archive  The type of the archive object.
+    /// \tparam OutputIterator  An output iterator type.
+    /// \param archive  The archive from which the range of values will be read.
     /// \param output   An iterator to which the values read from the archive are written. Must
-    ///                 meet the requirements of OutputIterator
+    ///                 meet the requirements of OutputIterator.
     /// \returns Input iterator to the element in the destination range, one past the last
     ///          element copied.
-
     template <typename Ty, typename Archive, typename OutputIterator>
     OutputIterator read_range (Archive && archive, OutputIterator output) {
       auto distance = read<std::size_t> (std::forward<Archive> (archive));
       while (distance-- > 0) {
-        *output = read<Ty> (std::forward<Archive> (archive));
+        *output = read<Ty> (archive);
         ++output;
       }
       return output;
     }
+
+    ///@}
+
   } // namespace serialize
 } // namespace pstore
-///@}
 #endif // PSTORE_SERIALIZE_TYPES_HPP

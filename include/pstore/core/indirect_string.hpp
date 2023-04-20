@@ -145,65 +145,52 @@ namespace pstore {
       /// \param value  The indirect_string instance to be serialized.
       /// \result  The address at which the data was written.
       /// \note This function only writes to a database.
+      static auto write (archive::database_writer & archive, value_type const & value)
+        -> archive_result_type<archive::database_writer> {
+        return write_string_address (archive, value);
+      }
       static auto write (archive::database_writer && archive, value_type const & value)
         -> archive_result_type<archive::database_writer> {
         return write_string_address (archive, value);
       }
 
-      /// \brief Writes an instance of `indirect_string` to an archiver.
+      /// \brief Reads an instance of `indirect_string` from an archiver.
       ///
-      /// \param archive  The Archiver to which the string will be written.
-      /// \param value  The indirect_string instance to be serialized.
-      /// \result  The address at which the data was written.
-      /// \note This function only writes to a database.
-      static auto write (archive::database_writer & archive, value_type const & value)
-        -> archive_result_type<archive::database_writer> {
-        return write_string_address (archive, value);
+      /// \param archive  The Archiver from which a string will be read.
+      /// \param value  A reference to uninitialized memory that is suitable for a new string
+      /// instance.
+      /// \note This function only reads from the database.
+      static void read (archive::database_reader & archive, value_type & value) {
+        read_string_address (archive, value);
       }
-
-
-      /// \brief Reads an instance of `indirect_string` from an archiver.
-      ///
-      /// \param archive  The Archiver from which a string will be read.
-      /// \param value  A reference to uninitialized memory that is suitable for a new string
-      /// instance.
-      /// \note This function only reads from the database.
-      static void read (archive::database_reader & archive, value_type & value);
-
-      /// \brief Reads an instance of `indirect_string` from an archiver.
-      ///
-      /// \param archive  The Archiver from which a string will be read.
-      /// \param value  A reference to uninitialized memory that is suitable for a new string
-      /// instance.
-      /// \note This function only reads from the database.
-      static void read (archive::database_reader && archive, value_type & value);
+      static void read (archive::database_reader && archive, value_type & value) {
+        read_string_address (archive, value);
+      }
 
     private:
       template <typename DBArchive>
       static auto write_string_address (DBArchive && archive, value_type const & value)
-        -> archive_result_type<DBArchive>;
+        -> archive_result_type<DBArchive> {
+
+        // The body of an indirect string must be written separately by the caller.
+        PSTORE_ASSERT (value.is_pointer_);
+        constexpr auto mask = indirect_string::in_heap_mask;
+        PSTORE_ASSERT (!(reinterpret_cast<std::uintptr_t> (value.str_) & mask));
+
+        return archive.put (address{reinterpret_cast<std::uintptr_t> (value.str_) | mask});
+      }
 
       template <typename DBArchive>
-      static void read_string_address (DBArchive && archive, value_type & value);
+      static void read_string_address (DBArchive && archive, value_type & value) {
+        database const & db = archive.get_db ();
+        new (&value)
+          value_type (db, *db.getrou (typed_address<address>::make (archive.get_address ())));
+      }
     };
 
-    // write_string_address
-    // ~~~~~~~~~~~~~~~~~~~~
-    template <typename DBArchive>
-    auto serializer<indirect_string>::write_string_address (DBArchive && archive,
-                                                            value_type const & value)
-      -> archive_result_type<DBArchive> {
-
-      // The body of an indirect string must be written separately by the caller.
-      PSTORE_ASSERT (value.is_pointer_);
-      constexpr auto mask = indirect_string::in_heap_mask;
-      PSTORE_ASSERT (!(reinterpret_cast<std::uintptr_t> (value.str_) & mask));
-
-      return archive.put (address{reinterpret_cast<std::uintptr_t> (value.str_) | mask});
-    }
 
   } // end namespace serialize
-} // end namespace pstore
+} // namespace pstore
 
 namespace std {
 

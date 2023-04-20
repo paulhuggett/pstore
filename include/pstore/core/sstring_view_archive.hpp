@@ -60,10 +60,10 @@ namespace pstore {
       /// \param str  A reference to uninitialized memory that is suitable for a new string
       ///   instance.
       /// \note This function only reads from the database.
-      static void read (archive::database_reader && archive, value_type & str) {
+      static void read (archive::database_reader & archive, value_type & str) {
         readsv (archive, str);
       }
-      static void read (archive::database_reader & archive, value_type & str) {
+      static void read (archive::database_reader && archive, value_type & str) {
         readsv (archive, str);
       }
 
@@ -84,7 +84,7 @@ namespace pstore {
       template <typename Archive>
       static auto write (Archive && archive, value_type const & str)
         -> archive_result_type<Archive> {
-        return string_helper::write (archive, str);
+        return string_helper::write (std::forward<Archive> (archive), str);
       }
       // note that there's no read() implementation.
     };

@@ -67,7 +67,7 @@ namespace pstore {
         auto const resl = serialize::write (archive, gsl::make_span (&(*first), &(*last)));
 
         // Emit the string body.
-        serialize::write (archive, gsl::make_span (str));
+        serialize::write (std::forward<Archive> (archive), gsl::make_span (str));
         return resl;
       }
 
@@ -254,7 +254,7 @@ namespace pstore {
         -> archive_result_type<Archive> {
 
         auto const result = serialize::write (archive, value.first);
-        serialize::write (archive, value.second);
+        serialize::write (std::forward<Archive> (archive), value.second);
         return result;
       }
 
@@ -266,7 +266,7 @@ namespace pstore {
       template <typename Archive>
       static void read (Archive && archive, value_type & value) {
         serialize::read_uninit (archive, value.first);
-        serialize::read_uninit (archive, value.second);
+        serialize::read_uninit (std::forward<Archive> (archive), value.second);
       }
     };
   } // namespace serialize

@@ -249,15 +249,14 @@ namespace pstore {
       template <typename Archive>
       static auto write (Archive && archive, value_type const & ty)
         -> archive_result_type<Archive> {
-        auto result = serialize::write (std::forward<Archive> (archive), ty.first);
+        auto result = serialize::write (archive, ty.first);
         serialize::write (std::forward<Archive> (archive), ty.second);
         return result;
       }
 
       template <typename Archive>
       static void read (Archive && archive, value_type & out) {
-        auto const first =
-          serialize::read<decltype (value_type::first)> (std::forward<Archive> (archive));
+        auto const first = serialize::read<decltype (value_type::first)> (archive);
         auto const second =
           serialize::read<decltype (value_type::second)> (std::forward<Archive> (archive));
         new (&out) value_type (first, second);

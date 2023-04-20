@@ -111,29 +111,6 @@ namespace pstore {
   }
 
 
-  namespace serialize {
-
-    template <typename DBArchive>
-    void serializer<indirect_string>::read_string_address (DBArchive && archive,
-                                                           value_type & value) {
-      database const & db = archive.get_db ();
-      new (&value)
-        value_type (db, *db.getrou (typed_address<address>::make (archive.get_address ())));
-    }
-
-    void serializer<indirect_string>::read (archive::database_reader & archive,
-                                            value_type & value) {
-      read_string_address (archive, value);
-    }
-
-    void serializer<indirect_string>::read (archive::database_reader && archive,
-                                            value_type & value) {
-      read_string_address (archive, value);
-    }
-
-  } // end namespace serialize
-
-
   //*  _         _ _            _        _       _                     _    _          *
   //* (_)_ _  __| (_)_ _ ___ __| |_   __| |_ _ _(_)_ _  __ _   __ _ __| |__| |___ _ _  *
   //* | | ' \/ _` | | '_/ -_) _|  _| (_-<  _| '_| | ' \/ _` | / _` / _` / _` / -_) '_| *

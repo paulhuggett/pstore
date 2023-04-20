@@ -58,18 +58,36 @@ namespace pstore {
       template <typename Archive>
       static auto write (Archive && archive, value_type const & r) -> archive_result_type<Archive> {
         auto const resl = serialize::write (archive, r.addr.absolute ());
-        serialize::write (archive, r.size);
+        serialize::write (std::forward<Archive> (archive), r.size);
         return resl;
       }
       template <typename Archive>
       static void read (Archive && archive, value_type & r) {
         auto const addr = typed_address<T>::make (serialize::read<std::uint64_t> (archive));
-        auto const size = serialize::read<std::uint64_t> (archive);
+        auto const size = serialize::read<std::uint64_t> (std::forward<Archive> (archive));
         new (&r) extent<T> (addr, size);
       }
     };
 
   } // end namespace serialize
+
+  namespace details {
+
+    /// Accepts a sequence of characters as template arguments and returns a 64-bit unsigned integer
+    /// containing those characters with the first occupying the most-significant bit. For example:
+    /// chars_to_uint64<'a', 'b', 'c'> () returns 0x616263 where the ASCII codes for a, b, and c are
+    /// 0x61, 0x62, and 0x63 respectively.
+    template <char C1>
+    constexpr std::uint64_t chars_to_uint64 () noexcept {
+      return static_cast<std::uint64_t> (C1);
+    }
+    template <char C1, char C2, char... Args>
+    constexpr std::uint64_t chars_to_uint64 () noexcept {
+      return static_cast<std::uint64_t> (C1) << ((sizeof...(Args) + 1U) * 8U) |
+             chars_to_uint64<C2, Args...> ();
+    }
+
+  } // end namespace details
 
   struct trailer;
 
@@ -159,18 +177,11 @@ namespace pstore {
   /// This data is not read or written but a file range lock is placed on it as part of the
   /// implementation of the transaction lock.
   struct lock_block {
-    std::uint64_t vacuum_lock{chars_to_uint64 ('V', 'a', 'c', 'u', 'u', 'm', 'L', 'k')};
-    std::uint64_t transaction_lock{chars_to_uint64 ('T', 'r', 'n', 's', 'a', 'c', 't', 'L')};
+    std::uint64_t vacuum_lock{details::chars_to_uint64<'V', 'a', 'c', 'u', 'u', 'm', 'L', 'k'> ()};
+    std::uint64_t transaction_lock{
+      details::chars_to_uint64<'T', 'r', 'n', 's', 'a', 'c', 't', 'L'> ()};
 
     static constexpr auto file_offset = std::uint64_t{sizeof (header)};
-    static constexpr std::uint64_t chars_to_uint64 (char const c1, char const c2, char const c3,
-                                                    char const c4, char const c5, char const c6,
-                                                    char const c7, char const c8) noexcept {
-      return static_cast<std::uint64_t> (c1) | static_cast<std::uint64_t> (c2) << 8U |
-             static_cast<std::uint64_t> (c3) << 16U | static_cast<std::uint64_t> (c4) << 24U |
-             static_cast<std::uint64_t> (c5) << 32U | static_cast<std::uint64_t> (c6) << 40U |
-             static_cast<std::uint64_t> (c7) << 48U | static_cast<std::uint64_t> (c8) << 56U;
-    }
   };
 
   // Assert the size, offset, and alignment of the structure and its fields to ensure file format
@@ -284,4 +295,5 @@ namespace pstore {
   PSTORE_STATIC_ASSERT (sizeof (trailer) == 112);
 
 } // namespace pstore
+
 #endif // PSTORE_CORE_FILE_HEADER_HPP
