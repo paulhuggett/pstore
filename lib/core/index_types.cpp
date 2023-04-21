@@ -37,28 +37,26 @@ namespace {
 
 } // end anonymous namespace
 
-namespace pstore {
-  namespace index {
+namespace pstore::index {
 
-    // flush_indices
-    // ~~~~~~~~~~~~~
-    void flush_indices (transaction_base & transaction,
-                        trailer::index_records_array * const locations, unsigned const generation) {
+  // flush indices
+  // ~~~~~~~~~~~~~
+  void flush_indices (transaction_base & transaction,
+                      trailer::index_records_array * const locations, unsigned const generation) {
 #define X(k)                                                                                       \
   case trailer::indices::k:                                                                        \
     flush_index<trailer::indices::k> (transaction, locations, generation);                         \
     break;
 
-      for (auto ctr = std::underlying_type<trailer::indices>::type{0};
-           ctr <= index_integral (trailer::indices::last); ++ctr) {
-        switch (static_cast<trailer::indices> (ctr)) {
-          PSTORE_INDICES
-        case trailer::indices::last: break;
-        }
+    for (auto ctr = std::underlying_type<trailer::indices>::type{0};
+         ctr <= index_integral (trailer::indices::last); ++ctr) {
+      switch (static_cast<trailer::indices> (ctr)) {
+        PSTORE_INDICES
+      case trailer::indices::last: break;
       }
-#undef X
-      PSTORE_ASSERT (locations->size () == index_integral (trailer::indices::last));
     }
+#undef X
+    PSTORE_ASSERT (locations->size () == index_integral (trailer::indices::last));
+  }
 
-  } // end namespace index
-} // end namespace pstore
+} // end namespace pstore::index
