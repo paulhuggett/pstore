@@ -34,13 +34,14 @@ class TestIntegratedTestKeywordParser(unittest.TestCase):
                                              debug=False,
                                              isWindows=(
                                                platform.system() == 'Windows'),
+                                             order='smart',
                                              params={})
         TestIntegratedTestKeywordParser.litConfig = lit_config
         # Perform test discovery.
         test_path = os.path.dirname(os.path.dirname(__file__))
         inputs = [os.path.join(test_path, 'Inputs/testrunner-custom-parsers/')]
         assert os.path.isdir(inputs[0])
-        tests = lit.discovery.find_tests_for_inputs(lit_config, inputs)
+        tests = lit.discovery.find_tests_for_inputs(lit_config, inputs, False)
         assert len(tests) == 1 and "there should only be one test"
         TestIntegratedTestKeywordParser.inputTestCase = tests[0]
 
@@ -61,7 +62,8 @@ class TestIntegratedTestKeywordParser(unittest.TestCase):
             IntegratedTestKeywordParser("MY_RUN:", ParserKind.COMMAND),
             IntegratedTestKeywordParser("MY_CUSTOM:", ParserKind.CUSTOM,
                                         custom_parse),
-
+            IntegratedTestKeywordParser("MY_DEFINE:", ParserKind.DEFINE),
+            IntegratedTestKeywordParser("MY_REDEFINE:", ParserKind.REDEFINE),
         ]
 
     @staticmethod
@@ -104,8 +106,10 @@ class TestIntegratedTestKeywordParser(unittest.TestCase):
         cmd_parser = self.get_parser(parsers, 'MY_RUN:')
         value = cmd_parser.getValue()
         self.assertEqual(len(value), 2)  # there are only two run lines
-        self.assertEqual(value[0].strip(), "%dbg(MY_RUN: at line 4)  baz")
-        self.assertEqual(value[1].strip(), "%dbg(MY_RUN: at line 7)  foo  bar")
+        self.assertEqual(value[0].command.strip(),
+                         "%dbg(MY_RUN: at line 4)  baz")
+        self.assertEqual(value[1].command.strip(),
+                         "%dbg(MY_RUN: at line 7)  foo  bar")
 
     def test_boolean(self):
         parsers = self.make_parsers()
@@ -162,6 +166,26 @@ class TestIntegratedTestKeywordParser(unittest.TestCase):
         custom_parser = self.get_parser(parsers, 'MY_CUSTOM:')
         value = custom_parser.getValue()
         self.assertEqual(value, ['a', 'b', 'c'])
+
+    def test_defines(self):
+        parsers = self.make_parsers()
+        self.parse_test(parsers)
+        cmd_parser = self.get_parser(parsers, 'MY_DEFINE:')
+        value = cmd_parser.getValue()
+        self.assertEqual(len(value), 1) # there's only one MY_DEFINE directive
+        self.assertEqual(value[0].new_subst, True)
+        self.assertEqual(value[0].name, '%{name}')
+        self.assertEqual(value[0].value, 'value one')
+
+    def test_redefines(self):
+        parsers = self.make_parsers()
+        self.parse_test(parsers)
+        cmd_parser = self.get_parser(parsers, 'MY_REDEFINE:')
+        value = cmd_parser.getValue()
+        self.assertEqual(len(value), 1) # there's only one MY_REDEFINE directive
+        self.assertEqual(value[0].new_subst, False)
+        self.assertEqual(value[0].name, '%{name}')
+        self.assertEqual(value[0].value, 'value two')
 
     def test_bad_keywords(self):
         def custom_parse(line_number, line, output):
