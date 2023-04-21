@@ -151,7 +151,7 @@ namespace pstore {
       }
       static auto write (archive::database_writer && archive, value_type const & value)
         -> archive_result_type<archive::database_writer> {
-        return write_string_address (archive, value);
+        return write_string_address (std::move (archive), value);
       }
 
       /// \brief Reads an instance of `indirect_string` from an archiver.
@@ -164,7 +164,7 @@ namespace pstore {
         read_string_address (archive, value);
       }
       static void read (archive::database_reader && archive, value_type & value) {
-        read_string_address (archive, value);
+        read_string_address (std::move (archive), value);
       }
 
     private:

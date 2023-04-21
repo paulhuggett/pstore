@@ -62,7 +62,7 @@ namespace pstore::serialize {
       readsv (archive, str);
     }
     static void read (archive::database_reader && archive, value_type & str) {
-      readsv (archive, str);
+      readsv (std::move (archive), str);
     }
 
   private:
