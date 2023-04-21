@@ -150,8 +150,8 @@ namespace pstore {
     /// \note     The newly allocated space it not initialized.
     template <typename Ty, typename = typename std::enable_if_t<std::is_standard_layout_v<Ty>>>
     auto alloc_rw (std::size_t const num = 1) -> std::pair<std::shared_ptr<Ty>, typed_address<Ty>> {
-      auto result = this->alloc_rw (sizeof (Ty) * num, alignof (Ty));
-      return {std::static_pointer_cast<Ty> (result.first), typed_address<Ty> (result.second)};
+      auto [ptr, addr] = this->alloc_rw (sizeof (Ty) * num, alignof (Ty));
+      return {std::static_pointer_cast<Ty> (ptr), typed_address<Ty> (addr)};
     }
     ///@}
 
