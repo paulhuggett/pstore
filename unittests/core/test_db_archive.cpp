@@ -202,16 +202,21 @@ namespace {
         this->set_vacuum_mode (pstore::database::vacuum_mode::disabled);
       }
 
-      MOCK_CONST_METHOD4 (get, std::shared_ptr<void const> (pstore::address, std::size_t,
-                                                            bool /*is_initialized*/,
-                                                            bool /*is_writable*/));
+      MOCK_CONST_METHOD3 (get, std::shared_ptr<void const> (pstore::address, std::size_t, bool));
+      MOCK_METHOD3 (get, std::shared_ptr<void> (pstore::address, std::size_t, bool));
+
       MOCK_CONST_METHOD3 (getu,
                           unique_pointer (pstore::address, std::size_t, bool /*is_initialized*/));
 
-      auto base_get (pstore::address const & addr, std::size_t size, bool is_initialized,
-                     bool is_writable) const -> std::shared_ptr<void const> {
-        return pstore::database::get (addr, size, is_initialized, is_writable);
+      auto base_get_ro (pstore::address const & addr, std::size_t size, bool is_initialized) const
+        -> std::shared_ptr<void const> {
+        return pstore::database::get (addr, size, is_initialized);
       }
+      auto base_get_rw (pstore::address const & addr, std::size_t size, bool is_initialized)
+        -> std::shared_ptr<void> {
+        return pstore::database::get (addr, size, is_initialized);
+      }
+
       auto base_getu (pstore::address const & addr, std::size_t size, bool is_initialized) const
         -> unique_pointer {
         return pstore::database::getu (addr, size, is_initialized);
@@ -250,12 +255,14 @@ namespace testing {
 
 TEST_F (DbArchiveReadSpan, ReadUint64Span) {
   using testing::_;
+  using testing::Const;
   using testing::Invoke;
 
   testing::NiceMock<mock_database> db{store_.file ()};
 
   // Calls to db.get() are forwarded to the real implementation.
-  ON_CALL (db, get (_, _, _, _)).WillByDefault (Invoke (&db, &mock_database::base_get));
+  ON_CALL (Const (db), get (_, _, _)).WillByDefault (Invoke (&db, &mock_database::base_get_ro));
+  ON_CALL (db, get (_, _, _)).WillByDefault (Invoke (&db, &mock_database::base_get_rw));
 
   // All calls to db.getu() are forwarded to the real implementation.
   auto invoke_base_getu = Invoke (&db, &mock_database::base_getu);
@@ -269,7 +276,7 @@ TEST_F (DbArchiveReadSpan, ReadUint64Span) {
 
   mock_mutex mutex;
   auto transaction = begin (db, std::unique_lock<mock_mutex>{mutex});
-  pstore::typed_address<std::uint64_t> addr = append_uint64 (transaction, original[0]);
+  pstore::typed_address<std::uint64_t> const addr = append_uint64 (transaction, original[0]);
   append_uint64 (transaction, original[1]);
 
   // Now use the serializer to read a span of two uint64_ts. We expect the database.getu()

@@ -46,19 +46,24 @@ namespace {
       this->set_vacuum_mode (pstore::database::vacuum_mode::disabled);
     }
 
-    MOCK_CONST_METHOD4 (get, std::shared_ptr<void const> (pstore::address, std::size_t,
-                                                          bool /*is_initialized*/,
-                                                          bool /*is_writable*/));
-    MOCK_METHOD2 (allocate, pstore::address (std::uint64_t /*size*/, unsigned /*align*/));
+    MOCK_METHOD (std::shared_ptr<void const>, get, (pstore::address, std::size_t, bool),
+                 (const, override));
+    MOCK_METHOD (std::shared_ptr<void>, get, (pstore::address, std::size_t, bool), (override));
+
+    MOCK_METHOD (pstore::address, allocate, (std::uint64_t, unsigned), (override));
 
     // The next two methods simply allow the mocks to call through to the base class's
     // implementation of allocate() and get().
     pstore::address base_allocate (std::uint64_t bytes, unsigned align) {
       return pstore::database::allocate (bytes, align);
     }
-    auto base_get (pstore::address const & addr, std::size_t size, bool is_initialized,
-                   bool is_writable) const -> std::shared_ptr<void const> {
-      return pstore::database::get (addr, size, is_initialized, is_writable);
+    auto base_get_ro (pstore::address const & addr, std::size_t size, bool is_initialized) const
+      -> std::shared_ptr<void const> {
+      return pstore::database::get (addr, size, is_initialized);
+    }
+    auto base_get_rw (pstore::address const & addr, std::size_t size, bool is_initialized)
+      -> std::shared_ptr<void> {
+      return pstore::database::get (addr, size, is_initialized);
     }
   };
 
@@ -87,14 +92,18 @@ namespace {
   }
 
   void Transaction::SetUp () {
-    using ::testing::_;
-    using ::testing::Invoke;
+    using testing::_;
+    using testing::Const;
+    using testing::Invoke;
 
     // Pass the mocked calls through to their original implementations.
     // I'm simply using the mocking framework to observe that the
     // correct calls are made. The precise division of labor between
     // the database and transaction classes is enforced or determined here.
-    EXPECT_CALL (db_, get (_, _, _, _)).WillRepeatedly (Invoke (&db_, &mock_database::base_get));
+
+    EXPECT_CALL (Const (db_), get (_, _, _))
+      .WillRepeatedly (Invoke (&db_, &mock_database::base_get_ro));
+    EXPECT_CALL (db_, get (_, _, _)).WillRepeatedly (Invoke (&db_, &mock_database::base_get_rw));
     EXPECT_CALL (db_, allocate (_, _))
       .WillRepeatedly (Invoke (&db_, &mock_database::base_allocate));
   }
@@ -427,9 +436,9 @@ TEST_F (Transaction, GetRwInt) {
     // A call to get(). First argument (address) must lie beyond the initial transaction
     // and must request a writable int.
     EXPECT_CALL (db_, get (Ge (pstore::address{pstore::leader_size + sizeof (pstore::trailer)}),
-                           sizeof (int), false, true))
+                           sizeof (int), false))
       .After (allocate_int)
-      .WillOnce (Invoke (&db_, &mock_database::base_get));
+      .WillOnce (Invoke (&db_, &mock_database::base_get_rw));
   }
   // Now the real body of the test
   {
@@ -442,17 +451,18 @@ TEST_F (Transaction, GetRwInt) {
 
 // Use the getro<> method to return an address referencing the first int in the store.
 TEST_F (Transaction, GetRoInt) {
+  using testing::Const;
+  using testing::Invoke;
+
   // First setup the mock expectations.
-  EXPECT_CALL (db_, get (pstore::address::null (), sizeof (int), true, false))
-    .WillOnce (::testing::Invoke (&db_, &mock_database::base_get));
+  EXPECT_CALL (Const (db_), get (pstore::address::null (), sizeof (int), true))
+    .WillOnce (Invoke (&db_, &mock_database::base_get_ro));
 
   // Now the real body of the test
-  {
-    mock_mutex mutex;
-    auto transaction = begin (db_, std::unique_lock<mock_mutex>{mutex});
-    db_.getro (pstore::typed_address<int>::null (), 1);
-    transaction.commit ();
-  }
+  mock_mutex mutex;
+  auto transaction = begin (db_, std::unique_lock<mock_mutex>{mutex});
+  db_.getro (pstore::typed_address<int>::null (), 1);
+  transaction.commit ();
 }
 
 TEST_F (Transaction, GetRwUInt64) {

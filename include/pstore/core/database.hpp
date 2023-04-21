@@ -154,7 +154,7 @@ namespace pstore {
     /// \param size The size of the data block to be loaded.
     /// \return A read-only pointer to the loaded data.
     std::shared_ptr<void const> getro (address const addr, std::size_t const size) const {
-      return this->get (addr, size, true /*initialized*/, false /*writable*/);
+      return this->get (addr, size, true /*initialized*/);
     }
 
     unique_pointer<void const> getrou (address const addr, std::size_t const size) const {
@@ -236,8 +236,7 @@ namespace pstore {
     /// \param size The size of the data block to be loaded.
     /// \return A mutable pointer to the loaded data.
     std::shared_ptr<void> getrw (address const addr, std::size_t const size) {
-      return std::const_pointer_cast<void> (
-        this->get (addr, size, true /*initialized*/, true /*writable*/));
+      return this->get (addr, size, true /*initialized*/);
     }
 
     /// Loads a block of storage at the address and size given by \p ex.
@@ -279,8 +278,11 @@ namespace pstore {
     ///@}
 
     // (Virtual for mocking.)
-    virtual auto get (address addr, std::size_t size, bool initialized, bool writable) const
+    virtual auto get (address addr, std::size_t size, bool initialized) -> std::shared_ptr<void>;
+    virtual auto get (address addr, std::size_t size, bool initialized) const
       -> std::shared_ptr<void const>;
+
+
     // (Virtual for mocking.)
     virtual unique_pointer<void const> getu (address addr, std::size_t size,
                                              bool initialized) const;
@@ -444,10 +446,11 @@ namespace pstore {
     /// \param size  The number of bytes of data to be copied.
     /// \param initialized  True if the data must be populated from the store before being
     ///   returned.
-    /// \param writable  True if the memory is to be writable.
     //  \returns  A copy of the data which will be flushed as necessary on release.
-    std::shared_ptr<void const> get_spanning (address addr, std::size_t size, bool initialized,
-                                              bool writable) const;
+    auto get_spanning (address const addr, std::size_t const size, bool const initialized)
+      -> std::shared_ptr<void>;
+    auto get_spanning (address const addr, std::size_t const size, bool const initialized) const
+      -> std::shared_ptr<void const>;
 
     /// Returns a block of data from the store which spans more than one region. A fresh block
     /// of memory is allocated to which blocks of data from the store are copied.

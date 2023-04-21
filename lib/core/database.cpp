@@ -307,32 +307,49 @@ namespace pstore {
 
   // get spanning
   // ~~~~~~~~~~~~
-  auto database::get_spanning (address const addr, std::size_t const size, bool const initialized,
-                               bool const writable) const -> std::shared_ptr<void const> {
+  auto database::get_spanning (address const addr, std::size_t const size, bool const initialized)
+    -> std::shared_ptr<void> {
     // The deleter is called when the shared pointer that we're about to return is
     // released.
-    auto deleter = [this, addr, size, writable] (std::uint8_t * const p) {
-      if (writable) {
-        // Check that this code is not trying to write back to read-only storage. This error
-        // can occur if a non-const pointer is being destroyed after the containing
-        // transaction has been committed.
-        PSTORE_ASSERT (addr >= this->first_writable_address ());
+    auto deleter = [this, addr, size] (std::uint8_t * const p) {
+      // Check that this code is not trying to write back to read-only storage. This error
+      // can occur if a non-const pointer is being destroyed after the containing
+      // transaction has been committed.
+      PSTORE_ASSERT (addr >= this->first_writable_address ());
 
-        // If we're returning a writable pointer then we must copy the (potentially
-        // modified) contents back to the data store.
-        storage_.copy<storage::copy_to_store_traits> (
-          addr, size, p,
-          [] (std::uint8_t * const dest, std::uint8_t const * const src, std::size_t const n) {
-            std::memcpy (dest, src, n);
-          });
-      }
+      // If we're returning a writable pointer then we must copy the (potentially
+      // modified) contents back to the data store.
+      storage_.copy<storage::copy_to_store_traits> (
+        addr, size, p,
+        [] (std::uint8_t * const dest, std::uint8_t const * const src, std::size_t const n) {
+          std::memcpy (dest, src, n);
+        });
       delete[] p;
     };
 
     // Create the memory block that we'll be returning, attaching a suitable deleter
     // which will be responsible for copying the data back to the store (if we're providing
     // a writable pointer).
-    std::shared_ptr<std::uint8_t> const result{new std::uint8_t[size], deleter};
+    std::shared_ptr<std::uint8_t> result{new std::uint8_t[size], deleter};
+
+    if (initialized) {
+      // Copy from the data store's regions to the newly allocated memory block.
+      storage_.copy<storage::copy_from_store_traits> (
+        addr, size, result.get (),
+        [] (std::uint8_t const * const src, std::uint8_t * const dest, std::size_t const n) {
+          std::memcpy (dest, src, n);
+        });
+    }
+    return std::static_pointer_cast<void> (result);
+  }
+
+  auto database::get_spanning (address const addr, std::size_t const size,
+                               bool const initialized) const -> std::shared_ptr<void const> {
+    // Create the memory block that we'll be returning, attaching a suitable deleter
+    // which will be responsible for copying the data back to the store (if we're providing
+    // a writable pointer).
+    std::shared_ptr<std::uint8_t> const result{new std::uint8_t[size],
+                                               [] (std::uint8_t * const p) { delete[] p; }};
 
     if (initialized) {
       // Copy from the data store's regions to the newly allocated memory block.
@@ -384,11 +401,19 @@ namespace pstore {
 
   // get
   // ~~~
-  auto database::get (address const addr, std::size_t const size, bool const initialized,
-                      bool const writable) const -> std::shared_ptr<void const> {
-    this->check_get_params (addr, size, writable);
+  auto database::get (address const addr, std::size_t const size, bool const initialized)
+    -> std::shared_ptr<void> {
+    this->check_get_params (addr, size, true);
     if (storage_.request_spans_regions (addr, size)) {
-      return this->get_spanning (addr, size, initialized, writable);
+      return this->get_spanning (addr, size, initialized);
+    }
+    return storage_.address_to_pointer (addr);
+  }
+  auto database::get (address const addr, std::size_t const size, bool const initialized) const
+    -> std::shared_ptr<void const> {
+    this->check_get_params (addr, size, false);
+    if (storage_.request_spans_regions (addr, size)) {
+      return this->get_spanning (addr, size, initialized);
     }
     return storage_.address_to_pointer (addr);
   }

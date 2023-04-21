@@ -78,9 +78,7 @@ namespace pstore {
     // We call database::get() with the initialized parameter set to false because this
     // is new storage: there's no need to copy its existing contents if the block spans
     // more than one region.
-    auto ptr = std::const_pointer_cast<void> (db_.get (addr, size,
-                                                       false,  // initialized?
-                                                       true)); // writable?
+    auto ptr = db_.get (addr, size, false /*initialized?*/);
     return {ptr, addr};
   }
 
