@@ -39,8 +39,8 @@ namespace pstore {
   /// \p v modulo \p align is zero.
   template <typename IntType, typename AlignType>
   constexpr IntType aligned (IntType const v, AlignType const align) noexcept {
-    static_assert (std::is_unsigned<IntType>::value, "aligned() IntType must be unsigned");
-    static_assert (std::is_unsigned<AlignType>::value, "aligned() AlignType must be unsigned");
+    static_assert (std::is_unsigned_v<IntType>, "aligned() IntType must be unsigned");
+    static_assert (std::is_unsigned_v<AlignType>, "aligned() AlignType must be unsigned");
     PSTORE_ASSERT (is_power_of_two (align));
 
     return (v + align - 1U) & static_cast<IntType> (~(align - 1U));
