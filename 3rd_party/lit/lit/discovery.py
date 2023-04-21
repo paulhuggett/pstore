@@ -52,7 +52,7 @@ def getTestSuite(item, litConfig, cache):
         # configuration to load instead.
         config_map = litConfig.params.get('config_map')
         if config_map:
-            cfgpath = os.path.realpath(cfgpath)
+            cfgpath = os.path.abspath(cfgpath)
             target = config_map.get(os.path.normcase(cfgpath))
             if target:
                 cfgpath = target
@@ -63,8 +63,8 @@ def getTestSuite(item, litConfig, cache):
 
         cfg = TestingConfig.fromdefaults(litConfig)
         cfg.load_from_path(cfgpath, litConfig)
-        source_root = os.path.realpath(cfg.test_source_root or path)
-        exec_root = os.path.realpath(cfg.test_exec_root or path)
+        source_root = os.path.abspath(cfg.test_source_root or path)
+        exec_root = os.path.abspath(cfg.test_exec_root or path)
         return Test.TestSuite(cfg.name, source_root, exec_root, cfg), ()
 
     def search(path):
