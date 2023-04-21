@@ -119,7 +119,7 @@ namespace pstore {
   //*  | | | | | |  __/ | | | | | (_) | |  | |_| |  | | | | | | (_| | |_) | |_) |  __/ |     *
   //*  |_| |_| |_|\___|_| |_| |_|\___/|_|   \__, |  |_| |_| |_|\__,_| .__/| .__/ \___|_|     *
   //*                                       |___/                   |_|   |_|                *
-  // read_only_impl
+  // read only impl
   // ~~~~~~~~~~~~~~
   void memory_mapper_base::read_only_impl (void * addr, std::size_t len) {
     DWORD old_protect = 0;

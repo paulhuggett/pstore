@@ -228,7 +228,7 @@ namespace pstore {
     }
   }
 
-  // copy_construct
+  // copy construct
   // ~~~~~~~~~~~~~~
   template <typename T>
   template <typename Other>
@@ -241,7 +241,7 @@ namespace pstore {
     }
   }
 
-  // copy_assign
+  // copy assign
   // ~~~~~~~~~~~
   template <typename T>
   template <typename Other>
@@ -261,7 +261,7 @@ namespace pstore {
     return *this;
   }
 
-  // move_construct
+  // move construct
   // ~~~~~~~~~~~~~~
   template <typename T>
   template <typename Other>
@@ -274,7 +274,7 @@ namespace pstore {
     }
   }
 
-  // move_assign
+  // move assign
   // ~~~~~~~~~~~
   template <typename T>
   template <typename Other>
@@ -307,14 +307,14 @@ namespace pstore {
     return this->operator== (rhs.get ());
   }
 
-  // get_error
+  // get error
   // ~~~~~~~~~
   template <typename T>
   std::error_code error_or<T>::get_error () const noexcept {
     return has_error_ ? *get_error_storage () : std::error_code{};
   }
 
-  // get_error_storage
+  // get error storage
   // ~~~~~~~~~~~~~~~~~
   template <typename T>
   inline std::error_code * PSTORE_NONNULL error_or<T>::get_error_storage () noexcept {

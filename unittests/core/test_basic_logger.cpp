@@ -76,7 +76,7 @@ namespace {
     });
   }
 
-  // tz_value
+  // tz value
   // ~~~~~~~~
   maybe<std::string> time_zone_setter::tz_value () {
     czstring const tz = std::getenv ("TZ");
@@ -131,7 +131,7 @@ namespace {
     void canonicalize_sign ();
   };
 
-  // canonicalize_sign
+  // canonicalize sign
   // ~~~~~~~~~~~~~~~~~
   void BasicLoggerTimeFixture::canonicalize_sign () {
     static_assert (pstore::basic_logger::time_buffer_size >= sign_index_,

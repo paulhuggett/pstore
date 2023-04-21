@@ -80,7 +80,7 @@ namespace {
   }
 
 
-  // signal_handler
+  // signal handler
   // ~~~~~~~~~~~~~~
   /// A signal handler entry point.
   void signal_handler (int const sig) {
@@ -91,13 +91,13 @@ namespace {
 } // end anonymous namespace
 
 
-// notify_quit_thread
+// notify quit thread
 // ~~~~~~~~~~~~~~~~~~
 void notify_quit_thread () {
   quit_info.notify_all (-1);
 }
 
-// create_quit_thread
+// create quit thread
 // ~~~~~~~~~~~~~~~~~~
 std::thread create_quit_thread (vacuum::status & status,
                                 std::shared_ptr<pstore::database> const & src_db) {

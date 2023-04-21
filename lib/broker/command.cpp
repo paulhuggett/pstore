@@ -181,7 +181,7 @@ namespace pstore::broker {
       &command_processor::quit), //  shut down a single pipe-reader thread.
   }};
 
-  // process_command
+  // process command
   // ~~~~~~~~~~~~~~~
   void command_processor::process_command (brokerface::fifo_path const & fifo,
                                            brokerface::message_type const & msg) {

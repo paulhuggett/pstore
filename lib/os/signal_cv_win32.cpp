@@ -40,13 +40,13 @@ namespace pstore {
     }
   }
 
-  // wait_descriptor
+  // wait descriptor
   // ~~~~~~~~~~~~~~~
   pipe_descriptor const & descriptor_condition_variable::wait_descriptor () const noexcept {
     return event_;
   }
 
-  // notify_all
+  // notify all
   // ~~~~~~~~~~
   void descriptor_condition_variable::notify_all () {
     if (!::SetEvent (event_.native_handle ())) {
@@ -54,7 +54,7 @@ namespace pstore {
     }
   }
 
-  // notify_all_no_except
+  // notify all no except
   // ~~~~~~~~~~~~~~~~~~~~
   void descriptor_condition_variable::notify_all_no_except () noexcept {
     ::SetEvent (event_.native_handle ());

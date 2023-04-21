@@ -67,7 +67,7 @@ namespace pstore {
     //* / _` / -_) ' \/ -_) '_| / _| (_-</ -_) _|  _| / _ \ ' \  *
     //* \__, \___|_||_\___|_| |_\__| /__/\___\__|\__|_\___/_||_| *
     //* |___/                                                    *
-    // size_bytes
+    // size bytes
     // ~~~~~~~~~~
     std::size_t generic_section::size_bytes (std::size_t const data_size,
                                              std::size_t const num_ifixups,

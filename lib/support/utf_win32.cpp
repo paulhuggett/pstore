@@ -220,7 +220,7 @@ namespace pstore {
         return converted;
       }
 
-      // to_mbcs
+      // to mbcs
       // ~~~~~~~
       std::string to_mbcs (wchar_t const * utf16, std::size_t length) {
         if (length == std::size_t{0}) {

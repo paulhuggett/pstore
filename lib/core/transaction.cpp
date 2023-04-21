@@ -70,7 +70,7 @@ namespace pstore {
     return result;
   }
 
-  // alloc_rw
+  // alloc rw
   // ~~~~~~~~
   std::pair<std::shared_ptr<void>, address> transaction_base::alloc_rw (std::size_t const size,
                                                                         unsigned const align) {

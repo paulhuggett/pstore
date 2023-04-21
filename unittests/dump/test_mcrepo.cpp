@@ -108,7 +108,7 @@ namespace {
     db_.reset (new pstore::database (file_));
   }
 
-  // store_str
+  // store str
   // ~~~~~~~~~
   pstore::typed_address<pstore::indirect_string>
   MCRepoFixture::store_str (transaction_type & transaction, std::string const & str) {
@@ -124,7 +124,7 @@ namespace {
     return pstore::typed_address<pstore::indirect_string> (pos.get_address ());
   }
 
-  // store_data
+  // store data
   // ~~~~~~~~~~
   pstore::extent<std::uint8_t> MCRepoFixture::store_data (transaction_type & transaction,
                                                           std::uint8_t const * first,

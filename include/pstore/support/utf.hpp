@@ -196,13 +196,13 @@ namespace pstore {
       return code_unit >= 0xD800 && code_unit <= 0xDBFF;
     }
 
-    // is_utf16_low_surrogate
+    // is utf16 low surrogate
     // ~~~~~~~~~~~~~~~~~~~~~~
     constexpr auto is_utf16_low_surrogate (std::uint16_t const code_unit) noexcept -> bool {
       return code_unit >= 0xDC00 && code_unit <= 0xDFFF;
     }
 
-    // utf16_to_code_point
+    // utf16 to code point
     // ~~~~~~~~~~~~~~~~~~~
     template <typename InputIterator, typename SwapperFunction>
     auto utf16_to_code_point (InputIterator first, InputIterator last, SwapperFunction swapper)
@@ -236,7 +236,7 @@ namespace pstore {
       return {first, code_point};
     }
 
-    // utf16_to_code_points
+    // utf16 to code points
     // ~~~~~~~~~~~~~~~~~~~~
     template <typename InputIt, typename OutputIt, typename Swapper>
     auto utf16_to_code_points (InputIt first, InputIt last, OutputIt out, Swapper swapper)
@@ -261,7 +261,7 @@ namespace pstore {
       return utf16_to_code_points<ResultType> (std::begin (src), std::end (src), swapper);
     }
 
-    // utf16_to_code_point
+    // utf16 to code point
     // ~~~~~~~~~~~~~~~~~~~
     template <typename InputType, typename Swapper>
     auto utf16_to_code_point (InputType const & src, Swapper swapper) -> char32_t {
@@ -272,7 +272,7 @@ namespace pstore {
       return cp;
     }
 
-    // utf16_to_utf8
+    // utf16 to utf8
     // ~~~~~~~~~~~~~
     template <typename InputIt, typename OutputIt, typename Swapper>
     auto utf16_to_utf8 (InputIt first, InputIt last, OutputIt out, Swapper swapper) -> OutputIt {

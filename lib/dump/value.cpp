@@ -92,7 +92,7 @@ namespace pstore {
     //*   s t r i n g   *
     //*******************
 
-    // should_be_quoted
+    // should be quoted
     // ~~~~~~~~~~~~~~~~
     bool string::should_be_quoted (std::string const & v) {
       using uchar_type = typename std::make_unsigned<std::string::value_type>::type;
@@ -103,7 +103,7 @@ namespace pstore {
              }) != std::end (v);
     }
 
-    // write_unquoted
+    // write unquoted
     // ~~~~~~~~~~~~~~
     template <typename OStream>
     OStream & string::write_unquoted (OStream & os, std::string const & v) {
@@ -124,7 +124,7 @@ namespace pstore {
       return os;
     }
 
-    // write_codepoint_hex
+    // write codepoint hex
     // ~~~~~~~~~~~~~~~~~~~
     template <typename OStream, typename UCharType>
     OStream & string::write_codepoint_hex (OStream & os, UCharType ch) {
@@ -133,7 +133,7 @@ namespace pstore {
                 << to_hex<UCharType> (ch & 0x0FU);
     }
 
-    // write_character
+    // write character
     // ~~~~~~~~~~~~~~~
     template <typename OStream>
     OStream & string::write_character (OStream & os, char ch) {
@@ -148,7 +148,7 @@ namespace pstore {
       return os;
     }
 
-    // write_quoted
+    // write quoted
     // ~~~~~~~~~~~~
     template <typename OStream>
     OStream & string::write_quoted (OStream & os, std::string const & v) {
@@ -182,7 +182,7 @@ namespace pstore {
       return write_quoted (os, v_);
     }
 
-    // write_impl
+    // write impl
     // ~~~~~~~~~~
     std::ostream & string::write_impl (std::ostream & os, indent const &) const {
       return this->writer (os);
@@ -327,7 +327,7 @@ namespace pstore {
       return os;
     }
 
-    // write_impl
+    // write impl
     // ~~~~~~~~~~
     std::ostream & array::write_impl (std::ostream & os, indent const & ind) const {
       return this->writer (os, ind);
@@ -336,7 +336,7 @@ namespace pstore {
       return this->writer (os, ind);
     }
 
-    // is_number_array
+    // is number array
     // ~~~~~~~~~~~~~~~
     bool array::is_number_array () const {
       for (value_ptr const & value : values_) {
@@ -359,8 +359,7 @@ namespace pstore {
       return std::make_shared<string> (p, force_quoted);
     }
 
-
-    // property_length
+    // property length
     // ~~~~~~~~~~~~~~~
     /// \brief Used to measure key length so that we can align the output nicely.
     template <typename OStreamCharType>
@@ -369,7 +368,6 @@ namespace pstore {
       object::property (p)->write (out);
       return out.str ().length ();
     }
-
 
     // writer
     // ~~~~~~
@@ -388,7 +386,7 @@ namespace pstore {
       return this->write_full_size (os, ind, strings);
     }
 
-    // write_compact
+    // write compact
     // ~~~~~~~~~~~~~
     template <typename OStream, typename ObjectCharacterTraits>
     OStream & object::write_compact (OStream & os,
@@ -406,7 +404,7 @@ namespace pstore {
       return os;
     }
 
-    // write_full_size
+    // write full size
     // ~~~~~~~~~~~~~~~
     template <typename OStream, typename ObjectCharacterTraits>
     OStream &
@@ -465,7 +463,7 @@ namespace pstore {
       return (it != members_.end ()) ? it->val : value_ptr (nullptr);
     }
 
-    // write_impl
+    // write impl
     // ~~~~~~~~~~
     std::ostream & object::write_impl (std::ostream & os, indent const & indent) const {
       return this->writer (os, indent, object_char_traits ());
@@ -575,7 +573,7 @@ namespace pstore {
       return os;
     }
 
-    // write_impl
+    // write impl
     // ~~~~~~~~~~
     std::ostream & binary::write_impl (std::ostream & os, indent const & ind) const {
       return this->writer (os, ind);
@@ -616,7 +614,7 @@ namespace pstore {
       return os << '>';
     }
 
-    // write_impl
+    // write impl
     // ~~~~~~~~~~
     std::ostream & binary16::write_impl (std::ostream & os, indent const & ind) const {
       return this->writer (os, ind);

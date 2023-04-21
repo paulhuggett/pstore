@@ -89,7 +89,7 @@ namespace {
 
   std::string const Gc::vacuum_exe = test_watch_thread::vacuumd_path ();
 
-  // make_process_id
+  // make process id
   // ~~~~~~~~~~~~~~~
   process_identifier Gc::make_process_id (int index) {
     int const id = 7919 + index; // No significance to this number: it's just the 1000th prime
@@ -108,13 +108,13 @@ namespace {
 #endif // _WIN32
   }
 
-  // call_params
+  // call params
   // ~~~~~~~~~~~
   auto Gc::call_params (int count) -> spawn_params {
     return spawn_params{"path" + std::to_string (count), make_process_id (count)};
   }
 
-  // expect_call
+  // expect call
   // ~~~~~~~~~~~
   void Gc::expect_call (test_watch_thread & gc, std::string const & path, process_identifier pid) {
     Expectation const exp =
@@ -127,7 +127,7 @@ namespace {
     expect_call (gc, std::get<std::string> (params), std::get<process_identifier> (params));
   }
 
-  // expect_spawn_calls
+  // expect spawn calls
   // ~~~~~~~~~~~~~~~~~~
   auto Gc::expect_spawn_calls (test_watch_thread & gc, unsigned num) -> std::vector<spawn_params> {
     std::vector<spawn_params> calls;

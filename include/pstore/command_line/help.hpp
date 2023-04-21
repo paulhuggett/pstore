@@ -133,7 +133,7 @@ namespace pstore::command_line {
     OutputStream & outs_;
   };
 
-  // add_occurrence
+  // add occurrence
   // ~~~~~~~~~~~~~~
   template <typename OutputStream>
   bool help<OutputStream>::add_occurrence () {
@@ -141,7 +141,7 @@ namespace pstore::command_line {
     return false;
   }
 
-  // has_switches
+  // has switches
   // ~~~~~~~~~~~~
   template <typename OutputStream>
   bool help<OutputStream>::has_switches () const {

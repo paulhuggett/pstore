@@ -105,7 +105,7 @@ namespace pstore {
 
 
 
-  // read_only
+  // read only
   // ~~~~~~~~~
   void memory_mapper_base::read_only_impl (void * const addr, std::size_t const len) {
     if (::mprotect (addr, len, PROT_READ) == -1) {

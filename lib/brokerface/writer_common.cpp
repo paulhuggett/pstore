@@ -48,7 +48,7 @@ namespace pstore::brokerface {
   writer::writer (fifo_path const & fifo, update_callback cb)
           : writer (fifo, duration_type{0}, 0U, std::move (cb)) {}
 
-  // default_callback [static]
+  // default callback [static]
   // ~~~~~~~~~~~~~~~~
   void writer::default_callback () {}
 

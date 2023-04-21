@@ -32,13 +32,13 @@ namespace pstore::brokerface {
   // ~~~~~~
   fifo_path::~fifo_path () {}
 
-  // get_default_path
+  // get default path
   // ~~~~~~~~~~~~~~~~
   std::string fifo_path::get_default_path () {
     return std::string{R"(\\.\pipe\)"} + default_pipe_name;
   }
 
-  // open_impl
+  // open impl
   // ~~~~~~~~~
   auto fifo_path::open_impl () const -> client_pipe {
     auto const path = this->get ();
@@ -62,7 +62,7 @@ namespace pstore::brokerface {
     return fd;
   }
 
-  // wait_until_impl
+  // wait until impl
   // ~~~~~~~~~~~~~~~
   void fifo_path::wait_until_impl (std::chrono::milliseconds timeout) const {
     auto const path = this->get ();

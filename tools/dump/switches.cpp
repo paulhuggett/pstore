@@ -37,7 +37,7 @@ namespace pstore::command_line {
     }
   };
 
-  // type_description<digest_opt>
+  // type description<digest_opt>
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   template <>
   struct type_description<dump::digest_opt> {

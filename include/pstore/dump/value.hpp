@@ -137,7 +137,7 @@ namespace pstore {
       static unsigned default_base_;
       unsigned const base_ = default_base_;
 
-      // write_decimal
+      // write decimal
       // ~~~~~~~~~~~~~
       template <typename T, typename OStream>
       OStream & write_decimal (T value, OStream & os) const {

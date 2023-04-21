@@ -101,7 +101,7 @@ namespace pstore::broker {
     ::kill (pid, SIGINT);
   }
 
-  // child_signal
+  // child signal
   // ~~~~~~~~~~~~
   /// \note This function is called from a signal handler so must restrict itself to
   /// signal-safe functions.

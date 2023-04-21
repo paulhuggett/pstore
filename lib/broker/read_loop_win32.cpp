@@ -54,7 +54,7 @@ namespace {
   using namespace pstore::broker;
 
 
-  // error_message
+  // error message
   // ~~~~~~~~~~~~~
   /// Yields the description of a win32 error code.
   std::string error_message (DWORD errcode) {
@@ -175,7 +175,7 @@ namespace {
     return nullptr;
   }
 
-  // initiate_read
+  // initiate read
   // ~~~~~~~~~~~~~
   reader * reader::initiate_read () {
     // Start an asynchronous read. This will either start to read data if it's available
@@ -218,7 +218,7 @@ namespace {
   }
 
 
-  // read_completed
+  // read completed
   // ~~~~~~~~~~~~~~
   /// An I/O completion routine that's called after a read request completes.
   /// If we've received a complete message, then it is queued for processing. We then try to read
@@ -274,7 +274,7 @@ namespace {
     command_processor_->push_command (std::move (request_), record_file_);
   }
 
-  // completed_with_error
+  // completed with error
   // ~~~~~~~~~~~~~~~~~~~~
   void reader::completed_with_error () {
     request_.reset ();
@@ -335,7 +335,7 @@ namespace {
           : command_processor_{cp}
           , record_file_{record_file} {}
 
-  // attach_pipe
+  // attach pipe
   // ~~~~~~~~~~~
   /// Associates the given pipe handle with this request object and starts a read operation.
   void request::attach_pipe (pipe_descriptor && pipe) {
@@ -361,7 +361,7 @@ namespace {
   }
 
 
-  // connect_to_new_client
+  // connect to new client
   // ~~~~~~~~~~~~~~~~~~~~~
   /// Initiates the connection between a named pipe and a client.
   bool connect_to_new_client (HANDLE pipe, OVERLAPPED & overlapped) {
@@ -399,7 +399,7 @@ namespace {
   }
 
 
-  // create_and_connect_instance
+  // create and connect instance
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~
   /// Creates a pipe instance and connects to the client.
   /// \param pipe_name  The name of the pipe.
@@ -434,7 +434,7 @@ namespace {
   }
 
 
-  // create_event
+  // create event
   // ~~~~~~~~~~~~
   /// Creates a manual-reset event which is initially signaled.
   pipe_descriptor create_event () {
@@ -449,7 +449,7 @@ namespace {
 
 namespace pstore::broker {
 
-  // read_loop
+  // read loop
   // ~~~~~~~~~
   void read_loop (brokerface::fifo_path & path, std::shared_ptr<recorder> & record_file,
                   std::shared_ptr<command_processor> cp) {

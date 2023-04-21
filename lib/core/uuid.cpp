@@ -133,7 +133,7 @@ namespace pstore {
     data_ = d->array ();
   }
 
-  // from_string
+  // from string
   // ~~~~~~~~~~~
   maybe<uuid> uuid::from_string (std::string const & str) {
     if (str.length () != string_length) {
@@ -206,7 +206,7 @@ namespace pstore {
     }
   }
 
-  // is_null
+  // is null
   // ~~~~~~~
   bool uuid::is_null () const noexcept {
     return std::all_of (std::begin (data_), std::end (data_), [] (auto const v) { return !v; });

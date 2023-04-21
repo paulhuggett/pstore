@@ -48,7 +48,7 @@ namespace {
     static container build_vector (unsigned num, UnaryFunction f);
   };
 
-  // run_for_each
+  // run for each
   // ~~~~~~~~~~~~
   auto ParallelForEach::run_for_each (container const & src) -> container {
     std::mutex mut;
@@ -61,7 +61,7 @@ namespace {
     return out;
   }
 
-  // build_vector
+  // build vector
   // ~~~~~~~~~~~~
   template <typename UnaryFunction>
   auto ParallelForEach::build_vector (unsigned num, UnaryFunction f) -> container {

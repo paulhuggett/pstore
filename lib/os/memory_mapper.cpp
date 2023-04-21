@@ -45,7 +45,7 @@ namespace pstore {
   // ~~~~~~
   memory_mapper_base::~memory_mapper_base () = default;
 
-  // page_size [static]
+  // page size [static]
   // ~~~~~~~~~
   unsigned long memory_mapper_base::page_size (system_page_size_interface const & ps) {
     return ps.get ();

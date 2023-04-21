@@ -99,7 +99,7 @@ namespace pstore::brokerface {
     }
   }
 
-  // open_server_pipe
+  // open server pipe
   // ~~~~~~~~~~~~~~~~
   auto fifo_path::open_server_pipe () -> server_pipe {
     auto * const path = path_.c_str ();
@@ -138,7 +138,7 @@ namespace pstore::brokerface {
     return {std::move (fdread), std::move (fdwrite)};
   }
 
-  // open_impl
+  // open impl
   // ~~~~~~~~~
   auto fifo_path::open_impl () const -> client_pipe {
     auto const & path = get ();
@@ -166,13 +166,13 @@ namespace pstore::brokerface {
     return fdwrite;
   }
 
-  // wait_until_impl
+  // wait until impl
   // ~~~~~~~~~~~~~~~
   void fifo_path::wait_until_impl (std::chrono::milliseconds const timeout) const {
     std::this_thread::sleep_for (timeout);
   }
 
-  // get_default_path
+  // get default path
   // ~~~~~~~~~~~~~~~~
   std::string fifo_path::get_default_path () {
     // TODO: consider using /run/user/<userid> on Linux?

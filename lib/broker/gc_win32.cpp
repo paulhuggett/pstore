@@ -58,7 +58,7 @@ namespace {
     }
   }
 
-  // build_object_vector
+  // build object vector
   // ~~~~~~~~~~~~~~~~~~~
   /// The parameter list for WaitForMultipleObjects() needs us to pass an array containing the
   /// handles for which we are to wait. However, to give us reasonable lookup performance, we've

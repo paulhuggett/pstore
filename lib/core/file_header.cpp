@@ -88,7 +88,7 @@ namespace pstore {
   std::array<std::uint8_t, 8> const trailer::default_signature2{
     {'h', 'P', 'P', 'y', 'T', 'a', 'i', 'l'}};
 
-  // crc_is_valid
+  // crc is valid
   // ~~~~~~~~~~~~
   bool trailer::crc_is_valid () const noexcept {
 #if PSTORE_CRC_CHECKS_ENABLED
@@ -98,7 +98,7 @@ namespace pstore {
 #endif
   }
 
-  // signature_is_valid
+  // signature is valid
   // ~~~~~~~~~~~~~~~~~~
   bool trailer::signature_is_valid () const noexcept {
 #if PSTORE_SIGNATURE_CHECKS_ENABLED
@@ -108,7 +108,7 @@ namespace pstore {
 #endif
   }
 
-  // get_crc
+  // get crc
   // ~~~~~~~
   std::uint32_t trailer::get_crc () const noexcept {
     return crc32 (gsl::make_span (&this->a, 1));

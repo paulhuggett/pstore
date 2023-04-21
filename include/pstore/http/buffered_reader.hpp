@@ -332,7 +332,7 @@ namespace pstore {
       return static_cast<std::size_t> (result);
     }
 
-    // check_invariants
+    // check invariants
     // ~~~~~~~~~~~~~~~~
     template <typename IO, typename RefillFunction>
     void buffered_reader<IO, RefillFunction>::check_invariants () noexcept {

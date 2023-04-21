@@ -94,7 +94,7 @@ namespace pstore::index::details {
     return result;
   }
 
-  // allocate_from
+  // allocate from
   // ~~~~~~~~~~~~~
   std::unique_ptr<linear_node> linear_node::allocate_from (linear_node const & orig_node,
                                                            std::size_t const extra_children) {
@@ -110,7 +110,7 @@ namespace pstore::index::details {
     return linear_node::allocate_from (*p.second, extra_children);
   }
 
-  // get_node
+  // get node
   // ~~~~~~~~
   auto linear_node::get_node (database const & db, index_pointer const node)
     -> std::pair<std::shared_ptr<linear_node const>, linear_node const *> {

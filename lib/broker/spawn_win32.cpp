@@ -45,7 +45,7 @@ namespace pstore::broker {
       }
     }
 
-    // argv_quote
+    // argv quote
     // ~~~~~~~~~~
     /// Given an individual command-line argument, returns it with all necessary quoting and
     /// escaping for use on the Windows command-line.
@@ -95,7 +95,7 @@ namespace pstore::broker {
       return res;
     }
 
-    // build_command_line
+    // build command line
     // ~~~~~~~~~~~~~~~~~~
     /// Given a null-terminated array of strings, returns a quoted Windows command-line
     /// string.

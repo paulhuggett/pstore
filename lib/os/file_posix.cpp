@@ -241,7 +241,7 @@ namespace pstore {
       file_ = *file_or_error;
     }
 
-    // close_noex
+    // close noex
     // ~~~~~~~~~~
     auto file_handle::close_noex (oshandle const file) -> error_or<oshandle> {
       if (file != invalid_oshandle && ::close (file) == -1) {
@@ -286,7 +286,7 @@ namespace pstore {
       return static_cast<std::uint64_t> (r);
     }
 
-    // read_buffer
+    // read buffer
     // ~~~~~~~~~~~
     std::size_t file_handle::read_buffer (gsl::not_null<void *> const buffer,
                                           std::size_t const nbytes) {
@@ -303,7 +303,7 @@ namespace pstore {
       return static_cast<std::size_t> (r);
     }
 
-    // write_buffer
+    // write buffer
     // ~~~~~~~~~~~~
     void file_handle::write_buffer (gsl::not_null<void const *> const buffer,
                                     std::size_t const nbytes) {
@@ -369,7 +369,7 @@ namespace pstore {
       return result;
     }
 
-    // lock_reg
+    // lock reg
     // ~~~~~~~~
     /// A helper function for the lock() and unlock() methods. It is a simple wrapper for the
     /// fcntl() system call which fills in all of the fields of the flock struct as necessary.
@@ -442,7 +442,7 @@ namespace pstore {
       }
     }
 
-    // latest_time
+    // latest time
     // ~~~~~~~~~~~
     std::time_t file_handle::latest_time () const {
       struct stat buf {};
@@ -464,7 +464,7 @@ namespace pstore {
 #  endif
     }
 
-    // get_temporary_directory
+    // get temporary directory
     // ~~~~~~~~~~~~~~~~~~~~~~~
     // [static]
     std::string file_handle::get_temporary_directory () {

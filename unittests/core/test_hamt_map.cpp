@@ -286,11 +286,11 @@ namespace {
 
   class GenericIndexFixture : public IndexFixture {
   protected:
-    // insert_or_assign a new node into the index.
+    // insert or assign a new node into the index.
     static auto insert_or_assign (test_trie & index, transaction_type & transaction,
                                   std::string const & key) -> std::pair<test_trie::iterator, bool>;
 
-    // insert_or_assign a new node into the index.
+    // insert or assign a new node into the index.
     static auto insert_or_assign (test_trie & index, transaction_type & transaction,
                                   std::string const & key, std::string const & value)
       -> std::pair<test_trie::iterator, bool>;
@@ -303,16 +303,14 @@ namespace {
     void check_is_store_branch (index_pointer node) const;
   };
 
-  // insert_or_assign a new node
-  // ~~~
+  // insert or assign
+  // ~~~~~~~~~~~~~~~~
   auto GenericIndexFixture::insert_or_assign (test_trie & index, transaction_type & transaction,
                                               std::string const & key)
     -> std::pair<test_trie::iterator, bool> {
     return index.insert_or_assign (transaction, std::make_pair (key, "value "s + key));
   }
 
-  // insert_or_assign a new node
-  // ~~~
   auto GenericIndexFixture::insert_or_assign (test_trie & index, transaction_type & transaction,
                                               std::string const & key, std::string const & value)
     -> std::pair<test_trie::iterator, bool> {

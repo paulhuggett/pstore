@@ -121,7 +121,7 @@ namespace pstore::broker {
 #endif
   }
 
-  // insert_before
+  // insert before
   // ~~~~~~~~~~~~~
   template <typename T>
   void intrusive_list<T>::insert_before (T * element, T * before) noexcept {

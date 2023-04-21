@@ -97,7 +97,7 @@ namespace pstore::command_line::details {
     return x->name () < y->name ();
   }
 
-  // get_max_width
+  // get max width
   // ~~~~~~~~~~~~~
   std::size_t get_max_width () {
     std::size_t max_width = terminal_width ();
@@ -111,7 +111,7 @@ namespace pstore::command_line::details {
     return max_width;
   }
 
-  // build_categories
+  // build categories
   // ~~~~~~~~~~~~~~~~
   categories_collection build_categories (option const * const self,
                                           option::options_container const & all) {
@@ -124,7 +124,7 @@ namespace pstore::command_line::details {
     return categories;
   }
 
-  // get_switch_strings
+  // get switch strings
   // ~~~~~~~~~~~~~~~~~~
   auto get_switch_strings (options_set const & ops) -> switch_strings {
     constexpr char const separator[] = ", ";
@@ -160,7 +160,7 @@ namespace pstore::command_line::details {
     return names;
   }
 
-  // widest_option
+  // widest option
   // ~~~~~~~~~~~~~
   std::size_t widest_option (categories_collection const & categories) {
     auto max_name_len = std::size_t{0};
@@ -174,7 +174,7 @@ namespace pstore::command_line::details {
     return std::min (max_name_len, overlong_opt_max);
   }
 
-  // has_switches
+  // has switches
   // ~~~~~~~~~~~~
   bool has_switches (option const * const self, option::options_container const & all) {
     return std::any_of (std::begin (all), std::end (all), [self] (option const * const op) {

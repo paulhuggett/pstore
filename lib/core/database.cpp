@@ -247,7 +247,7 @@ namespace pstore {
     }
   }
 
-  // build_sync_name [static]
+  // build sync name [static]
   // ~~~~~~~~~~~~~~~
   std::string database::build_sync_name (header const & header) {
     auto name = base32::convert (uint128{header.a.id.array ()});

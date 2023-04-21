@@ -34,7 +34,7 @@ namespace pstore::broker {
     return broker::spawn (argv);
   }
 
-  // start_vacuum
+  // start vacuum
   // ~~~~~~~~~~~~
   void gc_watch_thread::start_vacuum (std::string const & db_path) {
     std::unique_lock<decltype (mut_)> const lock{mut_};
@@ -56,7 +56,7 @@ namespace pstore::broker {
     cv_.notify_all (-1);
   }
 
-  // get_pid
+  // get pid
   // ~~~~~~~
   maybe<process_identifier> gc_watch_thread::get_pid (std::string const & path) {
     std::unique_lock<decltype (mut_)> const lock{mut_};
@@ -66,7 +66,7 @@ namespace pstore::broker {
     return maybe<process_identifier>{processes_.getr (path)};
   }
 
-  // stop_vacuum
+  // stop vacuum
   // ~~~~~~~~~~~
   bool gc_watch_thread::stop_vacuum (std::string const & path) {
     if (maybe<process_identifier> const pid = this->get_pid (path)) {
@@ -97,7 +97,7 @@ namespace pstore::broker {
     return processes_.size ();
   }
 
-  // vacuumd_path
+  // vacuumd path
   // ~~~~~~~~~~~~
   std::string gc_watch_thread::vacuumd_path () {
     using path::dir_name;

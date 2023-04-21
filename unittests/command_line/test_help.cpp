@@ -65,9 +65,6 @@ TEST_F (Help, HasSwitches) {
   }
 }
 
-// categories_collection build_categories (option const * const self, option::options_container
-// const & all);
-
 TEST_F (Help, BuildDefaultCategoryOnly) {
   {
     opt<std::string> option1{"arg1", positional};

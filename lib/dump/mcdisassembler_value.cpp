@@ -75,7 +75,7 @@ namespace {
     std::size_t pos_ = 0;
   };
 
-  // write_impl
+  // write impl
   // ~~~~~~~~~~
   void array_stream::write_impl (char const * ptr, std::size_t size) {
     using namespace pstore;
@@ -126,7 +126,7 @@ namespace {
           : digits_{hex_width (span)}
           , hex_mode_{hex_mode} {}
 
-  // hex_width
+  // hex width
   // ~~~~~~~~~
   unsigned address_printer::hex_width (pstore::gsl::span<std::uint8_t const> const & span) {
     auto const size = span.size ();
@@ -290,7 +290,7 @@ namespace {
     inst_printer_ptr & inst_printer;
   };
 
-  // emit_instructions
+  // emit instructions
   // ~~~~~~~~~~~~~~~~~
   error_or<bool> emit_instructions (disassembler_state & state,
                                     pstore::gsl::span<std::uint8_t const> const & span,
@@ -341,7 +341,7 @@ namespace {
            emit;
   }
 
-  // disasm_block
+  // disasm block
   // ~~~~~~~~~~~~
   std::error_code disasm_block (pstore::gsl::span<std::uint8_t const> const & span,
                                 pstore::dump::array::container & output, // out

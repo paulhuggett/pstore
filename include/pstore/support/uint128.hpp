@@ -387,7 +387,7 @@ namespace pstore {
     return *this;
   }
 
-  // bytes_to_uintXX
+  // bytes to uintXX
   // ~~~~~~~~~~~~~~~
 #ifdef PSTORE_HAVE_UINT128_T
   constexpr __uint128_t uint128::bytes_to_uint128 (std::uint8_t const * const bytes) noexcept {

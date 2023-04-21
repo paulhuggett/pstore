@@ -24,7 +24,7 @@
 
 namespace pstore {
 
-  // register_signal_handler
+  // register signal handler
   // ~~~~~~~~~~~~~~~~~~~~~~~
   signal_function register_signal_handler (int const signo, signal_function const func) {
     auto res = signal (signo, func);
@@ -40,7 +40,7 @@ namespace pstore {
 
 namespace pstore {
 
-  // register_signal_handler
+  // register signal handler
   // ~~~~~~~~~~~~~~~~~~~~~~~
   signal_function register_signal_handler (int const signo, signal_function const func) {
     struct sigaction act;

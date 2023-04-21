@@ -132,7 +132,7 @@ namespace {
   }
 
 
-  // file_time_to_epoch
+  // file time to epoch
   // ~~~~~~~~~~~~~~~~~~
   std::time_t file_time_to_epoch (std::uint64_t ticks) {
     // The number of days between Jan 1 1601 (the FILETIME 0 day) and
@@ -227,7 +227,7 @@ namespace pstore {
       file_ = *file_or_error;
     }
 
-    // close_noex
+    // close noex
     // ~~~~~~~~~~
     auto file_handle::close_noex (oshandle const file) -> error_or<oshandle> {
       if (file != invalid_oshandle && !::CloseHandle (file)) {
@@ -285,7 +285,7 @@ namespace pstore {
       });
     }
 
-    // write_buffer
+    // write buffer
     // ~~~~~~~~~~~~
     void file_handle::write_buffer (gsl::not_null<void const *> buffer, std::size_t size) {
       this->ensure_open ();
@@ -413,7 +413,7 @@ namespace pstore {
       }
     }
 
-    // latest_time
+    // latest time
     // ~~~~~~~~~~~
     time_t file_handle::latest_time () const {
       file_handle local_file{path_};
@@ -440,7 +440,7 @@ namespace pstore {
                   }));
     }
 
-    // get_temporary_directory [static]
+    // get temporary directory [static]
     // ~~~~~~~~~~~~~~~~~~~~~~~
     std::string file_handle::get_temporary_directory () {
       small_vector<wchar_t> temp_path;

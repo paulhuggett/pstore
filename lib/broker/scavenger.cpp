@@ -25,7 +25,7 @@
 
 namespace pstore::broker {
 
-  // thread_entry
+  // thread entry
   // ~~~~~~~~~~~~
   void scavenger::thread_entry () {
     try {

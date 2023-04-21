@@ -81,7 +81,7 @@ namespace pstore {
     return equal_contents (rhs);
   }
 
-  // equal_contents
+  // equal contents
   // ~~~~~~~~~~~~~~
   bool indirect_string::equal_contents (indirect_string const & rhs) const {
     shared_sstring_view lhs_owner;

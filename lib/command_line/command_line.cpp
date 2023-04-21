@@ -19,7 +19,7 @@
 
 namespace pstore::command_line::details {
 
-  // lookup_nearest_option
+  // lookup nearest option
   // ~~~~~~~~~~~~~~~~~~~~~
   maybe<option *> lookup_nearest_option (std::string const & arg,
                                          option::options_container const & all_options) {
@@ -39,7 +39,7 @@ namespace pstore::command_line::details {
     return best_option;
   }
 
-  // starts_with
+  // starts with
   // ~~~~~~~~~~~
   bool starts_with (std::string const & s, gsl::czstring prefix) {
     auto const end = std::end (s);
@@ -51,7 +51,7 @@ namespace pstore::command_line::details {
     return *prefix == '\0';
   }
 
-  // find_handler
+  // find handler
   // ~~~~~~~~~~~~
   maybe<option *> find_handler (std::string const & name) {
     auto const & all_options = option::all ();
@@ -62,19 +62,19 @@ namespace pstore::command_line::details {
     return it != end ? just (*it) : nothing<option *> ();
   }
 
-  // argument_is_positional
+  // argument is positional
   // ~~~~~~~~~~~~~~~~~~~~~~
   bool argument_is_positional (std::string const & arg_name) {
     return arg_name.empty () || arg_name.front () != '-';
   }
 
-  // handler_takes_argument
+  // handler takes argument
   // ~~~~~~~~~~~~~~~~~~~~~~
   bool handler_takes_argument (maybe<option *> handler) {
     return handler && (*handler)->takes_argument ();
   }
 
-  // handler_set_value
+  // handler set value
   // ~~~~~~~~~~~~~~~~~
   bool handler_set_value (maybe<option *> handler, std::string const & value) {
     PSTORE_ASSERT (handler_takes_argument (handler));
@@ -84,7 +84,7 @@ namespace pstore::command_line::details {
     return (*handler)->value (value);
   }
 
-  // get_option_and_value
+  // get option and value
   // ~~~~~~~~~~~~~~~~~~~~
   std::tuple<std::string, maybe<std::string>> get_option_and_value (std::string arg) {
     static constexpr char double_dash[] = "--";

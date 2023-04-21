@@ -164,7 +164,7 @@ namespace pstore::region {
       std::make_shared<MemoryMapper> (*file_, file_->is_writable (), offset, size));
   }
 
-  // check_regions_are_contiguous
+  // check regions are contiguous
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   template <typename File, typename MemoryMapper>
   void region_builder<File, MemoryMapper>::check_regions_are_contiguous (
@@ -181,8 +181,7 @@ namespace pstore::region {
 #endif
   }
 
-
-  // small_files_enabled
+  // small files enabled
   // ~~~~~~~~~~~~~~~~~~~
   constexpr bool small_files_enabled () noexcept {
 #ifdef PSTORE_POSIX_SMALL_FILES

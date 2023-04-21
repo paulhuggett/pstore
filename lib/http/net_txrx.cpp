@@ -26,7 +26,7 @@
 
 namespace {
 
-  // is_recv_error
+  // is recv error
   // ~~~~~~~~~~~~~
   constexpr bool is_recv_error (ssize_t const nread) noexcept {
 #ifdef _WIN32

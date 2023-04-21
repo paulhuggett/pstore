@@ -25,7 +25,7 @@ namespace pstore {
 
     bool address::default_expanded_ = false;
 
-    // write_impl
+    // write impl
     // ~~~~~~~~~~
     std::ostream & address::write_impl (std::ostream & os, indent const & indent) const {
       return this->real_value ()->write_impl (os, indent);
@@ -34,7 +34,7 @@ namespace pstore {
       return this->real_value ()->write_impl (os, indent);
     }
 
-    // real_value
+    // real value
     // ~~~~~~~~~~
     value_ptr address::real_value () const {
       if (!value_) {

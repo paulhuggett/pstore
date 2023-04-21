@@ -312,7 +312,7 @@ namespace pstore {
     this->set_buffer_ptr (elements_);
   }
 
-  // push_back
+  // push back
   // ~~~~~~~~~
   template <typename ElementType, std::size_t BodyElements>
   inline void small_vector<ElementType, BodyElements>::push_back (ElementType const & v) {
@@ -329,7 +329,7 @@ namespace pstore {
     elements_ = new_elements;
   }
 
-  // emplace_back
+  // emplace back
   // ~~~~~~~~~~~~
   template <typename ElementType, std::size_t BodyElements>
   template <typename... Args>
@@ -342,7 +342,7 @@ namespace pstore {
     elements_ = new_elements;
   }
 
-  // emplace_back_big
+  // emplace back big
   // ~~~~~~~~~~~~~~~~
   // The "slow" path for emplace_back which inserts into the "big" vector.
   template <typename ElementType, std::size_t BodyElements>
@@ -357,7 +357,7 @@ namespace pstore {
     elements_ = new_elements;
   }
 
-  // switch_to_big
+  // switch to big
   // ~~~~~~~~~~~~~
   template <typename ElementType, std::size_t BodyElements>
   void small_vector<ElementType, BodyElements>::switch_to_big (std::size_t new_elements) {

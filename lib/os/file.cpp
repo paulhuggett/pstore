@@ -121,13 +121,13 @@ namespace pstore {
       return this->lock_impl (file_base::blocking_mode::blocking);
     }
 
-    // try_lock
+    // try lock
     // ~~~~~~~~
     bool range_lock::try_lock () {
       return this->lock_impl (file_base::blocking_mode::non_blocking);
     }
 
-    // lock_impl
+    // lock impl
     // ~~~~~~~~~
     bool range_lock::lock_impl (file_base::blocking_mode const mode) {
       if (locked_) {
@@ -170,7 +170,7 @@ namespace pstore {
       return ":in-memory:";
     }
 
-    // check_writable
+    // check writable
     // ~~~~~~~~~~~~~~
     void in_memory::check_writable () const {
       if (!writable_) {
@@ -178,7 +178,7 @@ namespace pstore {
       }
     }
 
-    // read_buffer
+    // read buffer
     // ~~~~~~~~~~~
     std::size_t in_memory::read_buffer (gsl::not_null<void *> const ptr, std::size_t nbytes) {
       // The second half of this check is to catch integer overflows.
@@ -206,7 +206,7 @@ namespace pstore {
       return nbytes;
     }
 
-    // write_buffer
+    // write buffer
     // ~~~~~~~~~~~~
     void in_memory::write_buffer (gsl::not_null<void const *> const ptr, std::size_t const nbytes) {
       this->check_writable ();
@@ -270,7 +270,7 @@ namespace pstore {
       pos_ = std::min (pos_, eof_);
     }
 
-    // latest_time
+    // latest time
     // ~~~~~~~~~~~
     std::time_t in_memory::latest_time () const {
       return 0;

@@ -335,7 +335,7 @@ namespace pstore {
       PSTORE_ASSERT (p >= start && static_cast<std::size_t> (p - start) == size_bytes (d, i, x));
     }
 
-    // set_size
+    // set size
     // ~~~~~~~~
     template <typename IntType, typename Iterator, typename>
     inline IntType generic_section::set_size (Iterator first, Iterator last) {
@@ -350,7 +350,7 @@ namespace pstore {
         static_cast<common> (size), static_cast<common> (std::numeric_limits<IntType>::max ())));
     }
 
-    // size_bytes
+    // size bytes
     // ~~~~~~~~~~
     template <typename DataRange, typename IFixupRange, typename XFixupRange>
     std::size_t generic_section::size_bytes (DataRange const & d, IFixupRange const & i,
@@ -364,7 +364,7 @@ namespace pstore {
                          static_cast<std::size_t> (num_xfixups));
     }
 
-    // num_ifixups
+    // num ifixups
     // ~~~~~~~~~~~
     inline std::uint32_t generic_section::num_ifixups () const noexcept {
       return num_ifixups_;

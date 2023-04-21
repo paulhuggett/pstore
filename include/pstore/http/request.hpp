@@ -77,7 +77,7 @@ namespace pstore {
 
     } // end namespace details
 
-    // read_request
+    // read request
     // ~~~~~~~~~~~~
     /// \tparam Reader  The buffered_reader<> type from which data is to be read.
     /// \param reader  An instance of Reader: a buffered_reader<> from which data is read,
@@ -116,7 +116,7 @@ namespace pstore {
       return (reader.gets (io) >>= check_for_eof) >>= extract_request_info;
     }
 
-    // read_headers
+    // read headers
     // ~~~~~~~~~~~~
     /// \tparam Reader  The buffered_reader<> type from which data is to be read.
     /// \tparam HandleFn A function of the form `std::function<IO(IO, std::string const &,

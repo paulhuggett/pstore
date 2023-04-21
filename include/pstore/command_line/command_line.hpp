@@ -31,7 +31,7 @@ namespace pstore::command_line {
     bool starts_with (std::string const & s, gsl::czstring prefix);
     maybe<option *> find_handler (std::string const & name);
 
-    // check_for_missing
+    // check for missing
     // ~~~~~~~~~~~~~~~~~
     /// Makes sure that all of the required args have been specified.
     template <typename ErrorStream>
@@ -74,7 +74,7 @@ namespace pstore::command_line {
       return ok;
     }
 
-    // report_unknown_option
+    // report unknown option
     // ~~~~~~~~~~~~~~~~~~~~~
     template <typename ErrorStream>
     void report_unknown_option (std::string const & program_name, std::string const & arg_name,
@@ -180,7 +180,7 @@ namespace pstore::command_line {
       return std::make_tuple (std::move (handler), ok);
     }
 
-    // process_single_dash
+    // process single dash
     // ~~~~~~~~~~~~~~~~~~~
     template <typename ErrorStream>
     std::tuple<maybe<option *>, bool> process_single_dash (std::string arg_name,
@@ -218,7 +218,7 @@ namespace pstore::command_line {
       return std::make_tuple (std::move (handler), ok.get ());
     }
 
-    // parse_option_arguments
+    // parse option arguments
     // ~~~~~~~~~~~~~~~~~~~~~~
     template <typename InputIterator, typename ErrorStream>
     std::tuple<InputIterator, bool>

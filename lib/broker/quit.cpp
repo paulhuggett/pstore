@@ -204,7 +204,7 @@ namespace {
   }
 
 
-  // signal_handler
+  // signal handler
   // ~~~~~~~~~~~~~~
   /// A signal handler entry point.
   void signal_handler (int const sig) {
