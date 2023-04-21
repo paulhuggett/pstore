@@ -9,9 +9,8 @@ import platform
 import sys
 import tempfile
 
-
 def can_mmap_path (path):
-    """Returns true if the given path allows the use of memory-mapped files."""
+    '''Returns true if the given path allows the use of memory-mapped files.'''
 
     result = True
     with tempfile.NamedTemporaryFile (mode = 'w+t', dir = path) as f:
@@ -29,11 +28,14 @@ def can_mmap_path (path):
 
 
 def data_store_path ():
-    '''Returns the path to use for data stores. Since the data stores relies on
-    being able to memory-map file, we need to find a local path that allows
-    this. Normally one can use the test directory, but if this is a directory
-    on a virtual machine that's been mapped from the host (and that's how I
-    tend to roll), then it doesn't work and an alternative has to be found.'''
+    '''Returns the path to use for data stores. Since the data store relies on
+    being able to memory-map files, we need to find a local path that allows
+    this.
+
+    Normally one can safely use the test directory, however that may not
+    necessarily be supported. For example, if the test is in directory that's
+    been mapped from the host in a virtual machine, then an alternative may
+    have to be found.'''
 
     if can_mmap_path (config.test_exec_root):
         return config.test_exec_root
