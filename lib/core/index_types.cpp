@@ -22,7 +22,7 @@ namespace {
 
   constexpr auto index_integral (pstore::trailer::indices const idx) noexcept
     -> std::underlying_type_t<pstore::trailer::indices> {
-    return static_cast<std::underlying_type<pstore::trailer::indices>::type> (idx);
+    return static_cast<std::underlying_type_t<pstore::trailer::indices>> (idx);
   }
 
   template <pstore::trailer::indices Index>
@@ -48,7 +48,7 @@ namespace pstore::index {
     flush_index<trailer::indices::k> (transaction, locations, generation);                         \
     break;
 
-    for (auto ctr = std::underlying_type<trailer::indices>::type{0};
+    for (auto ctr = std::underlying_type_t<trailer::indices>{0};
          ctr <= index_integral (trailer::indices::last); ++ctr) {
       switch (static_cast<trailer::indices> (ctr)) {
         PSTORE_INDICES

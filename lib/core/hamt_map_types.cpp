@@ -52,8 +52,7 @@ namespace pstore::index::details {
   linear_node::linear_node (std::size_t const size)
           : size_{size} {
 
-    static_assert (std::is_standard_layout<linear_node>::value,
-                   "linear_node must be standard-layout");
+    static_assert (std::is_standard_layout_v<linear_node>, "linear_node must be standard-layout");
     static_assert (alignof (linear_node) >= 4,
                    "linear_node must have alignment >= 4 to ensure the bottom two bits are 0");
 

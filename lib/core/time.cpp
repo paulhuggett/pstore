@@ -38,7 +38,7 @@ namespace pstore {
     auto const ms = duration_cast<milliseconds> (dur);
 
     using rep = milliseconds::rep;
-    using urep = std::make_unsigned<rep>::type;
+    using urep = std::make_unsigned_t<rep>;
 
     rep const result = ms.count ();
     PSTORE_ASSERT (result >= 0);
