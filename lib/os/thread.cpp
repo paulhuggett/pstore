@@ -19,13 +19,11 @@
 
 #include <array>
 
-namespace pstore {
-  namespace threads {
+namespace pstore::threads {
 
-    std::string get_name () {
-      std::array<char, name_size> buffer;
-      return {get_name (gsl::make_span (buffer))};
-    }
+  std::string get_name () {
+    std::array<char, name_size> buffer;
+    return {get_name (gsl::make_span (buffer))};
+  }
 
-  } // end namespace threads
-} // end namespace pstore
+} // end namespace pstore::threads
