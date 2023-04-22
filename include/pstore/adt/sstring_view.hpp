@@ -25,6 +25,7 @@
 #define PSTORE_ADT_SSTRING_VIEW_HPP
 
 #include <cstring>
+#include <string_view>
 
 #include "pstore/support/fnv.hpp"
 #include "pstore/support/unsigned_cast.hpp"
@@ -232,12 +233,16 @@ namespace pstore {
   template <typename StringType>
   int sstring_view<PointerType>::compare (StringType const & s) const {
     auto const slen = string_traits<StringType>::length (s);
-    size_type const common_len = std::min (size (), slen);
-    int result = traits::compare (data (), string_traits<StringType>::data (s), common_len);
-    if (result == 0) {
-      result = (size () == slen) ? 0 : (size () < slen ? -1 : 1);
+    auto const size = this->size ();
+    if (int const result =
+          traits::compare (data (), string_traits<StringType>::data (s), std::min (size, slen));
+        result != 0) {
+      return result;
     }
-    return result;
+    if (size == slen) {
+      return 0;
+    }
+    return size < slen ? -1 : 1;
   }
 
   // operator==
@@ -351,9 +356,8 @@ namespace pstore {
   // ~~~~~~~~~~~
   template <typename OStream, typename PointerType>
   inline OStream & operator<< (OStream & os, sstring_view<PointerType> const & str) {
-    using ustreamsize = std::make_unsigned<std::streamsize>::type;
-    constexpr auto max = static_cast<ustreamsize> (std::numeric_limits<std::streamsize>::max ());
-    auto const size = std::min (str.length (), max);
+    auto const size = std::min (str.length (), static_cast<std::make_unsigned_t<std::streamsize>> (
+                                                 std::numeric_limits<std::streamsize>::max ()));
     os.write (str.data (), static_cast<std::streamsize> (size));
     return os;
   }
@@ -374,12 +378,11 @@ namespace pstore {
     return {ptr, length};
   }
 
-  shared_sstring_view make_shared_sstring_view (std::string const & str);
-  shared_sstring_view make_shared_sstring_view (gsl::czstring str);
+  shared_sstring_view make_shared_sstring_view (std::string_view str);
 
   template <typename ValueType>
   inline sstring_view<std::unique_ptr<ValueType>>
-  make_unique_sstring_view (std::unique_ptr<ValueType> ptr, std::size_t length) {
+  make_unique_sstring_view (std::unique_ptr<ValueType> && ptr, std::size_t length) {
     return {std::move (ptr), length};
   }
 
@@ -388,11 +391,8 @@ namespace pstore {
     PSTORE_ASSERT (span.size () >= 0);
     return {span.data (), unsigned_cast (span.size ())};
   }
-  inline raw_sstring_view make_sstring_view (char const * const ptr, std::size_t const length) {
-    return {ptr, length};
-  }
-  raw_sstring_view make_sstring_view (gsl::czstring str);
-  inline raw_sstring_view make_sstring_view (std::string const & str) {
+
+  inline raw_sstring_view make_sstring_view (std::string_view str) {
     return {str.data (), str.length ()};
   }
 
@@ -401,7 +401,7 @@ namespace pstore {
 namespace std {
 
   template <typename StringType>
-  struct equal_to<::pstore::sstring_view<StringType>> {
+  struct equal_to<pstore::sstring_view<StringType>> {
     template <typename S1, typename S2>
     bool operator() (S1 const & x, S2 const & y) const {
       return x == y;
@@ -409,10 +409,10 @@ namespace std {
   };
 
   template <typename StringType>
-  struct hash<::pstore::sstring_view<StringType>> {
-    size_t operator() (::pstore::sstring_view<StringType> const & str) const {
+  struct hash<pstore::sstring_view<StringType>> {
+    size_t operator() (pstore::sstring_view<StringType> const & str) const {
       return static_cast<size_t> (
-        ::pstore::fnv_64a_buf (::pstore::gsl::make_span (str.begin (), str.end ())));
+        pstore::fnv_64a_buf (pstore::gsl::make_span (str.begin (), str.end ())));
     }
   };
 

@@ -23,11 +23,12 @@
 // 3rd party
 #include <gmock/gmock.h>
 
+using namespace std::string_literals;
 using namespace std::string_view_literals;
 
 namespace {
 
-  std::shared_ptr<char> new_shared (std::string const & s) {
+  std::shared_ptr<char> new_shared (std::string_view s) {
     auto result = std::shared_ptr<char> (new char[s.size ()], [] (char * p) { delete[] p; });
     std::copy (std::begin (s), std::end (s), result.get ());
     return result;
@@ -64,8 +65,7 @@ namespace {
 
   using SStringViewInitTypes =
     testing::Types<string_maker<std::shared_ptr<char>>, string_maker<std::shared_ptr<char const>>,
-                   string_maker<std::unique_ptr<char[]>>,
-                   string_maker<std::unique_ptr<char const[]>>, string_maker<char const *>>;
+                   string_maker<std::unique_ptr<char[]>>>;
 
   // The pstore APIs that return shared_ptr<> and unique_ptr<> sstring_views is named
   // make_shared_sstring_view() and make_unique_sstring_view() respectively to try to avoid
@@ -73,13 +73,13 @@ namespace {
   // have the same name.
   template <typename ValueType>
   inline pstore::sstring_view<std::shared_ptr<ValueType>>
-  make_sstring_view (std::shared_ptr<ValueType> const & ptr, std::size_t length) {
-    return pstore::make_shared_sstring_view (ptr, length);
+  make_sstring_view (std::shared_ptr<ValueType> && ptr, std::size_t length) {
+    return pstore::make_shared_sstring_view (std::move (ptr), length);
   }
 
   template <typename ValueType>
   inline pstore::sstring_view<std::unique_ptr<ValueType>>
-  make_sstring_view (std::unique_ptr<ValueType> ptr, std::size_t length) {
+  make_sstring_view (std::unique_ptr<ValueType> && ptr, std::size_t length) {
     return pstore::make_unique_sstring_view (std::move (ptr), length);
   }
 
@@ -125,8 +125,8 @@ TEST (SStringView, FromSpan) {
 }
 
 TEST (SStringView, OperatorIndex) {
-  std::string const src{"ABCDE"};
-  pstore::sstring_view<char const *> sv = pstore::make_sstring_view (src.data (), src.length ());
+  auto const src = "ABCDE"sv;
+  pstore::sstring_view<char const *> sv = pstore::make_sstring_view (src);
   ASSERT_EQ (sv.length (), src.length ());
   EXPECT_FALSE (sv.empty ());
   EXPECT_EQ (sv[0], 'A');
@@ -135,8 +135,8 @@ TEST (SStringView, OperatorIndex) {
 }
 
 TEST (SStringView, At) {
-  std::string const src{"ABCDE"};
-  pstore::sstring_view<char const *> sv = pstore::make_sstring_view (src.data (), src.length ());
+  auto const src = "ABCDE"sv;
+  pstore::sstring_view<char const *> sv = pstore::make_sstring_view (src);
   ASSERT_EQ (sv.length (), src.length ());
   EXPECT_FALSE (sv.empty ());
   EXPECT_EQ (sv.at (0), 'A');
@@ -148,7 +148,7 @@ TEST (SStringView, At) {
 }
 
 TEST (SStringView, Back) {
-  std::string const src{"ABCDE"};
+  auto const src = "ABCDE"sv;
   auto const length = src.length ();
   std::shared_ptr<char> ptr = new_shared (src);
   pstore::sstring_view<std::shared_ptr<char>> sv = pstore::make_shared_sstring_view (ptr, length);
@@ -196,7 +196,7 @@ TEST (SStringView, Index) {
 TEST (SStringView, RBeginEmpty) {
   std::string const src;
   using sv_type = pstore::sstring_view<char const *>;
-  sv_type sv = pstore::make_sstring_view (src.data (), src.length ());
+  sv_type sv = pstore::make_sstring_view (src);
   sv_type const & csv = sv;
 
   sv_type::reverse_iterator rbegin = sv.rbegin ();
@@ -210,7 +210,7 @@ TEST (SStringView, RBeginEmpty) {
 TEST (SStringView, RBegin) {
   std::string const src{"abc"};
   using sv_type = pstore::sstring_view<char const *>;
-  sv_type sv = pstore::make_sstring_view (src.data (), src.length ());
+  sv_type sv = pstore::make_sstring_view (src);
   sv_type const & csv = sv;
 
   sv_type::reverse_iterator rbegin = sv.rbegin ();
@@ -231,9 +231,9 @@ TEST (SStringView, RBegin) {
 }
 
 TEST (SStringView, REndEmpty) {
-  std::string const src{""};
+  auto const src = ""sv;
   using sv_type = pstore::sstring_view<char const *>;
-  sv_type sv = pstore::make_sstring_view (src.data (), src.length ());
+  sv_type sv = pstore::make_sstring_view (src);
   sv_type const & csv = sv;
 
   sv_type::reverse_iterator rend = sv.rend ();
@@ -254,9 +254,9 @@ TEST (SStringView, REndEmpty) {
 }
 
 TEST (SStringView, REnd) {
-  std::string const src{"abc"};
+  auto const src = "abc"sv;
   using sv_type = pstore::sstring_view<char const *>;
-  sv_type sv = pstore::make_sstring_view (src.data (), src.length ());
+  sv_type sv = pstore::make_sstring_view (src);
   sv_type const & csv = sv;
 
   sv_type::reverse_iterator rend = sv.rend ();
@@ -278,20 +278,15 @@ TEST (SStringView, REnd) {
 
 TEST (SStringView, Clear) {
   std::string const empty_str;
-
-  pstore::sstring_view<char const *> empty =
-    pstore::make_sstring_view (empty_str.data (), empty_str.length ());
+  pstore::sstring_view<char const *> empty = pstore::make_sstring_view (empty_str);
   {
-    std::string const abc_str{"abc"};
-    pstore::sstring_view<char const *> sv1 =
-      pstore::make_sstring_view (abc_str.data (), abc_str.length ());
+    pstore::sstring_view<char const *> sv1 = pstore::make_sstring_view ("abc"sv);
     sv1.clear ();
     EXPECT_EQ (sv1.size (), 0U);
     EXPECT_EQ (sv1, empty);
   }
   {
-    pstore::sstring_view<char const *> sv2 =
-      pstore::make_sstring_view (empty_str.data (), empty_str.length ());
+    pstore::sstring_view<char const *> sv2 = pstore::make_sstring_view (empty_str);
     sv2.clear ();
     EXPECT_EQ (sv2.size (), 0U);
     EXPECT_EQ (sv2, empty);
@@ -299,9 +294,8 @@ TEST (SStringView, Clear) {
 }
 
 TEST (SStringView, FindChar) {
-  std::string const src{"abc"};
   using sv_type = pstore::sstring_view<char const *>;
-  sv_type sv = pstore::make_sstring_view (src.data (), src.length ());
+  sv_type sv = pstore::make_sstring_view ("abc"sv);
 
   EXPECT_EQ (sv.find ('a'), 0U);
   EXPECT_EQ (sv.find ('c'), 2U);
@@ -311,10 +305,7 @@ TEST (SStringView, FindChar) {
 }
 
 TEST (SStringView, Substr) {
-  std::string const src{"abc"};
-  using sv_type = pstore::sstring_view<char const *>;
-  sv_type sv = pstore::make_sstring_view (src.data (), src.length ());
-
+  pstore::sstring_view<char const *> sv = pstore::make_sstring_view ("abc"sv);
   EXPECT_EQ (sv.substr (0U, 1U), "a"sv);
   EXPECT_EQ (sv.substr (0U, 4U), "abc"sv);
   EXPECT_EQ (sv.substr (1U, 1U), "b"sv);
@@ -323,9 +314,8 @@ TEST (SStringView, Substr) {
 
 TEST (SStringView, OperatorWrite) {
   auto check = [] (std::string const & str) {
-    auto view = pstore::make_sstring_view (str.data (), str.length ());
     std::ostringstream stream;
-    stream << view;
+    stream << pstore::make_sstring_view (str);
     EXPECT_EQ (stream.str (), str);
   };
   check ("");
@@ -340,8 +330,8 @@ namespace {
 
   class sstringview_maker {
   public:
-    explicit sstringview_maker (char const * s)
-            : view_ (pstore::make_sstring_view (s, std::strlen (s))) {}
+    explicit sstringview_maker (std::string_view s)
+            : view_{pstore::make_sstring_view (s)} {}
 
     operator pstore::sstring_view<char const *> () const noexcept { return view_; }
 
@@ -367,6 +357,52 @@ namespace pstore {
 
 } // end namespace pstore
 
+namespace {
+
+  template <typename T>
+  void eq (std::string_view lhs, T rhs, bool expected) {
+    auto const lhs_view = pstore::make_sstring_view (lhs);
+    EXPECT_EQ (lhs_view == rhs, expected);
+    EXPECT_EQ (rhs == lhs_view, expected);
+  }
+
+  template <typename T>
+  void ne (std::string_view lhs, T rhs, bool expected) {
+    auto const lhs_view = pstore::make_sstring_view (lhs);
+    EXPECT_EQ (lhs_view != rhs, expected);
+    EXPECT_EQ (rhs != lhs_view, expected);
+  }
+
+  template <typename T>
+  void ge (std::string_view lhs, T rhs, bool x, bool y) {
+    auto const lhs_view = pstore::make_sstring_view (lhs);
+    EXPECT_EQ (lhs_view >= rhs, x);
+    EXPECT_EQ (rhs >= lhs_view, y);
+  }
+
+  template <typename T>
+  void gt (std::string_view lhs, T rhs, bool x, bool y) {
+    auto const lhs_view = pstore::make_sstring_view (lhs);
+    EXPECT_EQ (lhs_view > rhs, x);
+    EXPECT_EQ (rhs > lhs_view, y);
+  }
+
+  template <typename T>
+  void le (std::string_view lhs, T rhs, bool x, bool y) {
+    auto const lhs_view = pstore::make_sstring_view (lhs);
+    EXPECT_EQ (lhs_view <= rhs, x);
+    EXPECT_EQ (rhs <= lhs_view, y);
+  }
+
+  template <typename T>
+  void lt (std::string_view lhs, T rhs, bool x, bool y) {
+    auto const lhs_view = pstore::make_sstring_view (lhs);
+    EXPECT_EQ (lhs_view < rhs, x);
+    EXPECT_EQ (rhs < lhs_view, y);
+  }
+
+} // end anonymous namespace
+
 #ifdef PSTORE_IS_INSIDE_LLVM
 TYPED_TEST_CASE (SStringViewRelational, StringTypes);
 #else
@@ -374,157 +410,115 @@ TYPED_TEST_SUITE (SStringViewRelational, StringTypes, );
 #endif
 
 TYPED_TEST (SStringViewRelational, Eq) {
-#define EQ(lhs, rhs, x)                                                                            \
-  do {                                                                                             \
-    auto const lhs_view = pstore::make_sstring_view ((lhs), std::strlen (lhs));                    \
-    EXPECT_EQ (lhs_view == (rhs), (x));                                                            \
-    EXPECT_EQ ((rhs) == lhs_view, (x));                                                            \
-  } while (0)
-  EQ ("", TypeParam (""), true);
-  EQ ("", TypeParam ("abcde"), false);
-  EQ ("", TypeParam ("abcdefghij"), false);
-  EQ ("", TypeParam ("abcdefghijklmnopqrst"), false);
-  EQ ("abcde", TypeParam (""), false);
-  EQ ("abcde", TypeParam ("abcde"), true);
-  EQ ("abcde", TypeParam ("abcdefghij"), false);
-  EQ ("abcde", TypeParam ("abcdefghijklmnopqrst"), false);
-  EQ ("abcdefghij", TypeParam (""), false);
-  EQ ("abcdefghij", TypeParam ("abcde"), false);
-  EQ ("abcdefghij", TypeParam ("abcdefghij"), true);
-  EQ ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), false);
-  EQ ("abcdefghijklmnopqrst", TypeParam (""), false);
-  EQ ("abcdefghijklmnopqrst", TypeParam ("abcde"), false);
-  EQ ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), false);
-  EQ ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), true);
-#undef EQ
+  eq (""sv, TypeParam (""), true);
+  eq ("", TypeParam ("abcde"), false);
+  eq ("", TypeParam ("abcdefghij"), false);
+  eq ("", TypeParam ("abcdefghijklmnopqrst"), false);
+  eq ("abcde", TypeParam (""), false);
+  eq ("abcde", TypeParam ("abcde"), true);
+  eq ("abcde", TypeParam ("abcdefghij"), false);
+  eq ("abcde", TypeParam ("abcdefghijklmnopqrst"), false);
+  eq ("abcdefghij", TypeParam (""), false);
+  eq ("abcdefghij", TypeParam ("abcde"), false);
+  eq ("abcdefghij", TypeParam ("abcdefghij"), true);
+  eq ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), false);
+  eq ("abcdefghijklmnopqrst", TypeParam (""), false);
+  eq ("abcdefghijklmnopqrst", TypeParam ("abcde"), false);
+  eq ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), false);
+  eq ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), true);
 }
 
 TYPED_TEST (SStringViewRelational, Ne) {
-#define NE(lhs, rhs, x)                                                                            \
-  do {                                                                                             \
-    auto const lhs_view = pstore::make_sstring_view ((lhs), std::strlen (lhs));                    \
-    EXPECT_EQ (lhs_view != (rhs), (x));                                                            \
-    EXPECT_EQ ((rhs) != lhs_view, (x));                                                            \
-  } while (0)
-  NE ("", TypeParam (""), false);
-  NE ("", TypeParam ("abcde"), true);
-  NE ("", TypeParam ("abcdefghij"), true);
-  NE ("", TypeParam ("abcdefghijklmnopqrst"), true);
-  NE ("abcde", TypeParam (""), true);
-  NE ("abcde", TypeParam ("abcde"), false);
-  NE ("abcde", TypeParam ("abcdefghij"), true);
-  NE ("abcde", TypeParam ("abcdefghijklmnopqrst"), true);
-  NE ("abcdefghij", TypeParam (""), true);
-  NE ("abcdefghij", TypeParam ("abcde"), true);
-  NE ("abcdefghij", TypeParam ("abcdefghij"), false);
-  NE ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), true);
-  NE ("abcdefghijklmnopqrst", TypeParam (""), true);
-  NE ("abcdefghijklmnopqrst", TypeParam ("abcde"), true);
-  NE ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), true);
-  NE ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), false);
-#undef NE
+  ne ("", TypeParam (""), false);
+  ne ("", TypeParam ("abcde"), true);
+  ne ("", TypeParam ("abcdefghij"), true);
+  ne ("", TypeParam ("abcdefghijklmnopqrst"), true);
+  ne ("abcde", TypeParam (""), true);
+  ne ("abcde", TypeParam ("abcde"), false);
+  ne ("abcde", TypeParam ("abcdefghij"), true);
+  ne ("abcde", TypeParam ("abcdefghijklmnopqrst"), true);
+  ne ("abcdefghij", TypeParam (""), true);
+  ne ("abcdefghij", TypeParam ("abcde"), true);
+  ne ("abcdefghij", TypeParam ("abcdefghij"), false);
+  ne ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), true);
+  ne ("abcdefghijklmnopqrst", TypeParam (""), true);
+  ne ("abcdefghijklmnopqrst", TypeParam ("abcde"), true);
+  ne ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), true);
+  ne ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), false);
 }
 
 TYPED_TEST (SStringViewRelational, Ge) {
-#define GE(lhs, rhs, x, y)                                                                         \
-  do {                                                                                             \
-    auto const lhs_view = pstore::make_sstring_view ((lhs), std::strlen (lhs));                    \
-    EXPECT_EQ (lhs_view >= (rhs), (x));                                                            \
-    EXPECT_EQ ((rhs) >= lhs_view, (y));                                                            \
-  } while (0)
-  GE ("", TypeParam (""), true, true);
-  GE ("", TypeParam ("abcde"), false, true);
-  GE ("", TypeParam ("abcdefghij"), false, true);
-  GE ("", TypeParam ("abcdefghijklmnopqrst"), false, true);
-  GE ("abcde", TypeParam (""), true, false);
-  GE ("abcde", TypeParam ("abcde"), true, true);
-  GE ("abcde", TypeParam ("abcdefghij"), false, true);
-  GE ("abcde", TypeParam ("abcdefghijklmnopqrst"), false, true);
-  GE ("abcdefghij", TypeParam (""), true, false);
-  GE ("abcdefghij", TypeParam ("abcde"), true, false);
-  GE ("abcdefghij", TypeParam ("abcdefghij"), true, true);
-  GE ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), false, true);
-  GE ("abcdefghijklmnopqrst", TypeParam (""), true, false);
-  GE ("abcdefghijklmnopqrst", TypeParam ("abcde"), true, false);
-  GE ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), true, false);
-  GE ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), true, true);
-#undef GE
+  ge ("", TypeParam (""), true, true);
+  ge ("", TypeParam ("abcde"), false, true);
+  ge ("", TypeParam ("abcdefghij"), false, true);
+  ge ("", TypeParam ("abcdefghijklmnopqrst"), false, true);
+  ge ("abcde", TypeParam (""), true, false);
+  ge ("abcde", TypeParam ("abcde"), true, true);
+  ge ("abcde", TypeParam ("abcdefghij"), false, true);
+  ge ("abcde", TypeParam ("abcdefghijklmnopqrst"), false, true);
+  ge ("abcdefghij", TypeParam (""), true, false);
+  ge ("abcdefghij", TypeParam ("abcde"), true, false);
+  ge ("abcdefghij", TypeParam ("abcdefghij"), true, true);
+  ge ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), false, true);
+  ge ("abcdefghijklmnopqrst", TypeParam (""), true, false);
+  ge ("abcdefghijklmnopqrst", TypeParam ("abcde"), true, false);
+  ge ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), true, false);
+  ge ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), true, true);
 }
 
 TYPED_TEST (SStringViewRelational, Gt) {
-#define GT(lhs, rhs, x, y)                                                                         \
-  do {                                                                                             \
-    auto const lhs_view = pstore::make_sstring_view ((lhs), std::strlen (lhs));                    \
-    EXPECT_EQ (lhs_view > (rhs), (x));                                                             \
-    EXPECT_EQ ((rhs) > lhs_view, (y));                                                             \
-  } while (0)
-  GT ("", TypeParam (""), false, false);
-  GT ("", TypeParam ("abcde"), false, true);
-  GT ("", TypeParam ("abcdefghij"), false, true);
-  GT ("", TypeParam ("abcdefghijklmnopqrst"), false, true);
-  GT ("abcde", TypeParam (""), true, false);
-  GT ("abcde", TypeParam ("abcde"), false, false);
-  GT ("abcde", TypeParam ("abcdefghij"), false, true);
-  GT ("abcde", TypeParam ("abcdefghijklmnopqrst"), false, true);
-  GT ("abcdefghij", TypeParam (""), true, false);
-  GT ("abcdefghij", TypeParam ("abcde"), true, false);
-  GT ("abcdefghij", TypeParam ("abcdefghij"), false, false);
-  GT ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), false, true);
-  GT ("abcdefghijklmnopqrst", TypeParam (""), true, false);
-  GT ("abcdefghijklmnopqrst", TypeParam ("abcde"), true, false);
-  GT ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), true, false);
-  GT ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), false, false);
-#undef GT
+  gt ("", TypeParam (""), false, false);
+  gt ("", TypeParam ("abcde"), false, true);
+  gt ("", TypeParam ("abcdefghij"), false, true);
+  gt ("", TypeParam ("abcdefghijklmnopqrst"), false, true);
+  gt ("abcde", TypeParam (""), true, false);
+  gt ("abcde", TypeParam ("abcde"), false, false);
+  gt ("abcde", TypeParam ("abcdefghij"), false, true);
+  gt ("abcde", TypeParam ("abcdefghijklmnopqrst"), false, true);
+  gt ("abcdefghij", TypeParam (""), true, false);
+  gt ("abcdefghij", TypeParam ("abcde"), true, false);
+  gt ("abcdefghij", TypeParam ("abcdefghij"), false, false);
+  gt ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), false, true);
+  gt ("abcdefghijklmnopqrst", TypeParam (""), true, false);
+  gt ("abcdefghijklmnopqrst", TypeParam ("abcde"), true, false);
+  gt ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), true, false);
+  gt ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), false, false);
 }
 
 TYPED_TEST (SStringViewRelational, Le) {
-#define LE(lhs, rhs, x, y)                                                                         \
-  do {                                                                                             \
-    auto const lhs_view = pstore::make_sstring_view ((lhs), std::strlen (lhs));                    \
-    EXPECT_EQ (lhs_view <= (rhs), bool{(x)});                                                      \
-    EXPECT_EQ ((rhs) <= lhs_view, bool{(y)});                                                      \
-  } while (0)
-  LE ("", TypeParam (""), true, true);
-  LE ("", TypeParam ("abcde"), true, false);
-  LE ("", TypeParam ("abcdefghij"), true, false);
-  LE ("", TypeParam ("abcdefghijklmnopqrst"), true, false);
-  LE ("abcde", TypeParam (""), false, true);
-  LE ("abcde", TypeParam ("abcde"), true, true);
-  LE ("abcde", TypeParam ("abcdefghij"), true, false);
-  LE ("abcde", TypeParam ("abcdefghijklmnopqrst"), true, false);
-  LE ("abcdefghij", TypeParam (""), false, true);
-  LE ("abcdefghij", TypeParam ("abcde"), false, true);
-  LE ("abcdefghij", TypeParam ("abcdefghij"), true, true);
-  LE ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), true, false);
-  LE ("abcdefghijklmnopqrst", TypeParam (""), false, true);
-  LE ("abcdefghijklmnopqrst", TypeParam ("abcde"), false, true);
-  LE ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), false, true);
-  LE ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), true, true);
-#undef LE
+  le ("", TypeParam (""), true, true);
+  le ("", TypeParam ("abcde"), true, false);
+  le ("", TypeParam ("abcdefghij"), true, false);
+  le ("", TypeParam ("abcdefghijklmnopqrst"), true, false);
+  le ("abcde", TypeParam (""), false, true);
+  le ("abcde", TypeParam ("abcde"), true, true);
+  le ("abcde", TypeParam ("abcdefghij"), true, false);
+  le ("abcde", TypeParam ("abcdefghijklmnopqrst"), true, false);
+  le ("abcdefghij", TypeParam (""), false, true);
+  le ("abcdefghij", TypeParam ("abcde"), false, true);
+  le ("abcdefghij", TypeParam ("abcdefghij"), true, true);
+  le ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), true, false);
+  le ("abcdefghijklmnopqrst", TypeParam (""), false, true);
+  le ("abcdefghijklmnopqrst", TypeParam ("abcde"), false, true);
+  le ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), false, true);
+  le ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), true, true);
 }
 
 TYPED_TEST (SStringViewRelational, Lt) {
-#define LT(lhs, rhs, x, y)                                                                         \
-  do {                                                                                             \
-    auto const lhs_view = pstore::make_sstring_view ((lhs), std::strlen (lhs));                    \
-    EXPECT_EQ ((lhs_view < rhs), bool{(x)});                                                       \
-    EXPECT_EQ ((rhs < lhs_view), bool{(y)});                                                       \
-  } while (0)
-  LT ("", TypeParam (""), false, false);
-  LT ("", TypeParam ("abcde"), true, false);
-  LT ("", TypeParam ("abcdefghij"), true, false);
-  LT ("", TypeParam ("abcdefghijklmnopqrst"), true, false);
-  LT ("abcde", TypeParam (""), false, true);
-  LT ("abcde", TypeParam ("abcde"), false, false);
-  LT ("abcde", TypeParam ("abcdefghij"), true, false);
-  LT ("abcde", TypeParam ("abcdefghijklmnopqrst"), true, false);
-  LT ("abcdefghij", TypeParam (""), false, true);
-  LT ("abcdefghij", TypeParam ("abcde"), false, true);
-  LT ("abcdefghij", TypeParam ("abcdefghij"), false, false);
-  LT ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), true, false);
-  LT ("abcdefghijklmnopqrst", TypeParam (""), false, true);
-  LT ("abcdefghijklmnopqrst", TypeParam ("abcde"), false, true);
-  LT ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), false, true);
-  LT ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), false, false);
-#undef LE
+  lt ("", TypeParam (""), false, false);
+  lt ("", TypeParam ("abcde"), true, false);
+  lt ("", TypeParam ("abcdefghij"), true, false);
+  lt ("", TypeParam ("abcdefghijklmnopqrst"), true, false);
+  lt ("abcde", TypeParam (""), false, true);
+  lt ("abcde", TypeParam ("abcde"), false, false);
+  lt ("abcde", TypeParam ("abcdefghij"), true, false);
+  lt ("abcde", TypeParam ("abcdefghijklmnopqrst"), true, false);
+  lt ("abcdefghij", TypeParam (""), false, true);
+  lt ("abcdefghij", TypeParam ("abcde"), false, true);
+  lt ("abcdefghij", TypeParam ("abcdefghij"), false, false);
+  lt ("abcdefghij", TypeParam ("abcdefghijklmnopqrst"), true, false);
+  lt ("abcdefghijklmnopqrst", TypeParam (""), false, true);
+  lt ("abcdefghijklmnopqrst", TypeParam ("abcde"), false, true);
+  lt ("abcdefghijklmnopqrst", TypeParam ("abcdefghij"), false, true);
+  lt ("abcdefghijklmnopqrst", TypeParam ("abcdefghijklmnopqrst"), false, false);
 }
