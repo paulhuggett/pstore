@@ -85,7 +85,7 @@ namespace pstore {
     data_[variant_octet] |= 0b10000000;
 
     // Set version: must be 0b0100xxxx
-    data_[version_octet] &= 0x4F; // 0b01001111;
+    data_[version_octet] &= 0b01001111;
     data_[version_octet] |= static_cast<std::uint8_t> (version_type::random_number_based) << 4;
 
     PSTORE_ASSERT (this->variant () == uuid::variant_type::rfc_4122);
