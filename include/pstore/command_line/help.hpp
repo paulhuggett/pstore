@@ -34,7 +34,7 @@ namespace pstore::command_line {
 
     template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>
     constexpr int int_cast (T value) noexcept {
-      using common = typename std::common_type<T, unsigned>::type;
+      using common = std::common_type_t<T, unsigned>;
       return static_cast<int> (
         std::min (static_cast<common> (value),
                   static_cast<common> (unsigned_cast (std::numeric_limits<int>::max ()))));

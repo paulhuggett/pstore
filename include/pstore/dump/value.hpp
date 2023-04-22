@@ -309,7 +309,7 @@ namespace pstore {
       static OStream & write_quoted (OStream & os, std::string const & v);
 
       template <typename OStream,
-                typename UCharType = typename std::make_unsigned<typename OStream::char_type>::type>
+                typename UCharType = std::make_unsigned_t<typename OStream::char_type>>
       static OStream & write_codepoint_hex (OStream & os, UCharType ch);
 
       std::string v_;
