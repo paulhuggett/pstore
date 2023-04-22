@@ -420,6 +420,10 @@ namespace pstore {
       storage_type<details::extent_type<Extent>> storage_;
     };
 
+    template <typename T>
+    span (T * b, T * e) -> span<T>;
+
+
     template <typename ElementType, std::ptrdiff_t Extent>
     constexpr
       typename span<ElementType, Extent>::index_type const span<ElementType, Extent>::extent;
@@ -564,8 +568,7 @@ namespace pstore {
     //
     template <typename T>
     class not_null {
-      static_assert (std::is_assignable<T &, std::nullptr_t>::value,
-                     "T cannot be assigned nullptr.");
+      static_assert (std::is_assignable_v<T &, std::nullptr_t>, "T cannot be assigned nullptr.");
 
     public:
       // NOLINTNEXTLINE(hicpp-explicit-conversions)
@@ -600,8 +603,8 @@ namespace pstore {
       constexpr operator T () const noexcept { return get (); }
       constexpr T operator->() const noexcept { return get (); }
 
-      bool operator== (T const & rhs) const noexcept { return ptr_ == rhs; }
-      bool operator!= (T const & rhs) const noexcept { return !(*this == rhs); }
+      constexpr bool operator== (T const & rhs) const noexcept { return ptr_ == rhs; }
+      constexpr bool operator!= (T const & rhs) const noexcept { return !(*this == rhs); }
 
       // unwanted operators...pointers only point to single objects!
       // TODO ensure all arithmetic ops on this type are unavailable
@@ -621,7 +624,6 @@ namespace pstore {
       // function. If not, we could make them optional via conditional compilation.
       constexpr void ensure_invariant () const noexcept { PSTORE_ASSERT (ptr_ != nullptr); }
     };
-
 
     //
     // at() - Bounds-checked way of accessing static arrays, std::array, std::vector

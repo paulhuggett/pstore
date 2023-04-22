@@ -103,11 +103,9 @@ namespace pstore {
                              std::uint64_t const hval = fnv1a_64_init) noexcept {
     // FNV-1a hash each octet of the buffer
     auto result = hval;
-    for (auto const *it = reinterpret_cast<std::uint8_t const *> (buf.data ()), *const end =
-                                                                                  it +
-                                                                                  buf.size_bytes ();
-         it != end; ++it) {
-      result = fnv_details::append (*it, result);
+    for (auto const b :
+         gsl::span{reinterpret_cast<std::uint8_t const *> (buf.data ()), buf.size_bytes ()}) {
+      result = fnv_details::append (b, result);
     }
     return result;
   }
