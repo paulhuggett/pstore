@@ -28,44 +28,43 @@
 
 namespace pstore {
 
-  inline std::uint8_t round_to_power_of_2 (std::uint8_t v) noexcept {
+  namespace details {
+
+    template <unsigned Shift, typename T>
+    constexpr T round (T v) noexcept {
+      if constexpr (Shift == 0U) {
+        return v;
+      }
+      v = round<Shift / 2> (v);
+      return v | (v >> Shift);
+    }
+
+  } // end namespace details
+
+  constexpr std::uint8_t round_to_power_of_2 (std::uint8_t v) noexcept {
     --v;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
+    v = details::round<4, std::uint8_t> (v);
     ++v;
     return v;
   }
 
-  inline std::uint16_t round_to_power_of_2 (std::uint16_t v) noexcept {
+  constexpr std::uint16_t round_to_power_of_2 (std::uint16_t v) noexcept {
     --v;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
+    v = details::round<8, std::uint16_t> (v);
     ++v;
     return v;
   }
 
-  inline std::uint32_t round_to_power_of_2 (std::uint32_t v) noexcept {
+  constexpr std::uint32_t round_to_power_of_2 (std::uint32_t v) noexcept {
     --v;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
+    v = details::round<16, std::uint32_t> (v);
     ++v;
     return v;
   }
 
-  inline std::uint64_t round_to_power_of_2 (std::uint64_t v) noexcept {
+  constexpr std::uint64_t round_to_power_of_2 (std::uint64_t v) noexcept {
     --v;
-    v |= v >> 1;
-    v |= v >> 2;
-    v |= v >> 4;
-    v |= v >> 8;
-    v |= v >> 16;
-    v |= v >> 32;
+    v = details::round<32, std::uint64_t> (v);
     ++v;
     return v;
   }
