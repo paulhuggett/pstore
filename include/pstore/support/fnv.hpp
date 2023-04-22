@@ -75,9 +75,9 @@ namespace pstore {
     constexpr auto fnv_64_prime = UINT64_C (0x100000001b3);
 #endif
 
-    inline std::uint64_t append (std::uint8_t const v, std::uint64_t hval) noexcept {
+    constexpr std::uint64_t append (std::byte const v, std::uint64_t hval) noexcept {
       // xor the bottom with the current octet
-      hval ^= static_cast<std::uint64_t> (v);
+      hval ^= std::to_integer<std::uint64_t> (v);
 
 // multiply by the 64 bit FNV magic prime mod 2^64
 #ifdef NO_FNV_GCC_OPTIMIZATION
@@ -104,21 +104,11 @@ namespace pstore {
     // FNV-1a hash each octet of the buffer
     auto result = hval;
     for (auto const b :
-         gsl::span{reinterpret_cast<std::uint8_t const *> (buf.data ()), buf.size_bytes ()}) {
+         gsl::span{reinterpret_cast<std::byte const *> (buf.data ()), buf.size_bytes ()}) {
       result = fnv_details::append (b, result);
     }
     return result;
   }
-
-
-  /// \brief perform a 64 bit Fowler/Noll/Vo FNV-1a hash on a buffer
-  /// \param str  Start of the NUL-terminated string to hash
-  /// \param hval  Previous hash value
-  /// \returns 64 bit hash.
-  /// \note  To use the recommended 64 bit FNV-1a hash, use fnv1a_64_init as the hval arg on the
-  ///   first call to either fnv_64a_buf() or fnv_64a_str().
-  std::uint64_t fnv_64a_str (gsl::czstring str, std::uint64_t hval = fnv1a_64_init) noexcept;
-
 
   /// A simple function object wrapper for the fnv_64a_buf() function which is intended to
   /// be a compatible replacement for std::hash<>. It will hash the contents of any contiguous

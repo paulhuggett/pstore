@@ -319,7 +319,6 @@ set (PSTORE_SUPPORT_LIB_SRC
 
     assert.cpp
     error.cpp
-    fnv.cpp
     uint128.cpp
     utf.cpp
     utf_win32.cpp
