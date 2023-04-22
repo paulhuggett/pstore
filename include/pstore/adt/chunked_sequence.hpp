@@ -225,6 +225,10 @@ namespace pstore {
               typename Result = inherit_const_t<ChunkedSequence, iterator, const_iterator>>
     static Result end_impl (ChunkedSequence & cv) noexcept;
 
+    std::size_t grow_chunk (chunk * const c, std::size_t limit);
+    // Fill the tail chunk with new default-constructed elements.
+    std::size_t fill_tail_chunk (size_type count);
+
     /// Add default-initialized members to increase the number of elements held in the container
     /// to \p count.
     ///
@@ -320,44 +324,54 @@ namespace pstore {
     return cv.begin ();
   }
 
+  // grow chunk
+  // ~~~~~~~~~~
+  template <typename T, std::size_t ElementsPerChunk, std::size_t ActualSize,
+            std::size_t ActualAlign>
+  std::size_t chunked_sequence<T, ElementsPerChunk, ActualSize, ActualAlign>::grow_chunk (
+    chunk * const c, std::size_t const limit) {
+    PSTORE_ASSERT (limit <= c->capacity ());
+    for (auto ctr = limit; ctr > 0U; --ctr) {
+      c->emplace_back ();
+      ++size_; // Increment size each time in case emplace_back() throws.
+    }
+    return limit;
+  }
+
+  // fill tail chunk
+  // ~~~~~~~~~~~~~~~
+  template <typename T, std::size_t ElementsPerChunk, std::size_t ActualSize,
+            std::size_t ActualAlign>
+  std::size_t chunked_sequence<T, ElementsPerChunk, ActualSize, ActualAlign>::fill_tail_chunk (
+    size_type count) {
+    // First we must fill the current tail chunk with new default-constructed elements.
+    auto & tail = chunks_.back ();
+    std::size_t const tc = tail.capacity ();
+    // If the last chunk partially occupied? If so, fill the rest of it.
+    std::size_t const limit = std::min (count, tc);
+    count -= this->grow_chunk (&tail, limit);
+    PSTORE_ASSERT (tail.capacity () == tc - limit);
+    return count;
+  }
+
   // resize grow
   // ~~~~~~~~~~~
   template <typename T, std::size_t ElementsPerChunk, std::size_t ActualSize,
             std::size_t ActualAlign>
   void
   chunked_sequence<T, ElementsPerChunk, ActualSize, ActualAlign>::resize_grow (size_type count) {
-    auto const grow_chunk = [this] (chunk * const c, std::size_t const limit) {
-      assert (limit <= c->capacity ());
-      for (auto ctr = limit; ctr > 0U; --ctr) {
-        c->emplace_back ();
-        // Increment size each time in case emplace_back() throws.
-        ++size_;
-      }
-      return limit;
-    };
-
     if (count <= size_) {
       return; // Nothing to do.
     }
 
-    count -= size_;
-    {
-      // First we must fill the current tail chunk with new default-constructed elements.
-      auto & tail = chunks_.back ();
-      std::size_t const tc = tail.capacity ();
-      // If the last chunk partially occupied? If so, fill the rest of it.
-      std::size_t const limit = std::min (count, tc);
-      count -= grow_chunk (&tail, limit);
-      assert (tail.capacity () == tc - limit);
-    }
-
+    count = this->fill_tail_chunk (count - size_);
     // Allocate as many chunks as necessary filling them with the correct number of
     // default-initialized members.
     while (count > 0U) {
       // Append a new chunk.
       chunks_.emplace_back ();
       // Fill the chunk with default-constructed elements.
-      count -= grow_chunk (&chunks_.back (), std::min (ElementsPerChunk, count));
+      count -= this->grow_chunk (&chunks_.back (), std::min (ElementsPerChunk, count));
     }
   }
 
@@ -381,7 +395,7 @@ namespace pstore {
       if (count >= in_chunk && &tail != &head) {
         chunks_.pop_back ();
       } else {
-        assert (in_chunk >= count);
+        PSTORE_ASSERT (in_chunk >= count);
         tail.shrink (in_chunk - count);
         in_chunk = count;
       }
