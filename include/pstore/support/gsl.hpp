@@ -65,11 +65,11 @@ namespace pstore {
 
       public:
         using iterator_category = std::random_access_iterator_tag;
-        using value_type = typename std::remove_const_t<element_type>;
+        using value_type = std::remove_const_t<element_type>;
         using difference_type = typename Span::index_type;
 
-        using reference = typename std::conditional_t<IsConst, element_type const, element_type> &;
-        using pointer = typename std::add_pointer<reference>::type;
+        using reference = std::conditional_t<IsConst, element_type const, element_type> &;
+        using pointer = std::add_pointer_t<reference>;
 
         friend class span_iterator<Span, true>;
 
