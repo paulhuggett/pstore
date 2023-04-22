@@ -54,6 +54,7 @@
 #ifndef PSTORE_SUPPORT_FNV_HPP
 #define PSTORE_SUPPORT_FNV_HPP
 
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 
