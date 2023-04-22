@@ -25,10 +25,10 @@
 
 namespace {
 
-  constexpr bool starts_with (std::string const & s, char const c) {
+  bool starts_with (std::string const & s, char const c) {
     return !s.empty () && s.front () == c;
   }
-  constexpr bool ends_with (std::string const & s, char const c) {
+  bool ends_with (std::string const & s, char const c) {
     return !s.empty () && s.back () == c;
   }
 
