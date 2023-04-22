@@ -19,8 +19,11 @@
 #define PSTORE_CORE_CRC32_HPP
 
 #include <array>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+
+#include "pstore/support/gsl.hpp"
 
 namespace pstore {
 
@@ -30,11 +33,9 @@ namespace pstore {
 
   template <typename SpanType>
   std::uint32_t crc32 (SpanType buf) noexcept {
-    auto * p = reinterpret_cast<std::uint8_t const *> (buf.data ());
     auto crc = std::uint32_t{0};
-    auto size = buf.size_bytes ();
-    while (size--) {
-      crc = details::crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+    for (auto b : gsl::span{reinterpret_cast<std::byte const *> (buf.data ()), buf.size_bytes ()}) {
+      crc = details::crc32_tab[(crc ^ std::to_integer<std::uint32_t> (b)) & 0xFF] ^ (crc >> 8);
     }
     return crc ^ ~0U;
   }
