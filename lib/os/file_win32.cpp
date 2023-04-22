@@ -233,7 +233,7 @@ namespace pstore {
       if (file != invalid_oshandle && !::CloseHandle (file)) {
         return error_or<oshandle>{make_error_code (pstore::win32_erc (::GetLastError ()))};
       }
-      return error_or<oshandle>{in_place, invalid_oshandle};
+      return error_or<oshandle>{std::in_place, invalid_oshandle};
     }
 
     // seek
