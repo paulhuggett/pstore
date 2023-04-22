@@ -61,7 +61,7 @@ namespace {
   class Command : public ::testing::Test {
   public:
     Command ()
-            : http_status_{pstore::in_place, in_port_t{8080}}
+            : http_status_{std::in_place, in_port_t{8080}}
             , uptime_done_{false}
             , cp_{1U, &http_status_, &uptime_done_}
             , fifo_{nullptr} {}

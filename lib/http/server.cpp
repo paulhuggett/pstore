@@ -95,7 +95,7 @@ namespace {
       return pstore::error_or<std::string>{pstore::http::get_last_error ()};
     }
     host_name.back () = '\0'; // guarantee nul termination.
-    return pstore::error_or<std::string>{pstore::in_place, host_name.data ()};
+    return pstore::error_or<std::string>{std::in_place, host_name.data ()};
   }
 
   template <typename Reader, typename IO>
@@ -174,8 +174,8 @@ namespace {
     // Spawn a thread to manage this WebSockets session.
     auto const create_ws_server = [&reader, server_loop_thread, &request] (socket_descriptor & s) {
       PSTORE_ASSERT (s.valid ());
-      return return_type{pstore::in_place, new std::thread (server_loop_thread, std::move (reader),
-                                                            std::move (s), request.uri ())};
+      return return_type{std::in_place, new std::thread (server_loop_thread, std::move (reader),
+                                                         std::move (s), request.uri ())};
     };
 
     PSTORE_ASSERT (io.get ().valid ());

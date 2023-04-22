@@ -95,7 +95,7 @@ namespace pstore {
         if (!buf) {
           return result_type{details::out_of_data_error ()};
         }
-        return result_type{in_place, io2, *buf};
+        return result_type{std::in_place, io2, *buf};
       };
 
       auto extract_request_info = [] (state_type io3, std::string const & s) {
@@ -109,7 +109,7 @@ namespace pstore {
         if (method.length () == 0 || uri.length () == 0 || version.length () == 0) {
           return result_type{details::out_of_data_error ()};
         }
-        return result_type{in_place, io3,
+        return result_type{std::in_place, io3,
                            request_info{std::move (method), std::move (uri), std::move (version)}};
       };
 
@@ -137,7 +137,7 @@ namespace pstore {
              [&reader, &handler, &handler_state] (typename Reader::state_type state2,
                                                   maybe<std::string> const & ms) -> return_type {
         if (!ms || ms->length () == 0) {
-          return return_type{in_place, state2, handler_state};
+          return return_type{std::in_place, state2, handler_state};
         }
 
         std::string key;

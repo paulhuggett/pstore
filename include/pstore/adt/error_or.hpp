@@ -23,7 +23,6 @@
 #include <system_error>
 #include <tuple>
 
-#include "pstore/adt/utility.hpp"
 #include "pstore/support/assert.hpp"
 #include "pstore/support/gsl.hpp"
 #include "pstore/support/inherit_const.hpp"
@@ -69,7 +68,7 @@ namespace pstore {
     }
 
     template <typename... Args>
-    explicit error_or (in_place_t const inp, Args &&... args)
+    explicit error_or (std::in_place_t const inp, Args &&... args)
             : has_error_{false} {
       (void) inp;
       new (get_storage ()) storage_type (std::forward<Args> (args)...);

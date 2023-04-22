@@ -201,7 +201,7 @@ namespace pstore::http {
         if (end == span_.begin ()) {
           // that's the end of the source data.
           is_eof_ = true;
-          return error_or_n<IO, byte_span>{in_place, io,
+          return error_or_n<IO, byte_span>{std::in_place, io,
                                            byte_span{sp.data (), available.data () - sp.data ()}};
         }
 
@@ -217,7 +217,7 @@ namespace pstore::http {
       pos_ += to_copy;
       available = available.subspan (to_copy);
     }
-    return error_or_n<IO, byte_span>{in_place, io,
+    return error_or_n<IO, byte_span>{std::in_place, io,
                                      byte_span{sp.data (), available.data () - sp.data ()}};
   }
 
@@ -234,7 +234,7 @@ namespace pstore::http {
       auto const first = reinterpret_cast<element_type *> (sp2.data ());
       auto const elements =
         std::max (sp2.size (), index_type{0}) / index_type{sizeof (element_type)};
-      return error_or_n<IO, gsl::span<element_type>>{in_place, io2,
+      return error_or_n<IO, gsl::span<element_type>>{std::in_place, io2,
                                                      gsl::make_span (first, first + elements)};
     };
     return this->get_span_impl (io, as_writeable_bytes (sp)) >>= cast;
@@ -246,7 +246,7 @@ namespace pstore::http {
   auto buffered_reader<IO, RefillFunction>::geto (IO io) -> geto_result_type {
     std::uint8_t result{};
     return get_span (io, gsl::make_span (&result, 1)) >>= [] (IO io2, byte_span const & sp) {
-      return geto_result_type{in_place, io2,
+      return geto_result_type{std::in_place, io2,
                               sp.size () == 1 ? just (sp[0]) : nothing<std::uint8_t> ()};
     };
   }
@@ -260,7 +260,7 @@ namespace pstore::http {
     // and return a char32_t.
     return geto (io) >>= [] (IO io2, maybe<std::uint8_t> const & mb) {
       maybe<char> const mc = mb ? just (static_cast<char> (*mb)) : nothing<char> ();
-      return getc_result_type{in_place, io2, mc};
+      return getc_result_type{std::in_place, io2, mc};
     };
   }
 
@@ -274,7 +274,8 @@ namespace pstore::http {
       // If this is the first character of the string, then return end-of-stream. If
       // instead we hit end-of-stream after reading one or more characters, return
       // what we've got.
-      return gets_result_type{in_place, io2, str.empty () ? nothing<std::string> () : just (str)};
+      return gets_result_type{std::in_place, io2,
+                              str.empty () ? nothing<std::string> () : just (str)};
     };
 
     return this->getc (io) >>= [this, &str, eos] (IO io3, maybe<char> mc) {
@@ -300,9 +301,9 @@ namespace pstore::http {
             // with ASCII.
             push_ = static_cast<std::uint8_t> (*mc2);
           }
-          return gets_result_type{in_place, io4, just (str)};
+          return gets_result_type{std::in_place, io4, just (str)};
         };
-      case lf: return gets_result_type{in_place, io3, just (str)};
+      case lf: return gets_result_type{std::in_place, io3, just (str)};
       default: break;
       }
 

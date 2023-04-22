@@ -30,7 +30,6 @@
 
 using pstore::error_or;
 using pstore::error_or_n;
-using pstore::in_place;
 using pstore::maybe;
 using pstore::gsl::span;
 using pstore::http::make_buffered_reader;
@@ -41,7 +40,7 @@ TEST (HttpdBufferedReader, Span) {
   using byte_span = pstore::gsl::span<std::uint8_t>;
   auto refill = [] (int io, byte_span const & sp) {
     std::fill (std::begin (sp), std::end (sp), std::uint8_t{0});
-    return pstore::error_or_n<int, byte_span::iterator>{pstore::in_place, io, sp.end ()};
+    return pstore::error_or_n<int, byte_span::iterator>{std::in_place, io, sp.end ()};
   };
 
   constexpr auto buffer_size = std::size_t{0};

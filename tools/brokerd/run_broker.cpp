@@ -154,7 +154,7 @@ namespace {
   /// Create an HTTP server_status object which reflects the user's choice of port.
   decltype (auto) get_http_server_status (maybe<in_port_t> const & port) {
     if (port.has_value ()) {
-      return maybe<http::server_status>{in_place, *port};
+      return maybe<http::server_status>{std::in_place, *port};
     }
     return nothing<http::server_status> ();
   }

@@ -71,7 +71,7 @@ namespace pstore {
         if (is_recv_error (nread)) {
           return result_type{get_last_error ()};
         }
-        return result_type{in_place, socket, s.begin () + nread};
+        return result_type{std::in_place, socket, s.begin () + nread};
       }
 
       error_or<socket_descriptor &> network_sender (socket_descriptor & socket,

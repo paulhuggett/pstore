@@ -24,7 +24,6 @@ set (pstore_adt_lib_includes
     small_vector.hpp
     sparse_array.hpp
     sstring_view.hpp
-    utility.hpp
 )
       
 add_pstore_library (

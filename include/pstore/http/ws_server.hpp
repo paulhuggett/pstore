@@ -186,10 +186,9 @@ namespace pstore::http {
     template <typename T, typename Reader, typename IO>
     error_or_n<IO, T> read_and_byte_swap (Reader & reader, IO io) {
       auto v = T{0};
-      return reader.get_span (io, gsl::make_span (&v, 1)) >>=
-             [] (IO io2, gsl::span<T> const & l1) {
-               return error_or_n<IO, T>{in_place, io2, network_to_host (l1.at (0))};
-             };
+      return reader.get_span (io, gsl::make_span (&v, 1)) >>= [] (IO io2, gsl::span<T> const & l1) {
+        return error_or_n<IO, T>{std::in_place, io2, network_to_host (l1.at (0))};
+      };
     }
 
     template <typename T, typename Reader, typename IO>
@@ -197,7 +196,7 @@ namespace pstore::http {
       auto length16n = T{0};
       return reader.get_span (io, gsl::make_span (&length16n, 1)) >>=
              [] (IO io2, gsl::span<T> const & l1) {
-               return error_or_n<IO, T>{in_place, io2, network_to_host (l1.at (0))};
+               return error_or_n<IO, T>{std::in_place, io2, network_to_host (l1.at (0))};
              };
     }
 
@@ -206,7 +205,7 @@ namespace pstore::http {
                                                        unsigned base_length) {
       if (base_length < 126U) {
         // "If 0-125, that is the payload length."
-        return error_or_n<IO, std::uint64_t>{in_place, io, base_length};
+        return error_or_n<IO, std::uint64_t>{std::in_place, io, base_length};
       }
       if (base_length == 126U) {
         // "If 126, the following 2 bytes interpreted as a 16-bit unsigned integer are
@@ -289,9 +288,9 @@ namespace pstore::http {
                                     return details::decode_payload (payload_length, mask,
                                                                     payload_span) >>=
                                            [&] (gsl::span<std::uint8_t> const &) {
-                                             return return_type{in_place, io4,
-                                                                frame{part1.opcode, part1.fin,
-                                                                      std::move (payload)}};
+                                             return return_type{
+                                               std::in_place, io4,
+                                               frame{part1.opcode, part1.fin, std::move (payload)}};
                                            };
                                   };
                          };

@@ -77,7 +77,7 @@ namespace {
     };
 
     return pstore::http::serve_static_content (sender, 0, path, fs ()) >>= [&actual] (int) {
-      return pstore::error_or<std::string>{pstore::in_place, actual};
+      return pstore::error_or<std::string>{std::in_place, actual};
     };
   }
 
@@ -99,7 +99,7 @@ namespace {
       PSTORE_ASSERT (start != std::string::npos);
       auto const pos = src_.find (crlf, start);
       PSTORE_ASSERT (pos != std::string::npos);
-      return result_type{pstore::in_place, pos + crlf_len,
+      return result_type{std::in_place, pos + crlf_len,
                          pstore::just (src_.substr (start, pos - start))};
     }
 

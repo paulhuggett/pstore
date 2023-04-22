@@ -43,7 +43,7 @@ TEST (ErrorOr, ValueCtor) {
 }
 
 TEST (ErrorOr, InPlaceCtor) {
-  pstore::error_or<std::pair<int, int>> eo{pstore::in_place, 17, 23};
+  pstore::error_or<std::pair<int, int>> eo{std::in_place, 17, 23};
   EXPECT_TRUE (static_cast<bool> (eo));
   EXPECT_EQ (*eo, std::make_pair (17, 23));
   EXPECT_EQ (eo->first, 17);
@@ -55,7 +55,7 @@ TEST (ErrorOr, InPlaceCtor) {
 TEST (ErrorOr, ErrorAssign) {
   constexpr auto err = std::errc::address_family_not_supported;
 
-  pstore::error_or<std::pair<int, int>> eo{pstore::in_place, 17, 23};
+  pstore::error_or<std::pair<int, int>> eo{std::in_place, 17, 23};
   eo = err;
 
   EXPECT_FALSE (static_cast<bool> (eo));
@@ -82,9 +82,9 @@ namespace {
 } // end anonymous namespace
 
 TEST (ErrorOr, CopyAssign) {
-  pstore::error_or<copy_only> eo1{pstore::in_place, 1};
+  pstore::error_or<copy_only> eo1{std::in_place, 1};
   EXPECT_EQ (eo1->get (), 1);
-  pstore::error_or<copy_only> eo2{pstore::in_place, 2};
+  pstore::error_or<copy_only> eo2{std::in_place, 2};
   eo1 = eo2;
   EXPECT_EQ (eo1->get (), 2);
   EXPECT_EQ (eo2->get (), 2);
@@ -110,9 +110,9 @@ namespace {
 } // end anonymous namespace
 
 TEST (ErrorOr, MoveAssign) {
-  pstore::error_or<move_only> eo1{pstore::in_place, 1};
+  pstore::error_or<move_only> eo1{std::in_place, 1};
   EXPECT_EQ (eo1->get (), 1);
-  pstore::error_or<move_only> eo2{pstore::in_place, 2};
+  pstore::error_or<move_only> eo2{std::in_place, 2};
   eo1 = std::move (eo2);
   EXPECT_EQ (eo1->get (), 2);
 }
@@ -135,19 +135,19 @@ TEST (ErrorOr, Equal) {
 }
 
 TEST (ErrorOrN, StdGet) {
-  pstore::error_or_n<int, int> eo{pstore::in_place, 3, 5};
+  pstore::error_or_n<int, int> eo{std::in_place, 3, 5};
   EXPECT_EQ (pstore::get<0> (eo), 3);
   EXPECT_EQ (pstore::get<1> (eo), 5);
 
-  pstore::error_or_n<int, int> const eo_const{pstore::in_place, 7, 11};
+  pstore::error_or_n<int, int> const eo_const{std::in_place, 7, 11};
   EXPECT_EQ (pstore::get<0> (eo_const), 7);
   EXPECT_EQ (pstore::get<1> (eo_const), 11);
 }
 
 TEST (ErrorOrN, Bind) {
-  pstore::error_or_n<int, int, int> eo{pstore::in_place, 3, 5, 7};
+  pstore::error_or_n<int, int, int> eo{std::in_place, 3, 5, 7};
   pstore::error_or<int> y = eo >>= [] (int a, int b, int c) {
-    return pstore::error_or<int>{pstore::in_place, a + b + c};
+    return pstore::error_or<int>{std::in_place, a + b + c};
   };
   EXPECT_TRUE (y);
   EXPECT_EQ (*y, 15);

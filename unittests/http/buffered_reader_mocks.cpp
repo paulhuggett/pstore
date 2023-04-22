@@ -39,7 +39,7 @@ refiller_function refiller::refill_function () const {
 /// Returns a function which which simply returns end-of-stream when invoked.
 refiller_function eof () {
   return [] (int io, pstore::gsl::span<std::uint8_t> const & s) {
-    return refiller_result_type{pstore::in_place, io + 1, s.begin ()};
+    return refiller_result_type{std::in_place, io + 1, s.begin ()};
   };
 }
 
@@ -47,7 +47,7 @@ refiller_function eof () {
 refiller_function yield_bytes (pstore::gsl::span<std::uint8_t const> const & v) {
   return [v] (int io, pstore::gsl::span<std::uint8_t> const & s) {
     PSTORE_ASSERT (s.size () > 0 && v.size () <= s.size ());
-    return refiller_result_type{pstore::in_place, io + 1,
+    return refiller_result_type{std::in_place, io + 1,
                                 std::copy (v.begin (), v.end (), s.begin ())};
   };
 }
@@ -57,7 +57,7 @@ refiller_function yield_string (std::string const & str) {
   return [str] (int io, pstore::gsl::span<std::uint8_t> const & s) {
     PSTORE_ASSERT (str.length () <= pstore::unsigned_cast (s.size ()));
     return refiller_result_type{
-      pstore::in_place, io + 1,
+      std::in_place, io + 1,
       std::transform (str.begin (), str.end (), s.begin (), [] (std::uint8_t v) {
         PSTORE_ASSERT (v < 128);
         return static_cast<char> (v);

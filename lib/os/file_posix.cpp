@@ -246,7 +246,7 @@ namespace pstore::file {
     if (file != invalid_oshandle && ::close (file) == -1) {
       return error_or<oshandle>{make_error_code (pstore::errno_erc (errno))};
     }
-    return error_or<oshandle>{in_place, invalid_oshandle};
+    return error_or<oshandle>{std::in_place, invalid_oshandle};
   }
 
   // seek
