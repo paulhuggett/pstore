@@ -19,16 +19,14 @@
 #include <gtest/gtest.h>
 
 TEST (ClParser, SimpleString) {
-  using pstore::maybe;
   using pstore::command_line::parser;
 
-  maybe<std::string> r = parser<std::string> () ("hello");
+  std::optional<std::string> r = parser<std::string> () ("hello");
   EXPECT_TRUE (r.has_value ());
   EXPECT_EQ (r.value (), "hello");
 }
 
 TEST (ClParser, StringFromSet) {
-  using pstore::maybe;
   using pstore::command_line::parser;
 
   parser<std::string> p;
@@ -36,46 +34,44 @@ TEST (ClParser, StringFromSet) {
   p.add_literal_option ("b", 37, "description b");
 
   {
-    maybe<std::string> r1 = p ("hello");
+    std::optional<std::string> r1 = p ("hello");
     EXPECT_FALSE (r1.has_value ());
   }
   {
-    maybe<std::string> r2 = p ("a");
+    std::optional<std::string> r2 = p ("a");
     EXPECT_TRUE (r2.has_value ());
     EXPECT_EQ (r2.value (), "a");
   }
   {
-    maybe<std::string> r3 = p ("b");
+    std::optional<std::string> r3 = p ("b");
     EXPECT_TRUE (r3.has_value ());
     EXPECT_EQ (r3.value (), "b");
   }
 }
 
 TEST (ClParser, Int) {
-  using pstore::maybe;
   using pstore::command_line::parser;
   {
-    maybe<int> r1 = parser<int> () ("43");
+    std::optional<int> r1 = parser<int> () ("43");
     EXPECT_TRUE (r1.has_value ());
     EXPECT_EQ (r1.value (), 43);
   }
   {
     parser<int> p;
-    maybe<int> r2 = p ("");
+    std::optional<int> r2 = p ("");
     EXPECT_FALSE (r2.has_value ());
   }
   {
-    maybe<int> r3 = parser<int> () ("bad");
+    std::optional<int> r3 = parser<int> () ("bad");
     EXPECT_FALSE (r3.has_value ());
   }
   {
-    maybe<int> r4 = parser<int> () ("42bad");
+    std::optional<int> r4 = parser<int> () ("42bad");
     EXPECT_FALSE (r4.has_value ());
   }
 }
 
 TEST (ClParser, Enum) {
-  using pstore::maybe;
   using pstore::command_line::parser;
 
   enum color { red, blue, green };
@@ -84,26 +80,26 @@ TEST (ClParser, Enum) {
   p.add_literal_option ("blue", blue, "description blue");
   p.add_literal_option ("green", green, "description green");
   {
-    maybe<color> r1 = p ("red");
+    std::optional<color> const r1 = p ("red");
     EXPECT_TRUE (r1.has_value ());
     EXPECT_EQ (r1.value (), red);
   }
   {
-    maybe<color> r2 = p ("blue");
+    std::optional<color> const r2 = p ("blue");
     EXPECT_TRUE (r2.has_value ());
     EXPECT_EQ (r2.value (), blue);
   }
   {
-    maybe<color> r3 = p ("green");
+    std::optional<color> const r3 = p ("green");
     EXPECT_TRUE (r3.has_value ());
     EXPECT_EQ (r3.value (), green);
   }
   {
-    maybe<color> r4 = p ("bad");
+    std::optional<color> const r4 = p ("bad");
     EXPECT_FALSE (r4.has_value ());
   }
   {
-    maybe<color> r5 = p ("");
+    std::optional<color> const r5 = p ("");
     EXPECT_FALSE (r5.has_value ());
   }
 }

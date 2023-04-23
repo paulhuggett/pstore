@@ -31,9 +31,9 @@ namespace pstore::command_line {
   class parser<dump::digest_opt> : public parser_base {
   public:
     ~parser () noexcept override = default;
-    maybe<dump::digest_opt> operator() (std::string const & v) const {
-      maybe<index::digest> const d = uint128::from_hex_string (v);
-      return d ? just (dump::digest_opt{*d}) : nothing<dump::digest_opt> ();
+    std::optional<dump::digest_opt> operator() (std::string const & v) const {
+      std::optional<index::digest> const d = uint128::from_hex_string (v);
+      return d ? std::optional<dump::digest_opt> (*d) : std::optional<dump::digest_opt> ();
     }
   };
 

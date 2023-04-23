@@ -25,11 +25,11 @@ namespace pstore::command_line {
 
   namespace details {
 
-    maybe<option *> lookup_nearest_option (std::string const & arg,
-                                           option::options_container const & all_options);
+    std::optional<option *> lookup_nearest_option (std::string const & arg,
+                                                   option::options_container const & all_options);
 
     bool starts_with (std::string const & s, gsl::czstring prefix);
-    maybe<option *> find_handler (std::string const & name);
+    std::optional<option *> find_handler (std::string const & name);
 
     // check for missing
     // ~~~~~~~~~~~~~~~~~
@@ -83,7 +83,8 @@ namespace pstore::command_line {
       errs << str::out_string (program_name) << str::out_text (": Unknown command line argument '")
            << str::out_string (arg_name) << str::out_text ("'\n");
 
-      if (maybe<option *> const best_option = lookup_nearest_option (arg_name, option::all ())) {
+      if (std::optional<option *> const best_option =
+            lookup_nearest_option (arg_name, option::all ())) {
         std::string nearest_string = (*best_option)->name ();
         gsl::czstring const dashes = utf::length (nearest_string) < 2U ? "-" : "--";
         if (!value.empty ()) {
@@ -97,14 +98,14 @@ namespace pstore::command_line {
 
     template <typename ErrorStream>
     void report_unknown_option (std::string const & program_name, std::string const & arg_name,
-                                maybe<std::string> const & value, ErrorStream & errs) {
+                                std::optional<std::string> const & value, ErrorStream & errs) {
       report_unknown_option (program_name, arg_name, value ? *value : "", errs);
     }
 
 
     bool argument_is_positional (std::string const & arg_name);
-    bool handler_takes_argument (maybe<option *> handler);
-    bool handler_set_value (maybe<option *> handler, std::string const & value);
+    bool handler_takes_argument (std::optional<option *> handler);
+    bool handler_set_value (std::optional<option *> handler, std::string const & value);
 
     /// Splits the name and possible argument values from an argument string.
     ///
@@ -115,7 +116,7 @@ namespace pstore::command_line {
     /// \param arg A command-line argument string.
     /// \returns A tuple containing the argument name (shorn or leading dashes) and a
     ///          value string if one was present.
-    std::tuple<std::string, maybe<std::string>> get_option_and_value (std::string arg);
+    std::tuple<std::string, std::optional<std::string>> get_option_and_value (std::string arg);
 
     /// A simple wrapper for a bool where as soon as StickTo is assigned, subsequent
     /// assignments are ignored.
@@ -148,9 +149,10 @@ namespace pstore::command_line {
     };
 
     template <typename ErrorStream>
-    auto record_value_if_available (maybe<option *> handler, maybe<std::string> const & value,
+    auto record_value_if_available (std::optional<option *> handler,
+                                    std::optional<std::string> const & value,
                                     std::string const & program_name, ErrorStream & errs)
-      -> std::tuple<maybe<option *>, bool> {
+      -> std::tuple<std::optional<option *>, bool> {
       using str = stream_trait<typename ErrorStream::char_type>;
       bool ok = true;
       if ((*handler)->takes_argument ()) {
@@ -183,19 +185,19 @@ namespace pstore::command_line {
     // process single dash
     // ~~~~~~~~~~~~~~~~~~~
     template <typename ErrorStream>
-    std::tuple<maybe<option *>, bool> process_single_dash (std::string arg_name,
-                                                           std::string const & program_name,
-                                                           ErrorStream & errs) {
+    std::tuple<std::optional<option *>, bool> process_single_dash (std::string arg_name,
+                                                                   std::string const & program_name,
+                                                                   ErrorStream & errs) {
       PSTORE_ASSERT (starts_with (arg_name, "-"));
       arg_name.erase (0, 1U); // Remove the leading dash.
 
-      auto handler = nothing<option *> ();
+      std::optional<option *> handler;
       sticky_bool<false> ok{true};
       while (ok && !arg_name.empty ()) {
         char const name[2]{arg_name[0], '\0'};
         handler = find_handler (name);
         if (!handler || (*handler)->is_positional ()) {
-          report_unknown_option (program_name, name, nothing<std::string> (), errs);
+          report_unknown_option (program_name, name, std::optional<std::string> (), errs);
           ok = false;
           break;
         }
@@ -225,8 +227,8 @@ namespace pstore::command_line {
     parse_option_arguments (InputIterator first_arg, InputIterator last_arg,
                             std::string const & program_name, ErrorStream & errs) {
       using str = stream_trait<typename ErrorStream::char_type>;
-      auto value = nothing<std::string> ();
-      auto handler = nothing<option *> ();
+      std::optional<std::string> value;
+      std::optional<option *> handler;
       sticky_bool<false> ok{true};
 
       for (; first_arg != last_arg; ++first_arg) {

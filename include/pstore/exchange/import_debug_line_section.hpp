@@ -81,7 +81,7 @@ namespace pstore::exchange::import_ns {
     if (!seen_.all ()) {
       return error::incomplete_debug_line_section;
     }
-    maybe<index::digest> const digest = uint128::from_hex_string (header_digest_);
+    std::optional<index::digest> const digest = uint128::from_hex_string (header_digest_);
     if (!digest) {
       return error::bad_digest;
     }

@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <new>
+#include <optional>
 #include <stdexcept>
 
 #include "pstore/support/assert.hpp"
@@ -249,6 +250,20 @@ namespace pstore {
       return f (*t);
     }
     return maybe<typename decltype (f (*t))::value_type>{};
+  }
+
+  /// The monadic "bind" operator for std::optional<T>. If \p t is "nothing", then returns nothing
+  /// where the type of the return is derived from the return type of \p f.  If \p t has a value
+  /// then returns the result of calling \p f.
+  ///
+  /// \tparam T  The input type wrapped by a maybe<>.
+  /// \tparam Function  A callable object whose signature is of the form `std::optional<U> f(T t)`.
+  template <typename T, typename Function>
+  auto operator>>= (std::optional<T> && t, Function f) -> decltype (f (*t)) {
+    if (t) {
+      return f (*t);
+    }
+    return std::optional<typename decltype (f (*t))::value_type>{};
   }
 
 } // namespace pstore

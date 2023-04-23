@@ -19,9 +19,9 @@
 #include <algorithm>
 #include <cerrno>
 #include <cstdlib>
+#include <optional>
 
 #include "pstore/support/gsl.hpp"
-#include "pstore/support/maybe.hpp"
 
 namespace pstore::command_line {
 
@@ -69,62 +69,51 @@ namespace pstore::command_line {
   //* | .__/\__,_|_| /__/\___|_|   *
   //* |_|                          *
   template <typename T, typename = void>
-  class parser : public parser_base {
+  class parser final : public parser_base {
   public:
-    maybe<T> operator() (std::string const & v) const;
+    std::optional<T> operator() (std::string const & v) const;
   };
 
   template <typename T>
-  class parser<T, typename std::enable_if_t<std::is_enum_v<T>>> : public parser_base {
+  class parser<T, typename std::enable_if_t<std::is_enum_v<T>>> final : public parser_base {
   public:
-    maybe<T> operator() (std::string const & v) const {
-      auto begin = this->begin ();
-      auto end = this->end ();
-      auto it = std::find_if (begin, end, [&v] (literal const & lit) { return v == lit.name; });
+    std::optional<T> operator() (std::string const & v) const {
+      auto const end = this->end ();
+      auto const it =
+        std::find_if (this->begin (), end, [&v] (literal const & lit) { return v == lit.name; });
       if (it == end) {
-        return nothing<T> ();
+        return {};
       }
-      return just (T (it->value));
+      return std::optional<T>{std::in_place, static_cast<T> (it->value)};
     }
   };
 
-
   template <typename T>
-  class parser<T, typename std::enable_if_t<std::is_integral_v<T>>> : public parser_base {
+  class parser<T, typename std::enable_if_t<std::is_integral_v<T>>> final : public parser_base {
   public:
-    maybe<T> operator() (std::string const & v) const;
+    std::optional<T> operator() (std::string const & v) const {
+      PSTORE_ASSERT (std::distance (this->begin (), this->end ()) == 0 &&
+                     "Don't specify literal values for an integral option!");
+      if (v.length () == 0) {
+        return {};
+      }
+      gsl::zstring str_end = nullptr;
+      gsl::czstring const str = v.c_str ();
+      errno = 0;
+      long const res = std::strtol (str, &str_end, 10);
+      if (str_end != str + v.length () || errno != 0 || res > std::numeric_limits<int>::max () ||
+          res < std::numeric_limits<int>::min ()) {
+        return {};
+      }
+      return {static_cast<T> (res)};
+    }
   };
 
-  template <typename T>
-  maybe<T> parser<T, typename std::enable_if_t<std::is_integral_v<T>>>::operator() (
-    std::string const & v) const {
-    PSTORE_ASSERT (std::distance (this->begin (), this->end ()) == 0 &&
-                   "Don't specify literal values for an integral option!");
-    if (v.length () == 0) {
-      return nothing<T> ();
-    }
-    gsl::zstring str_end = nullptr;
-    gsl::czstring const str = v.c_str ();
-    errno = 0;
-    long const res = std::strtol (str, &str_end, 10);
-    if (str_end != str + v.length () || errno != 0 || res > std::numeric_limits<int>::max () ||
-        res < std::numeric_limits<int>::min ()) {
-      return nothing<T> ();
-    }
-    return just (static_cast<T> (res));
-  }
-
-
-  //*                                  _       _            *
-  //*  _ __  __ _ _ _ ___ ___ _ _   __| |_ _ _(_)_ _  __ _  *
-  //* | '_ \/ _` | '_(_-</ -_) '_| (_-<  _| '_| | ' \/ _` | *
-  //* | .__/\__,_|_| /__/\___|_|   /__/\__|_| |_|_||_\__, | *
-  //* |_|                                            |___/  *
   template <>
-  class parser<std::string> : public parser_base {
+  class parser<std::string> final : public parser_base {
   public:
     ~parser () noexcept override;
-    maybe<std::string> operator() (std::string const & v) const;
+    std::optional<std::string> operator() (std::string const & v) const;
   };
 
 } // end namespace pstore::command_line

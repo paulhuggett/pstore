@@ -63,7 +63,7 @@ namespace pstore::exchange::import_ns {
   // key
   // ~~~
   std::error_code debug_line_index::key (std::string const & s) {
-    if (maybe<uint128> const digest = uint128::from_hex_string (s)) {
+    if (std::optional<uint128> const digest = uint128::from_hex_string (s)) {
       digest_ = *digest;
       return {};
     }

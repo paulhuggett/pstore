@@ -37,18 +37,16 @@ namespace pstore::command_line {
   //* |_|                                            |___/  *
   parser<std::string>::~parser () noexcept = default;
 
-  maybe<std::string> parser<std::string>::operator() (std::string const & v) const {
+  std::optional<std::string> parser<std::string>::operator() (std::string const & v) const {
     // If this one of the literal strings?
     auto const begin = this->begin ();
     auto const end = this->end ();
-    if (std::distance (begin, end) != 0) {
-      auto const pos =
-        std::find_if (begin, end, [&v] (literal const & lit) { return v == lit.name; });
-      if (pos == end) {
-        return nothing<std::string> ();
-      }
+    if (std::distance (begin, end) != 0 &&
+        std::find_if (begin, end, [&v] (literal const & lit) { return v == lit.name; }) == end) {
+      return {};
     }
-    return just (v);
+
+    return {v};
   }
 
 } // end namespace pstore::command_line

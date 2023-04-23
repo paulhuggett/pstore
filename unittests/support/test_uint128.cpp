@@ -369,31 +369,37 @@ TEST_F (UInt128, PopCount) {
 }
 
 TEST (Uint128FromString, Empty) {
-  EXPECT_EQ (pstore::uint128::from_hex_string (""), pstore::nothing<pstore::uint128> ());
+  EXPECT_EQ (pstore::uint128::from_hex_string (""), std::optional<pstore::uint128> ());
 }
 
 TEST (Uint128FromString, Bad) {
   EXPECT_EQ (pstore::uint128::from_hex_string ("0000000000000000000000000000000g"),
-             pstore::nothing<pstore::uint128> ());
+             std::optional<pstore::uint128> ());
 }
 
 TEST (Uint128FromString, Digits) {
   EXPECT_EQ (pstore::uint128::from_hex_string ("00000000000000000000000000000000"),
-             pstore::just (pstore::uint128{0U}));
+             std::optional<pstore::uint128> (pstore::uint128{0U}));
   EXPECT_EQ (pstore::uint128::from_hex_string ("00000000000000000000000000000001"),
-             pstore::just (pstore::uint128{1U}));
-  EXPECT_EQ (pstore::uint128::from_hex_string ("10000000000000000000000000000001"),
-             pstore::just (pstore::uint128{0x10000000'00000000U, 0x00000000'00000001U}));
-  EXPECT_EQ (pstore::uint128::from_hex_string ("99999999999999999999999999999999"),
-             pstore::just (pstore::uint128{0x99999999'99999999U, 0x99999999'99999999U}));
+             std::optional<pstore::uint128> (pstore::uint128{1U}));
+  EXPECT_EQ (
+    pstore::uint128::from_hex_string ("10000000000000000000000000000001"),
+    std::optional<pstore::uint128> (pstore::uint128{0x10000000'00000000U, 0x00000000'00000001U}));
+  EXPECT_EQ (
+    pstore::uint128::from_hex_string ("99999999999999999999999999999999"),
+    std::optional<pstore::uint128> (pstore::uint128{0x99999999'99999999U, 0x99999999'99999999U}));
 }
 TEST (Uint128FromString, Alpha) {
-  EXPECT_EQ (pstore::uint128::from_hex_string ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
-             pstore::just (pstore::uint128{0xFFFFFFFF'FFFFFFFFU, 0xFFFFFFFF'FFFFFFFFU}));
-  EXPECT_EQ (pstore::uint128::from_hex_string ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
-             pstore::just (pstore::uint128{0xAAAAAAAA'AAAAAAAAU, 0xAAAAAAAA'AAAAAAAAU}));
-  EXPECT_EQ (pstore::uint128::from_hex_string ("ffffffffffffffffffffffffffffffff"),
-             pstore::just (pstore::uint128{0xFFFFFFFF'FFFFFFFFU, 0xFFFFFFFF'FFFFFFFFU}));
-  EXPECT_EQ (pstore::uint128::from_hex_string ("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
-             pstore::just (pstore::uint128{0xAAAAAAAA'AAAAAAAAU, 0xAAAAAAAA'AAAAAAAAU}));
+  EXPECT_EQ (
+    pstore::uint128::from_hex_string ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"),
+    std::optional<pstore::uint128> (pstore::uint128{0xFFFFFFFF'FFFFFFFFU, 0xFFFFFFFF'FFFFFFFFU}));
+  EXPECT_EQ (
+    pstore::uint128::from_hex_string ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"),
+    std::optional<pstore::uint128> (pstore::uint128{0xAAAAAAAA'AAAAAAAAU, 0xAAAAAAAA'AAAAAAAAU}));
+  EXPECT_EQ (
+    pstore::uint128::from_hex_string ("ffffffffffffffffffffffffffffffff"),
+    std::optional<pstore::uint128> (pstore::uint128{0xFFFFFFFF'FFFFFFFFU, 0xFFFFFFFF'FFFFFFFFU}));
+  EXPECT_EQ (
+    pstore::uint128::from_hex_string ("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+    std::optional<pstore::uint128> (pstore::uint128{0xAAAAAAAA'AAAAAAAAU, 0xAAAAAAAA'AAAAAAAAU}));
 }

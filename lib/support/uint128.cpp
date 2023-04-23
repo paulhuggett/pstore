@@ -15,36 +15,34 @@
 //===----------------------------------------------------------------------===//
 #include "pstore/support/uint128.hpp"
 
-using pstore::just;
-using pstore::maybe;
-using pstore::nothing;
+#include "pstore/support/maybe.hpp"
 
 namespace {
 
-  maybe<unsigned> hex_to_digit (char const digit) noexcept {
+  std::optional<unsigned> hex_to_digit (char const digit) noexcept {
     if (digit >= 'a' && digit <= 'f') {
-      return just (static_cast<unsigned> (digit) - ('a' - 10));
+      return static_cast<unsigned> (digit) - ('a' - 10);
     }
     if (digit >= 'A' && digit <= 'F') {
-      return just (static_cast<unsigned> (digit) - ('A' - 10));
+      return static_cast<unsigned> (digit) - ('A' - 10);
     }
     if (digit >= '0' && digit <= '9') {
-      return just (static_cast<unsigned> (digit) - '0');
+      return static_cast<unsigned> (digit) - '0';
     }
-    return nothing<unsigned> ();
+    return {};
   }
 
-  maybe<std::uint64_t> get64 (std::string const & str, unsigned index) {
+  std::optional<std::uint64_t> get64 (std::string const & str, unsigned index) {
     PSTORE_ASSERT (index < str.length ());
     auto result = std::uint64_t{0};
     for (auto shift = 60; shift >= 0; shift -= 4, ++index) {
       auto const digit = hex_to_digit (str[index]);
       if (!digit) {
-        return nothing<std::uint64_t> ();
+        return {};
       }
       result |= (static_cast<std::uint64_t> (digit.value ()) << static_cast<unsigned> (shift));
     }
-    return just (result);
+    return result;
   }
 
 } // end anonymous namespace
@@ -62,13 +60,13 @@ namespace pstore {
 
   // from hex string
   // ~~~~~~~~~~~~~~~
-  maybe<uint128> uint128::from_hex_string (std::string const & str) {
+  std::optional<uint128> uint128::from_hex_string (std::string const & str) {
     if (str.length () != 32) {
-      return nothing<uint128> ();
+      return {};
     }
     return get64 (str, 0U) >>= [&] (std::uint64_t const high) {
       return get64 (str, 16U) >>= [&] (std::uint64_t const low) {
-        return just (uint128{high, low});
+        return std::optional<uint128>{std::in_place, high, low};
       };
     };
   }

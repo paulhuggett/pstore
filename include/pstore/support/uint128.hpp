@@ -24,11 +24,12 @@
 #include <cstdint>
 #include <functional>
 #include <limits>
+#include <optional>
 #include <ostream>
 #include <string>
 #include <utility>
 
-#include "pstore/support/maybe.hpp"
+#include "pstore/support/assert.hpp"
 
 namespace pstore {
   class uint128;
@@ -173,7 +174,7 @@ namespace pstore {
     OutputIterator to_hex (OutputIterator out) const noexcept;
     std::string to_hex_string () const;
 
-    static maybe<uint128> from_hex_string (std::string const & str);
+    static std::optional<uint128> from_hex_string (std::string const & str);
 
   private:
     static constexpr std::uint64_t max64 = std::numeric_limits<std::uint64_t>::max ();

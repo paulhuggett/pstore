@@ -344,7 +344,7 @@ namespace pstore::command_line {
   // ~~~~~~~~~~~~
   template <typename T, typename Parser>
   bool list<T, Parser>::simple_value (std::string const & v) {
-    if (maybe<T> m = parser_ (v)) {
+    if (std::optional<T> const m = parser_ (v)) {
       values_.push_back (m.value ());
       return true;
     }

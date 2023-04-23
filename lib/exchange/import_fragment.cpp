@@ -213,7 +213,7 @@ namespace pstore::exchange::import_ns {
   // key
   // ~~~
   std::error_code fragment_index::key (std::string const & s) {
-    if (maybe<index::digest> const digest = uint128::from_hex_string (s)) {
+    if (std::optional<index::digest> const digest = uint128::from_hex_string (s)) {
       digest_ = *digest;
       return push_object_rule<fragment_sections> (this, transaction_, names_, &digest_);
     }

@@ -243,7 +243,7 @@ namespace pstore::exchange::import_ns {
   // key
   // ~~~
   std::error_code compilations_index::key (std::string const & s) {
-    if (maybe<index::digest> const digest = uint128::from_hex_string (s)) {
+    if (std::optional<index::digest> const digest = uint128::from_hex_string (s)) {
       return push_object_rule<compilation> (this, transaction_, names_, fragments_,
                                             index::digest{*digest});
     }
