@@ -126,7 +126,7 @@ namespace pstore {
 
   // Construct from the canonical UUID string representation as defined by RFC4122.
   uuid::uuid (std::string const & str) {
-    maybe<uuid> d = uuid::from_string (str);
+    std::optional<uuid> const d = uuid::from_string (str);
     if (!d.has_value ()) {
       raise (pstore::error_code::uuid_parse_error);
     }
@@ -135,9 +135,9 @@ namespace pstore {
 
   // from string
   // ~~~~~~~~~~~
-  maybe<uuid> uuid::from_string (std::string const & str) {
+  std::optional<uuid> uuid::from_string (std::string const & str) {
     if (str.length () != string_length) {
-      return nothing<uuid> ();
+      return {};
     }
 
     container_type data;
@@ -150,7 +150,7 @@ namespace pstore {
       case 18:
       case 23:
         if (digit != '-') {
-          return nothing<uuid> ();
+          return {};
         }
         PSTORE_ASSERT (out.is_high ());
         break;
@@ -162,13 +162,13 @@ namespace pstore {
         } else if (digit >= '0' && digit <= '9') {
           out.append (static_cast<unsigned> (digit) - '0');
         } else {
-          return nothing<uuid> ();
+          return {};
         }
         break;
       }
     }
 
-    return just (uuid{data});
+    return uuid{data};
   }
 
   // variant

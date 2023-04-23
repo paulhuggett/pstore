@@ -57,7 +57,7 @@ TEST_F (BasicUUID, Out) {
 TEST (UUID, ParseStringBadLength) {
   {
     std::string const input1 = "00000000-0000-0000-0000-00000000000000";
-    pstore::maybe<pstore::uuid> v1 = pstore::uuid::from_string (input1);
+    std::optional<pstore::uuid> v1 = pstore::uuid::from_string (input1);
     EXPECT_FALSE (v1.has_value ());
 
     check_for_error ([&input1] () { pstore::uuid _ (input1); },
@@ -65,7 +65,7 @@ TEST (UUID, ParseStringBadLength) {
   }
   {
     std::string const input2 = "00000000-0000-0000-0000-0000000000";
-    pstore::maybe<pstore::uuid> v2 = pstore::uuid::from_string (input2);
+    std::optional<pstore::uuid> v2 = pstore::uuid::from_string (input2);
     EXPECT_FALSE (v2.has_value ());
 
     check_for_error ([&input2] () { pstore::uuid _ (input2); },
@@ -87,7 +87,7 @@ TEST (UUID, GoodHex) {
                                   0xFF, 0xAA, 0xFF, 0x09, 0x90}}};
 
   // first try from_string()...
-  pstore::maybe<pstore::uuid> v = pstore::uuid::from_string (input);
+  std::optional<pstore::uuid> v = pstore::uuid::from_string (input);
   ASSERT_TRUE (v.has_value ());
   EXPECT_EQ (*v, expected);
 

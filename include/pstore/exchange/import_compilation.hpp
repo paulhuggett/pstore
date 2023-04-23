@@ -61,8 +61,8 @@ namespace pstore::exchange::import_ns {
     std::error_code key (std::string const & k) override;
     std::error_code end_object () override;
 
-    static maybe<repo::linkage> decode_linkage (std::string const & linkage);
-    static maybe<repo::visibility> decode_visibility (std::string const & visibility);
+    static std::optional<repo::linkage> decode_linkage (std::string const & linkage);
+    static std::optional<repo::visibility> decode_visibility (std::string const & visibility);
 
   private:
     not_null<container *> const definitions_;

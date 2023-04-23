@@ -64,8 +64,9 @@ namespace pstore::exchange::import_ns {
   // ~~~~~~~~~~
   std::error_code definition::end_object () {
     // The visibility key is optional (defaulting to "default_vis" unsurprisingly).
-    auto const visibility = seen_[visibility_index] ? decode_visibility (visibility_)
-                                                    : just (repo::visibility::default_vis);
+    auto const visibility = seen_[visibility_index]
+                              ? decode_visibility (visibility_)
+                              : std::optional<repo::visibility> (repo::visibility::default_vis);
     if (!visibility) {
       return error::bad_visibility;
     }
@@ -102,29 +103,29 @@ namespace pstore::exchange::import_ns {
 
   // decode linkage
   // ~~~~~~~~~~~~~~
-  maybe<repo::linkage> definition::decode_linkage (std::string const & linkage) {
+  std::optional<repo::linkage> definition::decode_linkage (std::string const & linkage) {
 #define X(a)                                                                                       \
   if (linkage == #a) {                                                                             \
-    return just (repo::linkage::a);                                                                \
+    return repo::linkage::a;                                                                       \
   }
     PSTORE_REPO_LINKAGES
 #undef X
-    return nothing<repo::linkage> ();
+    return {};
   }
 
   // decode visibility
   // ~~~~~~~~~~~~~~~~~
-  maybe<repo::visibility> definition::decode_visibility (std::string const & visibility) {
+  std::optional<repo::visibility> definition::decode_visibility (std::string const & visibility) {
     if (visibility == "default") {
-      return just (repo::visibility::default_vis);
+      return repo::visibility::default_vis;
     }
     if (visibility == "hidden") {
-      return just (repo::visibility::hidden_vis);
+      return repo::visibility::hidden_vis;
     }
     if (visibility == "protected") {
-      return just (repo::visibility::protected_vis);
+      return repo::visibility::protected_vis;
     }
-    return nothing<repo::visibility> ();
+    return {};
   }
 
 
