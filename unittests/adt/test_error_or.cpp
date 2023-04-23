@@ -81,7 +81,7 @@ namespace {
 
 } // end anonymous namespace
 
-TEST (ErrorOr, CopyAssign) {
+TEST (ErrorOr, CopyAssignValue) {
   pstore::error_or<copy_only> eo1{std::in_place, 1};
   EXPECT_EQ (eo1->get (), 1);
   pstore::error_or<copy_only> eo2{std::in_place, 2};
@@ -90,18 +90,36 @@ TEST (ErrorOr, CopyAssign) {
   EXPECT_EQ (eo2->get (), 2);
 }
 
+TEST (ErrorOr, CopyAssignError) {
+  pstore::error_or<copy_only> eo1{std::in_place, 1};
+  EXPECT_EQ (eo1->get (), 1);
+  pstore::error_or<copy_only> eo2{make_error_code (std::errc::address_family_not_supported)};
+  eo1 = eo2;
+  EXPECT_FALSE (eo1);
+  EXPECT_FALSE (eo2);
+}
+
+TEST (ErrorOr, CopyAssignErrorCompatibleTypes) {
+  pstore::error_or<int> eo1{std::in_place, 1};
+  EXPECT_EQ (*eo1, 1);
+  pstore::error_or<short> eo2{make_error_code (std::errc::address_family_not_supported)};
+  eo1 = eo2;
+  EXPECT_FALSE (eo1);
+  EXPECT_FALSE (eo2);
+}
+
 namespace {
 
   class move_only {
   public:
-    explicit move_only (int v) noexcept
+    explicit constexpr move_only (int v) noexcept
             : v_{v} {}
     move_only (move_only const &) noexcept = delete;
     move_only (move_only &&) noexcept = default;
     move_only & operator= (move_only const &) = delete;
     move_only & operator= (move_only && rhs) = default;
 
-    int get () noexcept { return v_; }
+    constexpr int get () noexcept { return v_; }
 
   private:
     int v_;
@@ -117,8 +135,26 @@ TEST (ErrorOr, MoveAssign) {
   EXPECT_EQ (eo1->get (), 2);
 }
 
-TEST (ErrorOr, Equal) {
+TEST (ErrorOr, MoveAssignError) {
+  pstore::error_or<move_only> eo1{std::in_place, 1};
+  EXPECT_EQ (eo1->get (), 1);
+  pstore::error_or<move_only> eo2{make_error_code (std::errc::address_family_not_supported)};
+  eo1 = std::move (eo2);
+  EXPECT_FALSE (eo1);
+  EXPECT_FALSE (eo2);
+}
+
+TEST (ErrorOr, MoveAssignErrorCompatibleTypes) {
   pstore::error_or<int> eo1{1};
+  EXPECT_EQ (*eo1, 1);
+  pstore::error_or<short> eo2{make_error_code (std::errc::address_family_not_supported)};
+  eo1 = eo2;
+  EXPECT_FALSE (eo1);
+  EXPECT_FALSE (eo2);
+}
+
+TEST (ErrorOr, Equal) {
+  pstore::error_or<int> const eo1{1};
   EXPECT_TRUE (eo1.operator== (1));
   EXPECT_TRUE (eo1.operator== (pstore::error_or<int>{1}));
   EXPECT_FALSE (eo1.operator== (0));

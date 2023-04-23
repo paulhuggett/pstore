@@ -119,7 +119,7 @@ namespace pstore {
     // comparison (operator== and operator!=)
     // ****
     bool operator== (std::error_code const rhs) const { return get_error () == rhs; }
-    bool operator== (error_or const & rhs);
+    bool operator== (error_or const & rhs) const;
     bool operator== (T const & rhs) const {
       return static_cast<bool> (*this) && this->get () == rhs;
     }
@@ -130,7 +130,7 @@ namespace pstore {
 
     bool operator!= (T const & rhs) const { return !operator== (rhs); }
     bool operator!= (std::error_code const rhs) const { return !operator== (rhs); }
-    bool operator!= (error_or const & rhs) { return !operator== (rhs); }
+    bool operator!= (error_or const & rhs) const { return !operator== (rhs); }
     template <typename Error>
     std::enable_if_t<is_error<Error>::value, bool> operator!= (Error rhs) const {
       return !operator== (rhs);
@@ -296,7 +296,7 @@ namespace pstore {
   // operator==
   // ~~~~~~~~~~
   template <typename T>
-  bool error_or<T>::operator== (error_or const & rhs) {
+  bool error_or<T>::operator== (error_or const & rhs) const {
     if (has_error_ != rhs.has_error_) {
       return false;
     }
