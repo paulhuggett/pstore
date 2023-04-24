@@ -35,12 +35,12 @@ namespace {
     // of pstore::serialize::serializer<Ty>.
 
     template <typename Archive>
-    explicit foo (Archive & archive)
-            : a_ (pstore::serialize::read<int> (archive)) {}
+    explicit foo (Archive && archive)
+            : a_ (pstore::serialize::read<int> (std::forward<Archive> (archive))) {}
 
     template <typename Archive>
-    auto write (Archive & archive) const -> typename Archive::result_type {
-      return pstore::serialize::write (archive, a_);
+    auto write (Archive && archive) const -> typename Archive::result_type {
+      return pstore::serialize::write (std::forward<Archive> (archive), a_);
     }
 
     foo & operator= (foo const &) = default;
@@ -55,25 +55,29 @@ namespace {
     return os << "foo(" << f.get () << ')';
   }
 
-} // end anonymous namespace
-
-int main () {
-  std::vector<std::uint8_t> bytes;
-
   // Serialize an instance of "foo" to the "bytes" vector.
-  {
+  std::vector<std::uint8_t> void write_foo () {
+    std::vector<std::uint8_t> bytes;
     pstore::serialize::archive::vector_writer writer{bytes};
-    {
-      foo f (42);
-      std::cout << "Writing: " << f << '\n';
-      pstore::serialize::write (writer, f);
-    }
+    foo f (42);
+    std::cout << "Writing: " << f << '\n';
+    pstore::serialize::write (writer, f);
     std::cout << "Wrote these bytes: " << writer << '\n';
+    return bytes;
   }
+
   // Materialize an instance of "foo" from the "bytes" container.
-  {
+  void read (std::vector<std::uint8_t> const & bytes) {
     auto reader = pstore::serialize::archive::make_reader (std::begin (bytes));
     auto f = pstore::serialize::read<foo> (reader);
     std::cout << "Read: " << f << '\n';
   }
+
+} // end anonymous namespace
+
+int main () {
+  // Write a foo.
+  auto bytes = write_foo ();
+  // Read it back again.
+  read (bytes);
 }
