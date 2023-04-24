@@ -39,7 +39,7 @@ namespace {
             : a_ (pstore::serialize::read<int> (std::forward<Archive> (archive))) {}
 
     template <typename Archive>
-    auto write (Archive && archive) const -> typename Archive::result_type {
+    auto write (Archive && archive) const -> typename std::decay_t<Archive>::result_type {
       return pstore::serialize::write (std::forward<Archive> (archive), a_);
     }
 
@@ -56,7 +56,7 @@ namespace {
   }
 
   // Serialize an instance of "foo" to the "bytes" vector.
-  std::vector<std::uint8_t> void write_foo () {
+  auto write_foo () {
     std::vector<std::uint8_t> bytes;
     pstore::serialize::archive::vector_writer writer{bytes};
     foo f (42);
