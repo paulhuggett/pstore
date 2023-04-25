@@ -249,15 +249,8 @@ namespace pstore {
       return it;
     }
 
-
-
     template <typename OutputIt>
-    char const * PSTORE_NONNULL query_to_kvp (gsl::czstring PSTORE_NONNULL in, OutputIt out) {
-      return query_to_kvp (in, in + std::strlen (in), out);
-    }
-
-    template <typename OutputIt>
-    std::string::const_iterator query_to_kvp (std::string const & in, OutputIt out) {
+    std::string_view::const_iterator query_to_kvp (std::string_view in, OutputIt out) {
       return query_to_kvp (in.cbegin (), in.cend (), out);
     }
 

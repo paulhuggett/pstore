@@ -20,7 +20,8 @@
 
 #include <gmock/gmock.h>
 
-using ::testing::ContainerEq;
+using namespace std::string_view_literals;
+using testing::ContainerEq;
 using string_map = std::map<std::string, std::string>;
 
 TEST (QueryToKvp, EmptyString) {
@@ -67,8 +68,9 @@ TEST (QueryToKvp, DuplicateKeyIgnored) {
 
 TEST (QueryToKvp, HashTerminatesQuery) {
   string_map result;
-  std::string const str{"k1=v1&k2=v2#foo"};
-  std::string::const_iterator pos = query_to_kvp (str, pstore::http::make_insert_iterator (result));
+  auto const str = "k1=v1&k2=v2#foo"sv;
+  std::string_view::const_iterator pos =
+    query_to_kvp (str, pstore::http::make_insert_iterator (result));
   EXPECT_EQ (std::string (pos, std::end (str)), "foo");
   EXPECT_THAT (result, ContainerEq (string_map{{"k1", "v1"}, {"k2", "v2"}}));
 }
