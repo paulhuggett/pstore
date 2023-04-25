@@ -24,25 +24,9 @@
 // 3rd party includes
 #include <gmock/gmock.h>
 
-TEST (Utf, LengthOfEmptySequenceIsZero) {
-  ASSERT_EQ (0U, pstore::utf::length (nullptr, 0));
-}
-
 TEST (Utf, LengthOfEmptyNulTerminatedString) {
   ASSERT_EQ (0U, pstore::utf::length (""));
 }
-TEST (Utf, LengthOfNonEmptyNullSequence) {
-  ASSERT_EQ (0U, pstore::utf::length (nullptr, 1));
-}
-TEST (Utf, LengthOfNullptr) {
-  ASSERT_EQ (0U, pstore::utf::length (nullptr));
-}
-TEST (Utf, LengthOfSequenceIncludingNullCharacter) {
-  static char const str[] = "";
-  ASSERT_EQ (1U, pstore::utf::length (str, sizeof (str)));
-}
-
-
 
 namespace {
 
@@ -55,10 +39,7 @@ namespace {
 } // end anonymous namespace
 
 TEST_F (SimpleAsciiFixture, LengthWithExplicitSize) {
-  ASSERT_EQ (9U, pstore::utf::length (str.c_str (), 9));
-}
-TEST_F (SimpleAsciiFixture, LengthWithNulTerminatedString) {
-  ASSERT_EQ (9U, pstore::utf::length (str.c_str ()));
+  ASSERT_EQ (9U, pstore::utf::length (str));
 }
 TEST_F (SimpleAsciiFixture, IndexCStr) {
   char const * strz = str.c_str ();
@@ -124,11 +105,8 @@ namespace {
 
 } // end anonymous namespace
 
-TEST_F (ShortJapaneseStringFixture, LengthWithExplicitSize) {
-  ASSERT_EQ (9U, pstore::utf::length (str.c_str (), sizeof (bytes) - 1));
-}
-TEST_F (ShortJapaneseStringFixture, LengthWithNulTerminatedString) {
-  ASSERT_EQ (9U, pstore::utf::length (str.c_str ()));
+TEST_F (ShortJapaneseStringFixture, Length) {
+  ASSERT_EQ (9U, pstore::utf::length (str));
 }
 TEST_F (ShortJapaneseStringFixture, IndexCstr) {
   char const * strz = str.c_str ();
@@ -189,11 +167,8 @@ namespace {
 
 } // end anonymous namespace
 
-TEST_F (FourByteUtf8ChineseCharacters, LengthWithExplicitSize) {
-  ASSERT_EQ (4U, pstore::utf::length (str.c_str (), sizeof (bytes) - 1));
-}
-TEST_F (FourByteUtf8ChineseCharacters, LengthWithNulTerminatedString) {
-  ASSERT_EQ (4U, pstore::utf::length (str.c_str (), sizeof (bytes) - 1));
+TEST_F (FourByteUtf8ChineseCharacters, Length) {
+  ASSERT_EQ (4U, pstore::utf::length (str));
 }
 TEST_F (FourByteUtf8ChineseCharacters, IndexCstr) {
   char const * strz = str.c_str ();
@@ -245,8 +220,8 @@ namespace {
   char const * MaxLengthUTFSequence::str = reinterpret_cast<char const *> (bytes);
 } // namespace
 
-TEST_F (MaxLengthUTFSequence, LengthWithExplicitSize) {
-  ASSERT_EQ (4U, pstore::utf::length (str, sizeof (bytes) - 1));
+TEST_F (MaxLengthUTFSequence, Length) {
+  ASSERT_EQ (4U, pstore::utf::length (str));
 }
 TEST_F (MaxLengthUTFSequence, LengthWithNulTerminatedString) {
   ASSERT_EQ (4U, pstore::utf::length (str));

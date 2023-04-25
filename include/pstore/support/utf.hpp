@@ -317,7 +317,7 @@ namespace pstore {
     /// Returns the number of UTF-8 code-points in a sequence.
 
     template <typename Iterator>
-    auto length (Iterator first, Iterator last) -> std::size_t {
+    constexpr auto length (Iterator first, Iterator last) -> std::size_t {
       auto const result =
         std::count_if (first, last, [] (char const c) { return is_utf_char_start (c); });
       PSTORE_ASSERT (result >= 0);
@@ -327,24 +327,20 @@ namespace pstore {
       return static_cast<std::size_t> (result);
     }
 
-    template <typename SpanType>
-    auto length (SpanType span) -> std::size_t {
+    template <typename ElementType, std::ptrdiff_t Extent>
+    constexpr auto length (gsl::span<ElementType, Extent> span) -> std::size_t {
       return length (span.begin (), span.end ());
     }
 
-    /// Returns the number of UTF-8 code points in the buffer given by a start address and
-    /// length.
+    /// Returns the number of UTF-8 code points in the buffer given by \p str.
     ///
-    /// \param str  The buffer start address.
-    /// \param nbytes The number of bytes in the buffer.
-    /// \return The number of UTF-8 code points in the buffer given by 'str' and 'nbytes'.
-    auto length (char const * str, std::size_t nbytes) -> std::size_t;
+    /// \param str  The string buffer.
+    /// \return The number of UTF-8 code points in the buffer.
+    constexpr auto length (std::string_view str) -> std::size_t {
+      return length (std::begin (str), std::end (str));
+    }
 
-    /// Returns the number of UTF-8 code points in the null-terminated buffer at str
-    auto length (gsl::czstring str) -> std::size_t;
-    auto length (std::string const & str) -> std::size_t;
-
-    inline auto length (std::nullptr_t) noexcept -> std::size_t {
+    constexpr auto length (std::nullptr_t) noexcept -> std::size_t {
       return 0;
     }
     ///@}

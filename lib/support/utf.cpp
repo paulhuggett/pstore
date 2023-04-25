@@ -27,20 +27,6 @@
 
 namespace pstore::utf {
 
-  // length
-  // ~~~~~~
-  auto length (char const * const str, std::size_t const nbytes) -> std::size_t {
-    return str == nullptr ? 0 : length (str, str + nbytes);
-  }
-
-  auto length (gsl::czstring const str) -> std::size_t {
-    return str == nullptr ? 0 : length (str, str + std::strlen (str));
-  }
-
-  auto length (std::string const & str) -> std::size_t {
-    return length (std::begin (str), std::end (str));
-  }
-
   // index
   // ~~~~~
   // returns a pointer to the beginning of the pos'th utf8 codepoint
