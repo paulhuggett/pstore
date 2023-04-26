@@ -68,14 +68,15 @@ function (pstore_standalone_compiler_setup)
     # Lots of warnings.
     list (APPEND clang_options
         -Weverything
-        -Wno-c99-extensions
+        -Wno-c++14-extensions
         -Wno-c++98-compat
         -Wno-c++98-compat-pedantic
-        -Wno-c++14-extensions
+        -Wno-c99-extensions
         -Wno-disabled-macro-expansion
         -Wno-exit-time-destructors
         -Wno-global-constructors
         -Wno-padded
+        -Wno-return-std-move-in-c++11
         -Wno-weak-vtables
     )
     if (${arg_IS_UNIT_TEST})
