@@ -85,7 +85,7 @@ TEST (PubSub, PubSub) {
 
   std::thread thread{[&] () {
     listening_counter.increment ();
-    while (pstore::maybe<std::string> const message = sub->listen ()) {
+    while (std::optional<std::string> const message = sub->listen ()) {
       received_counter.increment ();
       received.call (*message);
     }

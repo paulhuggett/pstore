@@ -23,11 +23,11 @@
 #define PSTORE_BROKERFACE_PUBSUB_HPP
 
 #include <mutex>
+#include <optional>
 #include <queue>
 #include <unordered_set>
 
 #include "pstore/support/gsl.hpp"
-#include "pstore/support/maybe.hpp"
 
 namespace pstore::brokerface {
 
@@ -57,9 +57,9 @@ namespace pstore::brokerface {
     /// Blocks waiting for a message to be published on the owning channel of for the
     /// subscription to be cancelled.
     ///
-    /// \returns A maybe holding a message published to the owning channel or with no value
+    /// \returns An optional holding a message published to the owning channel or with no value
     /// indicating that the subscription has been cancelled.
-    maybe<std::string> listen ();
+    std::optional<std::string> listen ();
 
     /// Cancels a subscription.
     ///
@@ -72,7 +72,7 @@ namespace pstore::brokerface {
     channel<ConditionVariable> const & owner () const noexcept { return *owner_; }
 
     /// Removes a single message from the subscription queue if available.
-    maybe<std::string> pop ();
+    std::optional<std::string> pop ();
 
   private:
     explicit subscriber (gsl::not_null<channel<ConditionVariable> *> c) noexcept
@@ -142,7 +142,7 @@ namespace pstore::brokerface {
     subscriber_pointer new_subscriber ();
 
   private:
-    maybe<std::string> listen (subscriber_type & sub);
+    std::optional<std::string> listen (subscriber_type & sub);
 
     /// Cancels a subscription.
     ///
@@ -186,21 +186,21 @@ namespace pstore::brokerface {
   // listen
   // ~~~~~~
   template <typename ConditionVariable>
-  inline maybe<std::string> subscriber<ConditionVariable>::listen () {
+  inline std::optional<std::string> subscriber<ConditionVariable>::listen () {
     return owner_->listen (*this);
   }
 
   // pop
   // ~~~
   template <typename ConditionVariable>
-  maybe<std::string> subscriber<ConditionVariable>::pop () {
+  std::optional<std::string> subscriber<ConditionVariable>::pop () {
     std::unique_lock<std::mutex> const lock{this->owner ().mut_};
     if (queue_.empty ()) {
-      return {};
+      return std::nullopt;
     }
     std::string const message = std::move (queue_.front ());
     queue_.pop ();
-    return just (message);
+    return message;
   }
 
   //*     _                       _  *
@@ -271,7 +271,7 @@ namespace pstore::brokerface {
   // listen
   // ~~~~~~
   template <typename ConditionVariable>
-  maybe<std::string> channel<ConditionVariable>::listen (subscriber_type & sub) {
+  std::optional<std::string> channel<ConditionVariable>::listen (subscriber_type & sub) {
     std::unique_lock<std::mutex> lock{mut_};
     while (sub.active_) {
       if (sub.queue_.size () == 0) {
@@ -279,10 +279,10 @@ namespace pstore::brokerface {
       } else {
         std::string const message = std::move (sub.queue_.front ());
         sub.queue_.pop ();
-        return just (message);
+        return message;
       }
     }
-    return nothing<std::string> ();
+    return std::nullopt;
   }
 
   // new subscriber

@@ -588,7 +588,7 @@ namespace pstore::http {
         PSTORE_ASSERT (cv != nullptr);
         cv->reset ();
         if (subscription) {
-          while (maybe<std::string> const message = subscription->pop ()) {
+          while (std::optional<std::string> const message = subscription->pop ()) {
             log (logger::priority::info, "sending:", *message);
             error_or<IO> const eo3 =
               send_message (sender, io, opcode::text, as_bytes (gsl::make_span (*message)));
