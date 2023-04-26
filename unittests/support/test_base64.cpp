@@ -90,18 +90,16 @@ namespace {
   class Base64Decode : public ::testing::Test {
   public:
     using container = std::vector<std::uint8_t>;
-    pstore::maybe<container> convert (std::string const & source) const;
+    std::optional<container> convert (std::string const & source) const;
   };
 
-  auto Base64Decode::convert (std::string const & source) const -> pstore::maybe<container> {
+  auto Base64Decode::convert (std::string const & source) const -> std::optional<container> {
     std::vector<std::uint8_t> out;
-    std::back_insert_iterator<container> it = std::back_inserter (out);
-    pstore::maybe<decltype (it)> const oit =
-      pstore::from_base64 (std::begin (source), std::end (source), it);
-    if (oit) {
-      return pstore::just (out);
+    if (auto const oit =
+          pstore::from_base64 (std::begin (source), std::end (source), std::back_inserter (out))) {
+      return out;
     }
-    return pstore::nothing<container> ();
+    return std::nullopt;
   }
 
 } // end anonymous namespace

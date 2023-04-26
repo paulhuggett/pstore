@@ -19,9 +19,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <optional>
 
 #include "pstore/support/gsl.hpp"
-#include "pstore/support/maybe.hpp"
 
 namespace pstore {
 
@@ -102,7 +102,8 @@ namespace pstore {
   } // end namespace details
 
   template <typename InputIterator, typename OutputIterator>
-  maybe<OutputIterator> from_base64 (InputIterator first, InputIterator last, OutputIterator out) {
+  std::optional<OutputIterator> from_base64 (InputIterator first, InputIterator last,
+                                             OutputIterator out) {
     auto count = 0U;
     std::array<std::uint8_t, 4> buff;
 
@@ -133,7 +134,7 @@ namespace pstore {
       std::fill (buff.begin () + count, buff.end (), std::uint8_t{0});
       out = details::decode4 (buff, out, count - 1);
     }
-    return first == last ? just (out) : nothing<OutputIterator> ();
+    return first == last ? std::optional<OutputIterator>{out} : std::optional<OutputIterator>{};
   }
 
 
