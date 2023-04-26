@@ -76,7 +76,6 @@ function (pstore_standalone_compiler_setup)
         -Wno-exit-time-destructors
         -Wno-global-constructors
         -Wno-padded
-        -Wno-return-std-move-in-c++11
         -Wno-weak-vtables
     )
     if (${arg_IS_UNIT_TEST})
@@ -136,6 +135,10 @@ function (pstore_add_additional_compiler_flags target_name)
 
         target_compile_options (${target_name} PRIVATE -Wno-c++14-extensions)
 
+        disable_warning_if_possible (${target_name}
+            -Wno-return-std-move-in-c++11
+            PSTORE_CLANG_SUPPORTS_WNO_RETURN_MOVE
+        )
         # TODO: this warning is far too pervasive in clang3.8 but much better in later
         # builds. Only disable for older versions.
         disable_warning_if_possible (${target_name}
