@@ -166,10 +166,6 @@ namespace pstore::command_line {
   namespace details {
 
     struct comma_separated {
-      // The need for this constructor was removed by CWG defect 253 but Clang (prior
-      // to 3.9.0) and GCC (before 4.6.4) require its presence.
-      constexpr comma_separated () noexcept {} // NOLINT
-
       template <typename Opt>
       void apply (Opt & o) const {
         o.set_comma_separated ();
@@ -197,10 +193,6 @@ namespace pstore::command_line {
   namespace details {
 
     struct positional {
-      // The need for this constructor was removed by CWG defect 253 but Clang (prior
-      // to 3.9.0) and GCC (before 4.6.4) require its presence.
-      constexpr positional () noexcept {} // NOLINT
-
       template <typename Opt>
       void apply (Opt & o) const {
         o.set_positional ();
@@ -208,10 +200,6 @@ namespace pstore::command_line {
     };
 
     struct required {
-      // The need for this constructor was removed by CWG defect 253 but Clang (prior
-      // to 3.9.0) and GCC (before 4.6.4) require its presence.
-      constexpr required () noexcept {} // NOLINT
-
       template <typename Opt>
       void apply (Opt & o) const {
         o.set_num_occurrences_flag (num_occurrences_flag::required);
@@ -219,10 +207,6 @@ namespace pstore::command_line {
     };
 
     struct optional {
-      // The need for this constructor was removed by CWG defect 253 but Clang (prior
-      // to 3.9.0) and GCC (before 4.6.4) require its presence.
-      constexpr optional () noexcept {} // NOLINT
-
       template <typename Opt>
       void apply (Opt & o) const {
         o.set_num_occurrences_flag (num_occurrences_flag::optional);
@@ -230,10 +214,6 @@ namespace pstore::command_line {
     };
 
     struct one_or_more {
-      // The need for this constructor was removed by CWG defect 253 but Clang (prior
-      // to 3.9.0) and GCC (before 4.6.4) require its presence.
-      constexpr one_or_more () noexcept {} // NOLINT
-
       template <typename Opt>
       void apply (Opt & o) const {
         bool const is_optional = o.get_num_occurrences_flag () == num_occurrences_flag::optional;
