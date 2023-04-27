@@ -239,11 +239,10 @@ namespace {
   // ~~~~~~
   syslog_logger::syslog_logger (std::string const & ident, int const facility)
           : facility_{facility} {
-
-    auto const size = ident_.size () - 1U;
-    std::strncpy (ident_.data (), ident.c_str (), size);
-    ident_[size] = '\0';
-
+    // Turn 'ident' into an czstring in ident_.
+    auto const last = copy_n (std::begin (ident), std::min (ident.size (), ident_.size () - 1U),
+                              std::begin (ident_));
+    *last = '\0';
     openlog (ident_.data (), LOG_PID, facility_);
   }
 
