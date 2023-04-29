@@ -24,6 +24,23 @@
 
 #include "pstore/config/config.hpp"
 
+#if __cplusplus >= 202002L
+#  define PSTORE_CXX20 (1)
+#elif defined(_MSVC_LANG) && _MSVC_LANG >= 202002L
+// MSVC does not set the value of __cplusplus correctly unless the
+// /Zc:__cplusplus is supplied. We have to detect C++20 using its
+// compiler-specific macros instead.
+#  define PSTORE_CXX20 (1)
+#else
+#  define PSTORE_CXX20 (0)
+#endif
+
+#ifdef __has_include
+#  if __has_include(<version>)
+#    include <version>
+#  endif
+#endif
+
 #ifdef PSTORE_EXCEPTIONS
 #  define PSTORE_TRY try
 #  define PSTORE_CATCH(x, code) catch (x) code
@@ -64,6 +81,26 @@ namespace pstore {
 #ifndef __has_cpp_attribute
 #  define __has_cpp_attribute(x) 0
 #endif
+
+#if PSTORE_CXX20 && defined(__cpp_lib_bit_cast)
+#  define PSTORE_CPP_LIB_BIT_CAST (1)
+#else
+#  define PSTORE_CPP_LIB_BIT_CAST (0)
+#endif
+
+#if defined(__cpp_concepts) && defined(__cpp_lib_concepts)
+#  define PSTORE_HAVE_CONCEPTS (1)
+#else
+#  define PSTORE_HAVE_CONCEPTS (0)
+#endif
+
+#if PSTORE_HAVE_CONCEPTS
+// This macro can't be written using a constexpr template function.
+// NOLINTNEXTLINE(cppcoreguidelines-macro-usage)
+#  define PSTORE_CXX20REQUIRES(x) requires x
+#else
+#  define PSTORE_CXX20REQUIRES(x)
+#endif // PSTORE_HAVE_CONCEPTS
 
 /// A function-like feature checking macro that is a wrapper around
 /// `__has_attribute`, which is defined by GCC 5+ and Clang and evaluates to a
