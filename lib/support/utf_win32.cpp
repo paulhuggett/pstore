@@ -20,7 +20,6 @@
 #ifdef _WIN32
 
 // Standard Library includes
-#  include <cassert>
 #  include <cwchar>
 #  include <vector>
 

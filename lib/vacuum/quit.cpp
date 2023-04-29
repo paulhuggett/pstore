@@ -19,7 +19,6 @@
 
 // Standard includes
 #include <atomic>
-#include <cassert>
 #include <cerrno>
 #include <condition_variable>
 #include <cstring>

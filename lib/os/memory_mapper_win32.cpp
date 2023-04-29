@@ -26,7 +26,6 @@
 
 #if defined(_WIN32)
 
-#  include <cassert>
 #  include <iomanip>
 #  include <limits>
 #  include <sstream>

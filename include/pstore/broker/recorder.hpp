@@ -20,7 +20,6 @@
 #ifndef PSTORE_BROKER_RECORDER_HPP
 #define PSTORE_BROKER_RECORDER_HPP
 
-#include <cassert>
 #include <cstdio>
 #include <mutex>
 

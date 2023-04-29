@@ -18,13 +18,12 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <cstddef>
 #include <initializer_list>
 #include <memory>
 #include <type_traits>
 
-#include "pstore/support/portab.hpp"
+#include "pstore/support/assert.hpp"
 
 #if PSTORE_CXX20 && defined(__has_include)
 #  if __has_include(<bit>)
@@ -111,11 +110,11 @@ namespace pstore {
     constexpr T * data () noexcept { return pointer_cast<T *> (data_.data ()); }
 
     constexpr T const & operator[] (std::size_t n) const noexcept {
-      assert (n < max_size ());
+      PSTORE_ASSERT (n < max_size ());
       return *(data () + n);
     }
     constexpr T & operator[] (std::size_t n) noexcept {
-      assert (n < max_size ());
+      PSTORE_ASSERT (n < max_size ());
       return *(data () + n);
     }
 
@@ -184,14 +183,14 @@ namespace pstore {
     /// Adds an element to the end of the container.
     template <typename OtherType>
     void push_back (OtherType const & v) {
-      assert (size_ < Size);
+      PSTORE_ASSERT (size_ < Size);
       construct_at (data () + size_, v);
       ++size_;
     }
     /// Appends a new element to the end of the container.
     template <typename... Args>
     void emplace_back (Args &&... args) {
-      assert (size_ < Size);
+      PSTORE_ASSERT (size_ < Size);
       construct_at (data () + size_, std::forward<Args> (args)...);
       ++size_;
     }
@@ -226,7 +225,7 @@ namespace pstore {
     }
 
     void pop_back () {
-      assert (size_ > 0U && "Attempt to use pop_back() with an empty container");
+      PSTORE_ASSERT (size_ > 0U && "Attempt to use pop_back() with an empty container");
       --size_;
       std::destroy_at (&this->element (*this, size_));
     }
@@ -265,7 +264,7 @@ namespace pstore {
     auto out = begin ();
     for (; first != last; ++size_, ++first, ++out) {
       if (size_ == Size) {
-        assert (false && "arrayvec container overflow");
+        PSTORE_ASSERT (false && "arrayvec container overflow");
         return;
       }
       construct_at (&*out, *first);
@@ -274,7 +273,7 @@ namespace pstore {
 
   template <typename T, std::size_t Size>
   arrayvec<T, Size>::arrayvec (size_type count, T const & value) {
-    assert (count <= Size);
+    PSTORE_ASSERT (count <= Size);
     while (count-- > 0) {
       this->emplace_back (value);
     }
@@ -285,7 +284,7 @@ namespace pstore {
   template <typename T, std::size_t Size>
   template <bool IsMove, typename OtherVec>
   void arrayvec<T, Size>::operator_assign (OtherVec & other) noexcept {
-    assert (&other != this);
+    PSTORE_ASSERT (&other != this);
     auto const p = this->begin ();
     auto src = other.begin ();
     auto dest = p;
@@ -329,7 +328,7 @@ namespace pstore {
   // ~~~~~~
   template <typename T, std::size_t Size>
   void arrayvec<T, Size>::resize (size_type count) {
-    assert (count <= Size);
+    PSTORE_ASSERT (count <= Size);
     if (count < size_) {
       std::for_each (begin () + count, end (), [] (T & t) { std::destroy_at (&t); });
       size_ = count;

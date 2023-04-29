@@ -22,7 +22,6 @@
 #ifndef PSTORE_HTTP_SERVE_DYNAMIC_CONTENT_HPP
 #define PSTORE_HTTP_SERVE_DYNAMIC_CONTENT_HPP
 
-#include <cassert>
 #include <functional>
 #include <limits>
 #include <sstream>

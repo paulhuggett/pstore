@@ -20,7 +20,6 @@
 
 #ifndef _WIN32
 
-#  include <cassert>
 #  include <fcntl.h>
 #  include <poll.h>
 #  include <unistd.h>

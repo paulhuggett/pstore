@@ -20,7 +20,6 @@
 #define PSTORE_HTTP_REQUEST_HPP
 
 #include <algorithm>
-#include <cassert>
 #include <cctype>
 #include <cerrno>
 #include <sstream>

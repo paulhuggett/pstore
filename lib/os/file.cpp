@@ -18,7 +18,6 @@
 #include "pstore/os/file.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <cctype>
 #include <cstring>
 #include <iterator>

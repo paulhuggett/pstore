@@ -16,7 +16,6 @@
 #ifndef PSTORE_HTTP_WS_SERVER_HPP
 #define PSTORE_HTTP_WS_SERVER_HPP
 
-#include <cassert>
 #include <cstdint>
 #include <limits>
 #include <unordered_map>

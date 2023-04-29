@@ -22,7 +22,6 @@
 #ifdef _WIN32
 
 #  include <algorithm>
-#  include <cassert>
 #  include <cstdlib>
 #  include <limits>
 

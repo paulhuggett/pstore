@@ -19,7 +19,6 @@
 
 #ifdef _WIN32
 
-#  include <cassert>
 #  include "pstore/support/error.hpp"
 #  include "pstore/support/scope_guard.hpp"
 

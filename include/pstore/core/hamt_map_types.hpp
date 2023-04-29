@@ -221,7 +221,7 @@ namespace pstore {
         constexpr bool is_empty () const noexcept { return branch_ == nullptr; }
 
         address to_address () const noexcept {
-          assert (is_address ());
+          PSTORE_ASSERT (is_address ());
           return addr_;
         }
 

@@ -33,7 +33,6 @@
 #ifndef PSTORE_BROKER_MESSAGE_POOL_HPP
 #define PSTORE_BROKER_MESSAGE_POOL_HPP
 
-#include <cassert>
 #include <condition_variable>
 #include <mutex>
 #include <queue>

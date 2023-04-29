@@ -130,7 +130,7 @@ namespace pstore {
 
         iterator_base & operator= (iterator_base const & rhs) noexcept {
           if (&rhs != this) {
-            assert (&db_ == &rhs.db_);
+            PSTORE_ASSERT (&db_ == &rhs.db_);
             visited_parents_ = rhs.visited_parents_;
             index_ = rhs.index_;
             pos_.reset ();
@@ -140,7 +140,7 @@ namespace pstore {
 
         iterator_base & operator= (iterator_base && rhs) noexcept {
           if (&rhs != this) {
-            assert (&db_ == &rhs.db_);
+            PSTORE_ASSERT (&db_ == &rhs.db_);
             visited_parents_ = std::move (rhs.visited_parents_);
             index_ = rhs.index_;
             pos_ = std::move (rhs.pos_);

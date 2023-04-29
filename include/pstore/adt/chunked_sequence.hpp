@@ -29,7 +29,6 @@
 
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <list>
 
 #include "pstore/adt/pointer_based_iterator.hpp"
@@ -493,7 +492,7 @@ namespace pstore {
             std::size_t ActualAlign>
   void chunked_sequence<T, ElementsPerChunk, ActualSize, ActualAlign>::chunk::shrink (
     std::size_t const new_size) noexcept {
-    assert (new_size <= size_);
+    PSTORE_ASSERT (new_size <= size_);
     std::destroy_n (&(*this)[new_size], size_ - new_size);
     size_ = new_size;
   }

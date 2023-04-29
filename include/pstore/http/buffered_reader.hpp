@@ -20,7 +20,6 @@
 #define PSTORE_HTTP_BUFFERED_READER_HPP
 
 #include <algorithm>
-#include <cassert>
 #include <cstddef>
 #include <string>
 #include <utility>

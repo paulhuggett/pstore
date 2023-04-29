@@ -15,7 +15,6 @@
 //===----------------------------------------------------------------------===//
 #include "pstore/os/time.hpp"
 
-#include <cassert>
 #include <cerrno>
 
 #include "pstore/config/config.hpp"

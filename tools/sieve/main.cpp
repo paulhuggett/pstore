@@ -14,7 +14,6 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <cassert>
 #include <cstdint>
 #include <exception>
 #include <fstream>

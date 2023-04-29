@@ -27,7 +27,6 @@
 #if !defined(_WIN32)
 
 // Standard headers
-#  include <cassert>
 #  include <cerrno>
 #  include <limits>
 #  include <sstream>

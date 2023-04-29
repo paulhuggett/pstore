@@ -16,7 +16,6 @@
 #ifndef PSTORE_MCREPO_SECTION_HPP
 #define PSTORE_MCREPO_SECTION_HPP
 
-#include <cassert>
 #include <cstdint>
 #include <cstdlib>
 #include <iosfwd>

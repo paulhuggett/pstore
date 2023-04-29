@@ -15,7 +15,6 @@
 //===----------------------------------------------------------------------===//
 #include "switches.hpp"
 
-#include <cassert>
 #include <iostream>
 #include <vector>
 

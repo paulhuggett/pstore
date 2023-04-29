@@ -18,7 +18,6 @@
 
 #include "pstore/exchange/export_paths.hpp"
 
-#include <cassert>
 #include <limits>
 
 #include "pstore/core/diff.hpp"
