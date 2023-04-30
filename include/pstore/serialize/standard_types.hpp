@@ -62,7 +62,8 @@ namespace pstore::serialize {
         *(last++) = 0;
       }
       // Emit the string length.
-      auto const resl = serialize::write (archive, gsl::make_span (first, last));
+      auto const resl = serialize::write (
+        archive, gsl::make_span (std::addressof (*first), std::addressof (*last)));
 
       // Emit the string body.
       serialize::write (std::forward<Archive> (archive), gsl::make_span (str));
