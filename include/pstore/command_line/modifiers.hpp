@@ -144,16 +144,16 @@ namespace pstore::command_line {
     template <typename T>
     class initializer {
     public:
-      template <typename U>
-      explicit initializer (U && t)
-              : init_{std::forward<U> (t)} {}
-      template <class Opt>
+      constexpr explicit initializer (T t)
+              : init_{t} {}
+
+      template <typename Opt>
       void apply (Opt & o) const {
         o.set_initial_value (init_);
       }
 
     private:
-      T const & init_;
+      T init_;
     };
 
   } // end namespace details

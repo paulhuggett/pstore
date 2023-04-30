@@ -52,11 +52,11 @@ TEST_F (Modifiers, DefaultConstruction) {
 
 TEST_F (Modifiers, Init) {
   // init() allows the initial (default) value of the option to be described.
-  opt<enumeration> opt_a (init (enumeration::a));
+  opt<enumeration> opt_a{init (enumeration::a)};
 
   EXPECT_EQ (opt_a.get (), enumeration::a);
 
-  opt<enumeration> opt_b (init (enumeration::b));
+  opt<enumeration> opt_b{init (enumeration::b)};
   EXPECT_EQ (opt_b.get (), enumeration::b);
 }
 
