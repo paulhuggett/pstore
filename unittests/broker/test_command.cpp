@@ -34,7 +34,7 @@ namespace {
   class mock_cp final : public pstore::broker::command_processor {
   public:
     explicit mock_cp (unsigned const num_read_threads,
-                      pstore::maybe<pstore::http::server_status> * const http_status,
+                      std::optional<pstore::http::server_status> * const http_status,
                       std::atomic<bool> * const uptime_done)
             : command_processor (num_read_threads, http_status, uptime_done, 4h) {}
 
@@ -74,7 +74,7 @@ namespace {
     static constexpr std::uint16_t num_parts = 1;
 
   private:
-    pstore::maybe<pstore::http::server_status> http_status_;
+    std::optional<pstore::http::server_status> http_status_;
     std::atomic<bool> uptime_done_;
 
     mock_cp cp_;

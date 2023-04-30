@@ -67,7 +67,7 @@ namespace pstore {
     // ~~~~~~~~
     void shutdown (command_processor * const cp, scavenger * const scav, int const signum,
                    unsigned const num_read_threads,
-                   not_null<maybe<pstore::http::server_status> *> const http_status,
+                   not_null<std::optional<pstore::http::server_status> *> const http_status,
                    not_null<std::atomic<bool> *> const uptime_done) {
 
       // Set the global "done" flag unless we're already shutting down. The latter condition
@@ -168,7 +168,7 @@ namespace {
   void quit_thread (std::weak_ptr<pstore::broker::command_processor> const cp,
                     std::weak_ptr<pstore::broker::scavenger> const scav,
                     unsigned const num_read_threads,
-                    not_null<pstore::maybe<pstore::http::server_status> *> const http_status,
+                    not_null<std::optional<pstore::http::server_status> *> const http_status,
                     not_null<std::atomic<bool> *> const uptime_done) {
     try {
       pstore::threads::set_name ("quit");
@@ -226,10 +226,11 @@ namespace pstore::broker {
 
   // create quit thread
   // ~~~~~~~~~~~~~~~~~~
-  std::thread create_quit_thread (std::weak_ptr<command_processor> cp,
-                                  std::weak_ptr<scavenger> scav, unsigned num_read_threads,
-                                  gsl::not_null<maybe<pstore::http::server_status> *> http_status,
-                                  gsl::not_null<std::atomic<bool> *> uptime_done) {
+  std::thread
+  create_quit_thread (std::weak_ptr<command_processor> cp, std::weak_ptr<scavenger> scav,
+                      unsigned num_read_threads,
+                      gsl::not_null<std::optional<pstore::http::server_status> *> http_status,
+                      gsl::not_null<std::atomic<bool> *> uptime_done) {
     std::thread quit (quit_thread, std::move (cp), std::move (scav), num_read_threads, http_status,
                       uptime_done);
 
@@ -241,6 +242,6 @@ namespace pstore::broker {
       signal (SIGPIPE, SIG_IGN);
 #endif
       return quit;
-    }
+  }
 
 } // end namespace pstore::broker

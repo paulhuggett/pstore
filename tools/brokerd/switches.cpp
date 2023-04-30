@@ -50,11 +50,11 @@ namespace {
                                    "queue before being removed by the scavenger"},
                               init (4U * 60U * 60U)};
 
-  pstore::maybe<std::string> path_option (opt<std::string> const & path) {
+  std::optional<std::string> path_option (opt<std::string> const & path) {
     if (path.get_num_occurrences () == 0U) {
-      return pstore::nothing<std::string> ();
+      return std::nullopt;
     }
-    return pstore::just (path.get ());
+    return path.get ();
   }
 
 } // end anonymous namespace
@@ -69,7 +69,8 @@ std::pair<switches, int> get_switches (int const argc, tchar * argv[]) {
   result.pipe_path = path_option (pipe_path);
   result.num_read_threads = num_read_threads.get ();
   result.announce_http_port = announce_http_port.get ();
-  result.http_port = disable_http ? pstore::nothing<in_port_t> () : pstore::just (http_port.get ());
+  result.http_port = disable_http ? std::optional<in_port_t> (std::nullopt)
+                                  : std::optional<in_port_t> (http_port.get ());
   result.scavenge_time = std::chrono::seconds{scavenge_time.get ()};
   return {std::move (result), EXIT_SUCCESS};
 }

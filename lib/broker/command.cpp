@@ -65,12 +65,12 @@ namespace pstore::broker {
   // ctor
   // ~~~~
   command_processor::command_processor (
-    unsigned const num_read_threads, gsl::not_null<maybe<http::server_status> *> const http_status,
-    gsl::not_null<std::atomic<bool> *> const uptime_done,
-    std::chrono::seconds const delete_threshold)
+    unsigned num_read_threads,
+    gsl::not_null<std::optional<http::server_status> *> const http_status,
+    gsl::not_null<std::atomic<bool> *> uptime_done, std::chrono::seconds scavenge_threshold)
           : http_status_{http_status}
           , uptime_done_{uptime_done}
-          , delete_threshold_{delete_threshold}
+          , delete_threshold_{scavenge_threshold}
           , num_read_threads_{num_read_threads} {
     PSTORE_ASSERT (
       std::is_sorted (std::begin (commands_), std::end (commands_), command_entry_compare));

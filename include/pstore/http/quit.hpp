@@ -20,12 +20,10 @@
 #include "pstore/support/gsl.hpp"
 #include "pstore/support/maybe.hpp"
 
-namespace pstore {
-  namespace http {
+namespace pstore::http {
 
-    void quit (gsl::not_null<maybe<server_status> *> http_status);
+  void quit (gsl::not_null<std::optional<server_status> *> http_status);
 
-  } // end namespace http
-} // end namespace pstore
+} // end namespace pstore::http
 
 #endif // PSTORE_HTTP_QUIT_HPP

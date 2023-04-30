@@ -18,20 +18,20 @@
 
 #include <chrono>
 #include <memory>
+#include <optional>
 #include <string>
 #include <tuple>
 
 #include "pstore/command_line/tchar.hpp"
 #include "pstore/os/descriptor.hpp" // for in_port_t
-#include "pstore/support/maybe.hpp"
 
 struct switches {
-  pstore::maybe<std::string> playback_path;
-  pstore::maybe<std::string> record_path;
-  pstore::maybe<std::string> pipe_path;
+  std::optional<std::string> playback_path;
+  std::optional<std::string> record_path;
+  std::optional<std::string> pipe_path;
   unsigned num_read_threads = 2U;
   bool announce_http_port = false;
-  pstore::maybe<in_port_t> http_port;
+  std::optional<in_port_t> http_port;
   std::chrono::seconds scavenge_time;
 };
 

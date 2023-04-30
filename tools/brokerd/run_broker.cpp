@@ -82,13 +82,13 @@ namespace {
   // create http worker thread
   // ~~~~~~~~~~~~~~~~~~~~~~~~~
   void create_http_worker_thread (gsl::not_null<std::vector<std::future<void>> *> const futures,
-                                  gsl::not_null<maybe<http::server_status> *> http_status,
+                                  gsl::not_null<std::optional<http::server_status> *> http_status,
                                   bool announce_port) {
     if (!http_status->has_value ()) {
       return;
     }
     futures->push_back (create_thread (
-      [announce_port] (maybe<http::server_status> * const status) {
+      [announce_port] (std::optional<http::server_status> * const status) {
         thread_init ("http");
         PSTORE_ASSERT (status->has_value ());
 
@@ -152,11 +152,12 @@ namespace {
   // get http server status
   // ~~~~~~~~~~~~~~~~~~~~~~
   /// Create an HTTP server_status object which reflects the user's choice of port.
-  decltype (auto) get_http_server_status (maybe<in_port_t> const & port) {
+  std::optional<http::server_status>
+  get_http_server_status (std::optional<in_port_t> const & port) {
     if (port.has_value ()) {
-      return maybe<http::server_status>{std::in_place, *port};
+      return http::server_status{*port};
     }
-    return nothing<http::server_status> ();
+    return std::nullopt;
   }
 } // namespace
 
@@ -189,7 +190,7 @@ int run_broker (switches const & opt) {
   std::vector<std::future<void>> futures;
   std::thread quit;
 
-  maybe<http::server_status> http_status = get_http_server_status (opt.http_port);
+  std::optional<http::server_status> http_status = get_http_server_status (opt.http_port);
   std::atomic<bool> uptime_done{false};
 
   log (priority::notice, "starting threads");
