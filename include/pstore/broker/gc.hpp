@@ -70,7 +70,7 @@ namespace pstore::broker {
 
     /// \param path  The path of a pstore file.
     /// \returns  The proccess-id for a GC runnning on a file at the path given by \p path.
-    maybe<process_identifier> get_pid (std::string const & path);
+    std::optional<process_identifier> get_pid (std::string const & path);
 
 #ifdef _WIN32
     static constexpr auto vacuumd_name = PSTORE_VACUUM_TOOL_NAME ".exe";

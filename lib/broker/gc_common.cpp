@@ -58,18 +58,18 @@ namespace pstore::broker {
 
   // get pid
   // ~~~~~~~
-  maybe<process_identifier> gc_watch_thread::get_pid (std::string const & path) {
+  std::optional<process_identifier> gc_watch_thread::get_pid (std::string const & path) {
     std::unique_lock<decltype (mut_)> const lock{mut_};
     if (!processes_.presentl (path)) {
-      return {};
+      return std::nullopt;
     }
-    return maybe<process_identifier>{processes_.getr (path)};
+    return processes_.getr (path);
   }
 
   // stop vacuum
   // ~~~~~~~~~~~
   bool gc_watch_thread::stop_vacuum (std::string const & path) {
-    if (maybe<process_identifier> const pid = this->get_pid (path)) {
+    if (std::optional<process_identifier> const pid = this->get_pid (path)) {
       log (priority::info, "Killing GC for ", logger::quoted{path.c_str ()});
       this->kill (*pid);
       processes_.erasel (path);
