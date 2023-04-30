@@ -193,7 +193,6 @@ namespace pstore::serialize {
     ///                 Container::value_type elements from the archive into the container.
     template <typename Archive>
     static void read (Archive && archive, insert_callback inserter) {
-      Container result;
       // TODO: size_t is not a fixed-size type. Prefer uintXX_t.
       auto const num_members = serialize::read<std::size_t> (archive);
       auto num_read = std::size_t{0};
