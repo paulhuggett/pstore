@@ -480,10 +480,6 @@ namespace pstore {
       PSTORE_ASSERT (v.get () != nullptr);
     }
 
-    object::member::member (member && rhs)
-            : property (std::move (rhs.property))
-            , val (std::move (rhs.val)) {}
-
   } // end namespace dump
 } // end namespace pstore
 

@@ -445,9 +445,6 @@ namespace pstore {
     public:
       struct member {
         member (std::string const & p, value_ptr const & v);
-        member (member const &) = default;
-        member (member && rhs);
-        member & operator= (member const &) = default;
 
         std::string property;
         value_ptr val;
