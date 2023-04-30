@@ -20,10 +20,9 @@
 #ifndef PSTORE_COMMAND_LINE_STR_TO_REVISION_HPP
 #define PSTORE_COMMAND_LINE_STR_TO_REVISION_HPP
 
+#include <optional>
 #include <string>
 #include <utility>
-
-#include "pstore/support/maybe.hpp"
 
 namespace pstore::command_line {
 
@@ -33,7 +32,7 @@ namespace pstore::command_line {
   /// \param str  The string to be converted to a revision number.
   /// \returns Either the converted revision number or nothing.
 
-  maybe<unsigned> str_to_revision (std::string const & str);
+  std::optional<unsigned> str_to_revision (std::string const & str);
 
 } // end namespace pstore::command_line
 

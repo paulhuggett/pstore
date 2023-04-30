@@ -47,10 +47,10 @@ namespace {
 
 namespace pstore::command_line {
 
-  maybe<unsigned> str_to_revision (std::string const & str) {
+  std::optional<unsigned> str_to_revision (std::string const & str) {
     std::string const arg = trim_and_lowercase (str);
     if (arg == "head") {
-      return just (head_revision);
+      return head_revision;
     }
 
     gsl::czstring const cstr = arg.c_str ();
@@ -64,10 +64,10 @@ namespace pstore::command_line {
         revision >= 0 && revision != head_revision &&
         static_cast<unsigned long> (revision) < std::numeric_limits<unsigned>::max ()) {
 
-      return just (static_cast<unsigned> (revision));
+      return static_cast<unsigned> (revision);
     }
 
-    return nothing<unsigned> ();
+    return std::nullopt;
   }
 
 } // end namespace pstore::command_line
