@@ -54,71 +54,54 @@ namespace {
                         [] (char const * argc) { return std::strcmp (argc, "--loud") == 0; });
   }
 
-  class quiet_event_listener : public testing::TestEventListener {
-  public:
-    explicit quiet_event_listener (TestEventListener * listener);
-    quiet_event_listener (quiet_event_listener const &) = delete;
-    quiet_event_listener (quiet_event_listener &&) = delete;
-    ~quiet_event_listener () override = default;
+class quiet_listener final : public testing::TestEventListener {
+public:
+  explicit quiet_listener (testing::TestEventListener *const listener)
+      : listener_ (listener) {}
+  quiet_listener (quiet_listener const &) = delete;
+  quiet_listener (quiet_listener &&) = delete;
+  ~quiet_listener () override = default;
 
-    quiet_event_listener & operator= (quiet_event_listener const &) = delete;
-    quiet_event_listener & operator= (quiet_event_listener &&) = delete;
+  quiet_listener &operator= (quiet_listener const &) = delete;
+  quiet_listener &operator= (quiet_listener &&) = delete;
 
-    void OnTestProgramStart (testing::UnitTest const & test) override;
-    void OnTestIterationStart (testing::UnitTest const & test, int iteration) override;
-    void OnEnvironmentsSetUpStart (testing::UnitTest const & test) override;
-    void OnEnvironmentsSetUpEnd (testing::UnitTest const & test) override;
-    void OnTestCaseStart (testing::TestCase const & test_case) override;
-    void OnTestStart (testing::TestInfo const & test_info) override;
-    void OnTestPartResult (testing::TestPartResult const & result) override;
-    void OnTestEnd (testing::TestInfo const & test_info) override;
-    void OnTestCaseEnd (testing::TestCase const & test_case) override;
-    void OnEnvironmentsTearDownStart (testing::UnitTest const & test) override;
-    void OnEnvironmentsTearDownEnd (testing::UnitTest const & test) override;
-    void OnTestIterationEnd (testing::UnitTest const & test, int iteration) override;
-    void OnTestProgramEnd (testing::UnitTest const & test) override;
-
-  private:
-    std::unique_ptr<testing::TestEventListener> listener_;
-  };
-
-  quiet_event_listener::quiet_event_listener (TestEventListener * listener)
-          : listener_ (listener) {}
-
-  void quiet_event_listener::OnTestProgramStart (testing::UnitTest const & test) {
+  void OnTestProgramStart (testing::UnitTest const &test) override {
     listener_->OnTestProgramStart (test);
   }
-
-  void quiet_event_listener::OnTestIterationStart (testing::UnitTest const & test, int iteration) {
+  void OnTestIterationStart (testing::UnitTest const &test, int iteration) override {
     listener_->OnTestIterationStart (test, iteration);
   }
-
-  void quiet_event_listener::OnEnvironmentsSetUpStart (testing::UnitTest const &) {}
-  void quiet_event_listener::OnEnvironmentsSetUpEnd (testing::UnitTest const &) {}
-  void quiet_event_listener::OnEnvironmentsTearDownStart (testing::UnitTest const &) {}
-  void quiet_event_listener::OnEnvironmentsTearDownEnd (testing::UnitTest const &) {}
-
-  void quiet_event_listener::OnTestCaseStart (testing::TestCase const &) {}
-  void quiet_event_listener::OnTestCaseEnd (testing::TestCase const &) {}
-  void quiet_event_listener::OnTestStart (testing::TestInfo const &) {}
-
-  void quiet_event_listener::OnTestPartResult (testing::TestPartResult const & result) {
+  void OnEnvironmentsSetUpStart (testing::UnitTest const &unit_test) override {
+    (void)unit_test;
+  }
+  void OnEnvironmentsSetUpEnd (testing::UnitTest const &unit_test) override {
+    (void)unit_test;
+  }
+  void OnTestStart (testing::TestInfo const &test_info) override { (void)test_info; }
+  void OnTestPartResult (testing::TestPartResult const &result) override {
     listener_->OnTestPartResult (result);
   }
-
-  void quiet_event_listener::OnTestEnd (testing::TestInfo const & test_info) {
+  void OnTestEnd (testing::TestInfo const &test_info) override {
     if (test_info.result ()->Failed ()) {
       listener_->OnTestEnd (test_info);
     }
   }
-
-  void quiet_event_listener::OnTestIterationEnd (testing::UnitTest const & test, int iteration) {
+  void OnEnvironmentsTearDownStart (testing::UnitTest const &unit_test) override {
+    (void)unit_test;
+  }
+  void OnEnvironmentsTearDownEnd (testing::UnitTest const &unit_test) override {
+    (void)unit_test;
+  }
+  void OnTestIterationEnd (testing::UnitTest const &test, int iteration) override {
     listener_->OnTestIterationEnd (test, iteration);
   }
-
-  void quiet_event_listener::OnTestProgramEnd (testing::UnitTest const & test) {
+  void OnTestProgramEnd (testing::UnitTest const &test) override {
     listener_->OnTestProgramEnd (test);
   }
+
+private:
+  std::unique_ptr<TestEventListener> listener_;
+};
 
 } // end anonymous namespace
 
@@ -150,7 +133,7 @@ int main (int argc, char ** argv) {
       // [==========] 149 tests from 53 test cases ran. (1 ms total)
       // [  PASSED  ] 149 tests.
 
-      listeners.Append (new quiet_event_listener (default_printer));
+      listeners.Append (new quiet_listener (default_printer));
     }
 
 #if defined(_WIN32)

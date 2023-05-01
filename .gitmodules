@@ -1,3 +1,6 @@
 [submodule "3rd_party/googletest"]
 	path = 3rd_party/googletest
 	url = https://github.com/google/googletest
+[submodule "3rd_party/peejay"]
+	path = 3rd_party/peejay
+	url = https://github.com/paulhuggett/peejay.git
