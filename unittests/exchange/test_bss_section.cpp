@@ -22,11 +22,11 @@
 
 // 3rd party includes
 #include <gtest/gtest.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/exchange/import_section_to_importer.hpp"
 #include "pstore/exchange/import_strings_array.hpp"
-#include "pstore/json/json.hpp"
 
 // local includes
 #include "add_export_strings.hpp"
@@ -60,8 +60,7 @@ namespace {
   template <typename ImportRule, typename... Args>
   decltype (auto) make_json_object_parser (pstore::database * const db, Args... args) {
     using namespace pstore::exchange::import_ns;
-    return pstore::json::make_parser (
-      callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
+    return peejay::make_parser (callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
   }
 
 } // end anonymous namespace
@@ -94,7 +93,7 @@ TEST_F (BssSection, RoundTripForAnEmptySection) {
                                                            &imported_content, &inserter);
   parser.input (exported_json).eof ();
   ASSERT_FALSE (parser.has_error ())
-    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.coordinate () << '\n'
+    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.input_pos () << '\n'
     << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
@@ -143,7 +142,7 @@ TEST_F (BssSection, RoundTripForPopulated) {
                                                            &imported_content, &inserter);
   parser.input (exported_json).eof ();
   ASSERT_FALSE (parser.has_error ())
-    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.coordinate () << '\n'
+    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.input_pos () << '\n'
     << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
@@ -235,7 +234,7 @@ TEST_F (BssSectionImport, BadAlignValue) {
   pstore::repo::section_content imported_content;
 
   // The align value must be a power of 2.
-  auto const & parser = parse<pstore::repo::section_kind::bss> (
+  auto const parser = parse<pstore::repo::section_kind::bss> (
     R"({ "align":7, "size":16 })", &db_, pstore::exchange::import_ns::string_mapping{}, &inserter,
     &imported_content);
   EXPECT_TRUE (parser.has_error ());
@@ -249,7 +248,7 @@ TEST_F (BssSectionImport, BadAlignType) {
   pstore::repo::section_content imported_content;
 
   // The align value is a boolean rather than an integer.
-  auto const & parser = parse<pstore::repo::section_kind::bss> (
+  auto const parser = parse<pstore::repo::section_kind::bss> (
     R"({ "align":true, "data":"" })", &db_, pstore::exchange::import_ns::string_mapping{},
     &inserter, &imported_content);
   EXPECT_TRUE (parser.has_error ());
@@ -263,7 +262,7 @@ TEST_F (BssSectionImport, MissingSize) {
   pstore::repo::section_content imported_content;
 
   // The data value is missing.
-  auto const & parser = parse<pstore::repo::section_kind::bss> (
+  auto const parser = parse<pstore::repo::section_kind::bss> (
     R"({ "align":8 })", &db_, pstore::exchange::import_ns::string_mapping{}, &inserter,
     &imported_content);
   EXPECT_TRUE (parser.has_error ());
@@ -277,7 +276,7 @@ TEST_F (BssSectionImport, BadSizeType) {
   pstore::repo::section_content imported_content;
 
   // The data value is a boolean rather than a string.
-  auto const & parser = parse<pstore::repo::section_kind::bss> (
+  auto const parser = parse<pstore::repo::section_kind::bss> (
     R"({ "align":8, "size":true })", &db_, pstore::exchange::import_ns::string_mapping{}, &inserter,
     &imported_content);
   EXPECT_TRUE (parser.has_error ());

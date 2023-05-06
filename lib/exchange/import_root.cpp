@@ -41,7 +41,7 @@ namespace {
     root_object & operator= (root_object &&) noexcept = delete;
 
     pstore::gsl::czstring name () const noexcept override;
-    std::error_code key (std::string const & key) override;
+    std::error_code key (peejay::u8string_view key) override;
     std::error_code end_object () override;
 
   private:
@@ -62,7 +62,7 @@ namespace {
 
   // key
   // ~~~
-  std::error_code root_object::key (std::string const & key) {
+  std::error_code root_object::key (peejay::u8string_view key) {
     using pstore::exchange::import_ns::error;
     using pstore::exchange::import_ns::transaction_array;
     using pstore::exchange::import_ns::uint64_rule;
@@ -121,8 +121,8 @@ namespace pstore::exchange::import_ns {
 
   // create parser
   // ~~~~~~~~~~~~~
-  json::parser<callbacks> create_parser (database & db) {
-    return json::make_parser (callbacks::make<root> (&db), json::extensions::all);
+  peejay::parser<callbacks> create_parser (database & db) {
+    return peejay::make_parser (callbacks::make<root> (&db), peejay::extensions::all);
   }
 
 } // end namespace pstore::exchange::import_ns

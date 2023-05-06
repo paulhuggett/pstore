@@ -58,7 +58,7 @@ namespace pstore::exchange::import_ns {
 
     gsl::czstring name () const noexcept override { return "definition"; }
 
-    std::error_code key (std::string const & k) override;
+    std::error_code key (peejay::u8string_view k) override;
     std::error_code end_object () override;
 
     static std::optional<repo::linkage> decode_linkage (std::string const & linkage);
@@ -134,7 +134,7 @@ namespace pstore::exchange::import_ns {
 
     gsl::czstring name () const noexcept override { return "compilation"; }
 
-    std::error_code key (std::string const & k) override;
+    std::error_code key (peejay::u8string_view k) override;
     std::error_code end_object () override;
 
   private:
@@ -176,7 +176,7 @@ namespace pstore::exchange::import_ns {
     compilations_index & operator= (compilations_index &&) = delete;
 
     gsl::czstring name () const noexcept override;
-    std::error_code key (std::string const & s) override;
+    std::error_code key (peejay::u8string_view s) override;
     std::error_code end_object () override;
 
   private:

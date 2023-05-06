@@ -52,7 +52,7 @@ namespace pstore::exchange::import_ns {
     debug_line_section & operator= (debug_line_section &&) noexcept = delete;
 
     gsl::czstring name () const noexcept override { return "debug line section"; }
-    std::error_code key (std::string const & k) override;
+    std::error_code key (peejay::u8string_view k) override;
     std::error_code end_object () override;
 
   private:
@@ -66,7 +66,7 @@ namespace pstore::exchange::import_ns {
   // key
   // ~~~
   template <typename OutputIterator>
-  std::error_code debug_line_section<OutputIterator>::key (std::string const & k) {
+  std::error_code debug_line_section<OutputIterator>::key (peejay::u8string_view k) {
     if (k == "header") {
       seen_[header] = true;
       return this->template push<string_rule> (&header_digest_);

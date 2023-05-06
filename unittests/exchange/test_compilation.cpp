@@ -23,13 +23,13 @@
 
 // 3rd party includes
 #include <gtest/gtest.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/exchange/export_fragment.hpp"
 #include "pstore/exchange/export_strings.hpp"
 #include "pstore/exchange/import_fragment.hpp"
 #include "pstore/exchange/import_strings_array.hpp"
-#include "pstore/json/json.hpp"
 #include "pstore/mcrepo/fragment.hpp"
 
 // local includes
@@ -44,18 +44,16 @@ namespace {
 
   template <typename ImportRule, typename... Args>
   auto make_json_array_parser (pstore::database * const db, Args... args)
-    -> pstore::json::parser<pstore::exchange::import_ns::callbacks> {
+    -> peejay::parser<pstore::exchange::import_ns::callbacks> {
     using namespace pstore::exchange::import_ns;
-    return pstore::json::make_parser (
-      callbacks::make<array_rule<ImportRule, Args...>> (db, args...));
+    return peejay::make_parser (callbacks::make<array_rule<ImportRule, Args...>> (db, args...));
   }
 
   template <typename ImportRule, typename... Args>
   auto make_json_object_parser (pstore::database * const db, Args... args)
-    -> pstore::json::parser<pstore::exchange::import_ns::callbacks> {
+    -> peejay::parser<pstore::exchange::import_ns::callbacks> {
     using namespace pstore::exchange::import_ns;
-    return pstore::json::make_parser (
-      callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
+    return peejay::make_parser (callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
   }
 
 
@@ -170,7 +168,7 @@ TEST_F (ExchangeCompilation, Empty) {
     name_parser.input (exported_names_stream.str ()).eof ();
     ASSERT_FALSE (name_parser.has_error ())
       << "JSON error was: " << name_parser.last_error ().message () << ' '
-      << name_parser.coordinate () << '\n'
+      << name_parser.input_pos () << '\n'
       << exported_names_stream.str ();
 
     auto const fragment_index =
@@ -180,7 +178,7 @@ TEST_F (ExchangeCompilation, Empty) {
     compilation_parser.input (exported_compilation_stream.str ()).eof ();
     ASSERT_FALSE (compilation_parser.has_error ())
       << "JSON error was: " << compilation_parser.last_error ().message () << ' '
-      << compilation_parser.coordinate () << '\n'
+      << compilation_parser.input_pos () << '\n'
       << exported_compilation_stream.str ();
 
     transaction.commit ();
@@ -261,7 +259,7 @@ TEST_F (ExchangeCompilation, TwoDefinitions) {
     name_parser.input (exported_names_stream.str ()).eof ();
     ASSERT_FALSE (name_parser.has_error ())
       << "JSON error was: " << name_parser.last_error ().message () << ' '
-      << name_parser.coordinate () << '\n'
+      << name_parser.input_pos () << '\n'
       << exported_names_stream.str ();
   }
   {
@@ -269,7 +267,7 @@ TEST_F (ExchangeCompilation, TwoDefinitions) {
     fragment_parser.input (exported_fragment_stream.str ()).eof ();
     ASSERT_FALSE (fragment_parser.has_error ())
       << "JSON error was: " << fragment_parser.last_error ().message () << ' '
-      << fragment_parser.coordinate () << '\n'
+      << fragment_parser.input_pos () << '\n'
       << exported_fragment_stream.str ();
   }
   {
@@ -280,7 +278,7 @@ TEST_F (ExchangeCompilation, TwoDefinitions) {
     compilation_parser.input (exported_compilation_stream.str ()).eof ();
     ASSERT_FALSE (compilation_parser.has_error ())
       << "JSON error was: " << compilation_parser.last_error ().message () << ' '
-      << compilation_parser.coordinate () << '\n'
+      << compilation_parser.input_pos () << '\n'
       << exported_compilation_stream.str ();
   }
 
@@ -344,8 +342,8 @@ TEST_F (ExchangeCompilation, MissingDefinitions) {
   auto name_parser = import_strings_parser (&transaction, &imported_names);
   name_parser.input (names).eof ();
   ASSERT_FALSE (name_parser.has_error ())
-    << "JSON error was: " << name_parser.last_error ().message () << ' '
-    << name_parser.coordinate () << '\n'
+    << "JSON error was: " << name_parser.last_error ().message () << ' ' << name_parser.input_pos ()
+    << '\n'
     << names;
 
   auto const fragment_index =

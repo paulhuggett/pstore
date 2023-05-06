@@ -23,6 +23,7 @@
 
 // 3rd party includes
 #include <gtest/gtest.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/core/database.hpp"
@@ -30,7 +31,6 @@
 #include "pstore/exchange/export_strings.hpp"
 #include "pstore/exchange/import_strings_array.hpp"
 #include "pstore/support/gsl.hpp"
-#include "pstore/json/json.hpp"
 #include "pstore/exchange/import_non_terminals.hpp"
 
 // Local includes
@@ -61,11 +61,10 @@ namespace {
   };
 
   template <typename ImportRule, typename... Args>
-  pstore::json::parser<pstore::exchange::import_ns::callbacks>
+  peejay::parser<pstore::exchange::import_ns::callbacks>
   make_json_array_parser (pstore::database * const db, Args... args) {
     using namespace pstore::exchange::import_ns;
-    return pstore::json::make_parser (
-      callbacks::make<array_rule<ImportRule, Args...>> (db, args...));
+    return peejay::make_parser (callbacks::make<array_rule<ImportRule, Args...>> (db, args...));
   }
 
   // Parse the exported strings JSON. The resulting index-to-string mappings are then available
@@ -104,7 +103,7 @@ TEST_F (ExchangePaths, ImportEmpty) {
     name_parser.input (exported_paths).eof ();
     ASSERT_FALSE (name_parser.has_error ())
       << "JSON error was: " << name_parser.last_error ().message () << ' '
-      << name_parser.coordinate () << '\n'
+      << name_parser.input_pos () << '\n'
       << exported_paths;
   }
 
@@ -148,7 +147,7 @@ TEST_F (ExchangePaths, RoundTripForTwoPaths) {
       name_parser.input (exported_names_stream.str ()).eof ();
       ASSERT_FALSE (name_parser.has_error ())
         << "JSON error was: " << name_parser.last_error ().message () << ' '
-        << name_parser.coordinate () << '\n'
+        << name_parser.input_pos () << '\n'
         << exported_names_stream.str ();
     }
     transaction.commit ();

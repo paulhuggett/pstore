@@ -40,7 +40,7 @@ namespace pstore::exchange::import_ns {
 
   // key
   // ~~~
-  std::error_code definition::key (std::string const & k) {
+  std::error_code definition::key (peejay::u8string_view k) {
     if (k == "digest") {
       seen_[digest_index] = true;
       return push<string_rule> (&digest_);
@@ -184,7 +184,7 @@ namespace pstore::exchange::import_ns {
 
   // key
   // ~~~
-  std::error_code compilation::key (std::string const & k) {
+  std::error_code compilation::key (peejay::u8string_view k) {
     if (k == "triple") {
       seen_[triple_index] = true;
       return push<uint64_rule> (&triple_);
@@ -243,7 +243,7 @@ namespace pstore::exchange::import_ns {
 
   // key
   // ~~~
-  std::error_code compilations_index::key (std::string const & s) {
+  std::error_code compilations_index::key (peejay::u8string_view s) {
     if (std::optional<index::digest> const digest = uint128::from_hex_string (s)) {
       return push_object_rule<compilation> (this, transaction_, names_, fragments_,
                                             index::digest{*digest});

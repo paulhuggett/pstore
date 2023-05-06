@@ -17,14 +17,16 @@
 
 // 3rd party includes
 #include <gtest/gtest.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/core/database.hpp"
-#include "pstore/json/json.hpp"
 #include "pstore/exchange/import_root.hpp"
 
 // Local includes
 #include "empty_store.hpp"
+
+using namespace std::string_view_literals;
 
 namespace {
 
@@ -46,12 +48,12 @@ TEST_F (ExchangeRoot, ImportId) {
   using namespace pstore::exchange;
 
   static constexpr auto json =
-    R"({ "version":1, "id":"7a73d64e-5873-439c-ac8f-2b3a68aebe53", "transactions":[] })";
+    R"({ "version":1, "id":"7a73d64e-5873-439c-ac8f-2b3a68aebe53", "transactions":[] })"sv;
 
-  pstore::json::parser<import_ns::callbacks> parser = import_ns::create_parser (import_db_);
+  peejay::parser<import_ns::callbacks> parser = import_ns::create_parser (import_db_);
   parser.input (json).eof ();
   ASSERT_FALSE (parser.has_error ())
-    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.coordinate () << '\n'
+    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.input_pos () << '\n'
     << json;
 
   EXPECT_EQ (import_db_.get_header ().id (), pstore::uuid{"7a73d64e-5873-439c-ac8f-2b3a68aebe53"})

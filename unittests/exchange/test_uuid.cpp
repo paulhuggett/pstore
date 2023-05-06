@@ -15,10 +15,12 @@
 //===----------------------------------------------------------------------===//
 #include "pstore/exchange/import_uuid.hpp"
 
+// 3rd party
 #include <gtest/gtest.h>
+#include "peejay/json.hpp"
 
+// pstore
 #include "pstore/exchange/import_error.hpp"
-#include "pstore/json/json.hpp"
 
 #include "empty_store.hpp"
 
@@ -42,7 +44,7 @@ namespace {
 
     decltype (auto) make_json_uuid_parser (pstore::gsl::not_null<pstore::uuid *> v) {
       using namespace pstore::exchange::import_ns;
-      return pstore::json::make_parser (callbacks::make<uuid_rule> (&db_, v));
+      return peejay::make_parser (callbacks::make<uuid_rule> (&db_, v));
     }
   };
 

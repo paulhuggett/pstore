@@ -113,11 +113,12 @@ namespace pstore::exchange::import_ns {
 
   // key
   // ~~~
-  std::error_code fragment_sections::key (std::string const & s) {
+  std::error_code fragment_sections::key (peejay::u8string_view s) {
     using repo::section_kind;
 
 #define X(a) {#a, section_kind::a},
-    static std::unordered_map<std::string, section_kind> const map{PSTORE_MCREPO_SECTION_KINDS};
+    static std::unordered_map<peejay::u8string_view, section_kind> const map{
+      PSTORE_MCREPO_SECTION_KINDS};
 #undef X
     auto const pos = map.find (s);
     if (pos == map.end ()) {
@@ -212,7 +213,7 @@ namespace pstore::exchange::import_ns {
 
   // key
   // ~~~
-  std::error_code fragment_index::key (std::string const & s) {
+  std::error_code fragment_index::key (peejay::u8string_view s) {
     if (std::optional<index::digest> const digest = uint128::from_hex_string (s)) {
       digest_ = *digest;
       return push_object_rule<fragment_sections> (this, transaction_, names_, &digest_);

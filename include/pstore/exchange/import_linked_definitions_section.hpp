@@ -60,7 +60,7 @@ namespace pstore::exchange::import_ns {
 
     gsl::czstring name () const noexcept override { return "linked definition"; }
 
-    std::error_code key (std::string const & k) override;
+    std::error_code key (peejay::u8string_view k) override;
     std::error_code end_object () override;
 
   private:
@@ -76,7 +76,7 @@ namespace pstore::exchange::import_ns {
   // key
   // ~~~
   template <typename OutputIterator>
-  std::error_code linked_definition<OutputIterator>::key (std::string const & k) {
+  std::error_code linked_definition<OutputIterator>::key (peejay::u8string_view k) {
     if (k == "compilation") {
       seen_[compilation] = true;
       return this->push<string_rule> (&compilation_);

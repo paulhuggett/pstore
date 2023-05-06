@@ -26,7 +26,6 @@ add_subdirectory (import)
 add_subdirectory (index_stats)  # Dumps pstore index statistics
 add_subdirectory (index_structure) # Dumps pstore index structures as GraphViz DOT graphs
 add_subdirectory (inserter)     # A utility to exercise the digest index
-add_subdirectory (json)         # A small wrapper for the JSON parser library
 add_subdirectory (lock_test)    # Test the global transaction lock
 add_subdirectory (mangle)       # A simple file fuzzing utility
 add_subdirectory (read)         # A utility for reading the write or strings index

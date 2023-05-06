@@ -73,7 +73,7 @@ namespace pstore::exchange::import_ns {
   std::error_code rule::begin_array () {
     return error::unexpected_array;
   }
-  std::error_code rule::string_value (std::string const & value) {
+  std::error_code rule::string_value (peejay::u8string_view value) {
     (void) value;
     return error::unexpected_string;
   }
@@ -83,7 +83,7 @@ namespace pstore::exchange::import_ns {
   std::error_code rule::begin_object () {
     return error::unexpected_object;
   }
-  std::error_code rule::key (std::string const & key) {
+  std::error_code rule::key (peejay::u8string_view key) {
     (void) key;
     return error::unexpected_object_key;
   }

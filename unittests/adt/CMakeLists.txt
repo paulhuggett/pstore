@@ -14,7 +14,6 @@
 #
 #===----------------------------------------------------------------------===//
 add_pstore_unit_test (pstore-adt-unit-tests
-    test_arrayvec.cpp
     test_chunked_sequence.cpp
     test_error_or.cpp
     test_pointer_based_iterator.cpp

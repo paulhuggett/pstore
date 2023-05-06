@@ -33,7 +33,7 @@ add_pstore_library (
     HEADER_DIR "${pstore_adt_include_dir}"
     INCLUDES ${pstore_adt_lib_includes}
 )
-target_link_libraries (pstore-adt PUBLIC pstore-support)
+target_link_libraries (pstore-adt PUBLIC peejay pstore-support)
 add_clang_tidy_target (pstore-adt)
 
 if (PSTORE_ENABLE_BROKER AND NOT PSTORE_EXCEPTIONS)
@@ -51,7 +51,7 @@ if (PSTORE_ENABLE_BROKER AND NOT PSTORE_EXCEPTIONS)
     set (LLVM_REQUIRES_RTTI No)
     set (PSTORE_EXCEPTIONS No)
 
-    target_link_libraries (pstore-adt-ex PUBLIC pstore-support-ex)
+    target_link_libraries (pstore-adt-ex PUBLIC peejay pstore-support-ex)
 endif (PSTORE_ENABLE_BROKER AND NOT PSTORE_EXCEPTIONS)
 
 if (PSTORE_BITCODE)

@@ -15,12 +15,29 @@
 //===----------------------------------------------------------------------===//
 #include "pstore/broker/uptime.hpp"
 
+// standard library
 #include <sstream>
 #include <thread>
 
-#include "pstore/json/utility.hpp"
+// 3rd party
+#include "peejay/json.hpp"
+#include "peejay/null.hpp"
+
+// pstore
 #include "pstore/os/logging.hpp"
 #include "pstore/os/thread.hpp"
+
+namespace {
+
+#ifndef NDEBUG
+  bool is_valid_json (std::string_view str) {
+    peejay::parser<peejay::null> parser{};
+    parser.input (str).eof ();
+    return !parser.has_error ();
+  }
+#endif
+
+} // end anonymous namespace
 
 namespace pstore::broker {
 
@@ -41,7 +58,7 @@ namespace pstore::broker {
         std::ostringstream os;
         os << "{ \"uptime\": " << seconds << " }";
         std::string const & str = os.str ();
-        PSTORE_ASSERT (json::is_valid (str));
+        PSTORE_ASSERT (is_valid_json (str));
         return str;
       });
     }

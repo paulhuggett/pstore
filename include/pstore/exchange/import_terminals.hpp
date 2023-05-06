@@ -65,7 +65,7 @@ namespace pstore::exchange::import_ns {
     string_rule (not_null<context *> const ctxt, not_null<std::string *> const v) noexcept
             : rule (ctxt)
             , v_{v} {}
-    std::error_code string_value (std::string const & v) override;
+    std::error_code string_value (peejay::u8string_view v) override;
     gsl::czstring name () const noexcept override;
 
   private:

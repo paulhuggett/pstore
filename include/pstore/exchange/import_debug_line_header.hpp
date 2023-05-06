@@ -43,8 +43,8 @@ namespace pstore::exchange::import_ns {
 
     gsl::czstring name () const noexcept override;
 
-    std::error_code string_value (std::string const & s) override;
-    std::error_code key (std::string const & s) override;
+    std::error_code string_value (peejay::u8string_view s) override;
+    std::error_code key (peejay::u8string_view s) override;
     std::error_code end_object () override;
 
   private:

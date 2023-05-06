@@ -66,7 +66,7 @@ namespace pstore::exchange::import_ns {
                        not_null<index::digest const *> digest);
 
     gsl::czstring name () const noexcept override;
-    std::error_code key (std::string const & s) override;
+    std::error_code key (peejay::u8string_view s) override;
     std::error_code end_object () override;
 
   private:
@@ -136,7 +136,7 @@ namespace pstore::exchange::import_ns {
     fragment_index & operator= (fragment_index &&) noexcept = delete;
 
     gsl::czstring name () const noexcept override;
-    std::error_code key (std::string const & s) override;
+    std::error_code key (peejay::u8string_view s) override;
     std::error_code end_object () override;
 
   private:

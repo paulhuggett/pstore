@@ -19,8 +19,11 @@
 #ifndef PSTORE_EXCHANGE_IMPORT_ROOT_HPP
 #define PSTORE_EXCHANGE_IMPORT_ROOT_HPP
 
+// 3rd party
+#include "peejay/json.hpp"
+
+// pstore
 #include "pstore/exchange/import_rule.hpp"
-#include "pstore/json/json.hpp"
 
 namespace pstore {
 
@@ -49,7 +52,7 @@ namespace pstore {
     /// Creates a JSON parser instance which will consume pstore exchange input.
     /// \param db  The database into which the imported data will be written.
     /// \returns A JSON parser instance.
-    json::parser<callbacks> create_parser (database & db);
+    peejay::parser<callbacks> create_parser (database & db);
 
   } // end namespace exchange::import_ns
 } // end namespace pstore

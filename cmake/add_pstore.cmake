@@ -136,6 +136,10 @@ function (pstore_add_additional_compiler_flags target_name)
         target_compile_options (${target_name} PRIVATE -Wno-c++14-extensions)
 
         disable_warning_if_possible (${target_name}
+            -Wno-c++20-compat
+            PSTORE_CLANG_SUPPORTS_CXX20_COMPAT
+        )
+        disable_warning_if_possible (${target_name}
             -Wno-return-std-move-in-c++11
             PSTORE_CLANG_SUPPORTS_WNO_RETURN_MOVE
         )

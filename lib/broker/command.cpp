@@ -17,9 +17,15 @@
 
 #include "pstore/broker/command.hpp"
 
+// standard library
 #include <iomanip>
 #include <sstream>
 
+// 3rd party
+#include "peejay/json.hpp"
+#include "peejay/null.hpp"
+
+// pstore
 #include "pstore/broker/gc.hpp"
 #include "pstore/broker/globals.hpp"
 #include "pstore/broker/internal_commands.hpp"
@@ -27,7 +33,6 @@
 #include "pstore/broker/quit.hpp"
 #include "pstore/broker/recorder.hpp"
 #include "pstore/brokerface/writer.hpp"
-#include "pstore/json/utility.hpp"
 #include "pstore/os/logging.hpp"
 #include "pstore/os/time.hpp"
 
@@ -54,6 +59,14 @@ namespace {
   }
 
   using priority = pstore::logger::priority;
+
+#ifndef NDEBUG
+  bool is_valid_json (std::string_view str) {
+    peejay::parser<peejay::null> parser{};
+    parser.input (str).eof ();
+    return !parser.has_error ();
+  }
+#endif
 
 } // end anonymous namespace
 
@@ -117,7 +130,7 @@ namespace pstore::broker {
       std::ostringstream os;
       os << "{ \"commits\": " << commits_ << " }";
       std::string const & str = os.str ();
-      PSTORE_ASSERT (json::is_valid (str));
+      PSTORE_ASSERT (is_valid_json (str));
       return str;
     });
   }

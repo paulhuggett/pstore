@@ -56,7 +56,7 @@ namespace pstore::exchange::import_ns {
     generic_section & operator= (generic_section &&) noexcept = delete;
 
     gsl::czstring name () const noexcept override { return "generic section"; }
-    std::error_code key (std::string const & k) override;
+    std::error_code key (peejay::u8string_view k) override;
     std::error_code end_object () override;
 
   protected:
@@ -78,7 +78,7 @@ namespace pstore::exchange::import_ns {
   // key
   // ~~~
   template <typename OutputIterator>
-  std::error_code generic_section<OutputIterator>::key (std::string const & k) {
+  std::error_code generic_section<OutputIterator>::key (peejay::u8string_view k) {
     if (k == "data") {
       seen_[data] = true; // string (ascii85)
       return this->push<string_rule> (&data_);

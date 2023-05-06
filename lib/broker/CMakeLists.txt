@@ -70,10 +70,10 @@ else ()
             INCLUDES "${pstore_broker_includes}"
         )
         target_link_libraries (pstore-broker PUBLIC
+            peejay
             pstore-adt-ex
             pstore-brokerface-ex
             pstore-http-ex
-            pstore-json-lib-ex
             pstore-os-ex
             pstore-support-ex
         )
@@ -89,10 +89,10 @@ else ()
             INCLUDES "${pstore_broker_includes}"
         )
         target_link_libraries (pstore-broker PUBLIC
+            peejay
             pstore-adt
             pstore-brokerface
             pstore-http
-            pstore-json-lib
             pstore-os
             pstore-support
         )

@@ -17,10 +17,10 @@
 
 // 3rd party includes
 #include <gtest/gtest.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/exchange/import_fragment.hpp"
-#include "pstore/json/json.hpp"
 
 // local includes
 #include "empty_store.hpp"
@@ -34,10 +34,9 @@ namespace {
 
   template <typename ImportRule, typename... Args>
   auto make_json_object_parser (pstore::database * const db, Args... args)
-    -> pstore::json::parser<pstore::exchange::import_ns::callbacks> {
+    -> peejay::parser<pstore::exchange::import_ns::callbacks> {
     using namespace pstore::exchange::import_ns;
-    return pstore::json::make_parser (
-      callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
+    return peejay::make_parser (callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
   }
 
   decltype (auto) import_fragment_parser (transaction * const transaction,

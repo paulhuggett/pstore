@@ -22,7 +22,7 @@ namespace pstore::exchange::import_ns {
           : rule (ctxt)
           , v_{v} {}
 
-  std::error_code uuid_rule::string_value (std::string const & v) {
+  std::error_code uuid_rule::string_value (peejay::u8string_view v) {
     if (std::optional<uuid> const value = uuid::from_string (v)) {
       *v_ = *value;
       return pop ();

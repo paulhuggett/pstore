@@ -39,7 +39,7 @@ namespace pstore::exchange::import_ns {
     strings_array_members & operator= (strings_array_members &&) noexcept = delete;
 
   private:
-    std::error_code string_value (std::string const & str) override;
+    std::error_code string_value (peejay::u8string_view str) override;
     std::error_code end_array () override;
     gsl::czstring name () const noexcept override;
 

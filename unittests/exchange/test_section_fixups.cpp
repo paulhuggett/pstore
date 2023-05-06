@@ -22,10 +22,10 @@
 
 // 3rd party includes
 #include <gmock/gmock.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/adt/sstring_view.hpp"
-#include "pstore/json/json.hpp"
 #include "pstore/exchange/export_ostream.hpp"
 #include "pstore/exchange/import_error.hpp"
 #include "pstore/exchange/import_rule.hpp"
@@ -73,9 +73,9 @@ TEST_F (ExchangeSectionFixups, RoundTripInternalEmpty) {
   // Setup the parse.
   pstore::exchange::import_ns::string_mapping names;
   internal_fixup_collection imported_ifixups;
-  auto parser = pstore::json::make_parser (
-    pstore::exchange::import_ns::callbacks::make<internal_fixup_array_root> (&db_, &names,
-                                                                             &imported_ifixups));
+  auto parser =
+    peejay::make_parser (pstore::exchange::import_ns::callbacks::make<internal_fixup_array_root> (
+      &db_, &names, &imported_ifixups));
 
   // Import the data that we just exported.
   parser.input (os.str ());
@@ -105,9 +105,9 @@ TEST_F (ExchangeSectionFixups, RoundTripInternalCollection) {
   // Setup the parse.
   pstore::exchange::import_ns::string_mapping imported_names;
   internal_fixup_collection imported_ifixups;
-  auto parser = pstore::json::make_parser (
-    pstore::exchange::import_ns::callbacks::make<internal_fixup_array_root> (&db_, &imported_names,
-                                                                             &imported_ifixups));
+  auto parser =
+    peejay::make_parser (pstore::exchange::import_ns::callbacks::make<internal_fixup_array_root> (
+      &db_, &imported_names, &imported_ifixups));
 
   // Import the data that we just exported.
   parser.input (os.str ());
@@ -139,8 +139,7 @@ namespace {
                            not_null<internal_fixup_collection *> const fixups) {
       using namespace pstore::exchange::import_ns;
       string_mapping names;
-      auto parser =
-        pstore::json::make_parser (callbacks::make<ifixups_object> (&db_, &names, fixups));
+      auto parser = peejay::make_parser (callbacks::make<ifixups_object> (&db_, &names, fixups));
       parser.input (src).eof ();
       return parser;
     }
@@ -333,7 +332,7 @@ TEST_F (ExchangeExternalFixups, ExternalEmpty) {
   // Setup the parse.
   xfixup_collection imported_xfixups;
   import_ns::string_mapping imported_names;
-  auto parser = pstore::json::make_parser (import_ns::callbacks::make<xfixup_array_root> (
+  auto parser = peejay::make_parser (import_ns::callbacks::make<xfixup_array_root> (
     &import_db_, &imported_names, &imported_xfixups));
 
   // Import the data that we just exported.
@@ -393,7 +392,7 @@ TEST_F (ExchangeExternalFixups, RoundTripForTwoFixups) {
   import_ns::string_mapping imported_names;
   {
     using namespace import_ns;
-    auto parser = pstore::json::make_parser (
+    auto parser = peejay::make_parser (
       callbacks::make<
         array_rule<strings_array_members, decltype (&transaction), decltype (&imported_names)>> (
         &import_db_, &transaction, &imported_names));
@@ -407,7 +406,7 @@ TEST_F (ExchangeExternalFixups, RoundTripForTwoFixups) {
     xfixup_collection imported_xfixups;
     imported_xfixups.reserve (2);
 
-    auto parser = pstore::json::make_parser (import_ns::callbacks::make<xfixup_array_root> (
+    auto parser = peejay::make_parser (import_ns::callbacks::make<xfixup_array_root> (
       &import_db_, &imported_names, &imported_xfixups));
     parser.input (exported_fixups.str ()).eof ();
 
@@ -439,8 +438,7 @@ namespace {
                                   pstore::exchange::import_ns::string_mapping const & names,
                                   not_null<external_fixup_collection *> const fixups) {
       using namespace pstore::exchange::import_ns;
-      auto parser =
-        pstore::json::make_parser (callbacks::make<xfixups_object> (db, &names, fixups));
+      auto parser = peejay::make_parser (callbacks::make<xfixups_object> (db, &names, fixups));
       parser.input (src);
       parser.eof ();
       return parser;

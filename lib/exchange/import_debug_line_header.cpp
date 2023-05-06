@@ -39,7 +39,7 @@ namespace pstore::exchange::import_ns {
 
   // string value
   // ~~~~~~~~~~~~
-  std::error_code debug_line_index::string_value (std::string const & s) {
+  std::error_code debug_line_index::string_value (peejay::u8string_view s) {
     // Decode the received string to get the raw binary.
     std::vector<std::uint8_t> data;
     if (!from_base64 (std::begin (s), std::end (s), std::back_inserter (data))) {
@@ -62,7 +62,7 @@ namespace pstore::exchange::import_ns {
 
   // key
   // ~~~
-  std::error_code debug_line_index::key (std::string const & s) {
+  std::error_code debug_line_index::key (peejay::u8string_view s) {
     if (std::optional<uint128> const digest = uint128::from_hex_string (s)) {
       digest_ = *digest;
       return {};

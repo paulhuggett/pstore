@@ -77,7 +77,7 @@ namespace pstore::exchange::import_ns {
   //* (_-<  _| '_| | ' \/ _` | | '_| || | / -_) *
   //* /__/\__|_| |_|_||_\__, | |_|  \_,_|_\___| *
   //*                   |___/                   *
-  std::error_code string_rule::string_value (std::string const & v) {
+  std::error_code string_rule::string_value (peejay::u8string_view v) {
     *v_ = v;
     return pop ();
   }

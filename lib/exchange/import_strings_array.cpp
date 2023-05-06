@@ -34,7 +34,7 @@ namespace pstore::exchange::import_ns {
 
   // string value
   // ~~~~~~~~~~~~
-  std::error_code strings_array_members::string_value (std::string const & str) {
+  std::error_code strings_array_members::string_value (peejay::u8string_view str) {
     return strings_->add_string (transaction_.get (), str);
   }
 

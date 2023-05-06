@@ -23,10 +23,10 @@ namespace pstore::exchange::import_ns {
 
     // string value
     // ~~~~~~~~~~~~
-    std::error_code section_name::string_value (std::string const & s) {
+    std::error_code section_name::string_value (peejay::u8string_view s) {
       // TODO: this map appears both here and in the fragment code.
 #define X(a) {#a, pstore::repo::section_kind::a},
-      static std::unordered_map<std::string, repo::section_kind> map = {
+      static std::unordered_map<peejay::u8string_view, repo::section_kind> map = {
         PSTORE_MCREPO_SECTION_KINDS};
 #undef X
       auto const pos = map.find (s);
@@ -61,7 +61,7 @@ namespace pstore::exchange::import_ns {
 
   // key
   // ~~~
-  std::error_code internal_fixup::key (std::string const & k) {
+  std::error_code internal_fixup::key (peejay::u8string_view k) {
     if (k == "section") {
       seen_[section] = true;
       return this->push<details::section_name> (&section_);
@@ -119,7 +119,7 @@ namespace pstore::exchange::import_ns {
 
   // key
   // ~~~
-  std::error_code external_fixup::key (std::string const & k) {
+  std::error_code external_fixup::key (peejay::u8string_view k) {
     if (k == "name") {
       seen_[name_index] = true;
       return this->push<uint64_rule> (&name_);

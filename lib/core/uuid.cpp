@@ -135,7 +135,7 @@ namespace pstore {
 
   // from string
   // ~~~~~~~~~~~
-  std::optional<uuid> uuid::from_string (std::string const & str) {
+  std::optional<uuid> uuid::from_string (std::string_view str) {
     if (str.length () != string_length) {
       return {};
     }

@@ -22,6 +22,7 @@
 #ifndef PSTORE_HTTP_SERVE_DYNAMIC_CONTENT_HPP
 #define PSTORE_HTTP_SERVE_DYNAMIC_CONTENT_HPP
 
+// standard library
 #include <functional>
 #include <limits>
 #include <sstream>
@@ -29,6 +30,10 @@
 #include <type_traits>
 #include <unordered_map>
 
+// 3rd party
+#include "peejay/json.hpp"
+
+// pstore
 #include "pstore/adt/error_or.hpp"
 #include "pstore/core/file_header.hpp"
 #include "pstore/http/error.hpp"
@@ -37,7 +42,6 @@
 #include "pstore/http/query_to_kvp.hpp"
 #include "pstore/http/quit.hpp"
 #include "pstore/http/send.hpp"
-#include "pstore/json/utility.hpp"
 #include "pstore/support/array_elements.hpp"
 
 namespace pstore {
@@ -53,9 +57,7 @@ namespace pstore {
         std::ostringstream os;
         os << R"({ "version": ")" << header::major_version << '.' << header::minor_version
            << "\" }";
-        auto const & v = os.str ();
-        PSTORE_ASSERT (json::is_valid (v));
-        return v;
+        return os.str ();
       };
       static std::string const version = version_string ();
       static auto const modified = std::chrono::system_clock::now ();

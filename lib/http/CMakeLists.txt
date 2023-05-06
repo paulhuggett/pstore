@@ -60,9 +60,9 @@ add_pstore_library (
     INCLUDES "${pstore_http_includes}"
 )
 target_link_libraries (pstore-http PUBLIC
+    peejay
     pstore-adt
     pstore-brokerface
-    pstore-json-lib
     pstore-romfs
     pstore-os
     pstore-support
@@ -87,9 +87,9 @@ if (PSTORE_ENABLE_BROKER AND NOT PSTORE_EXCEPTIONS)
     set (PSTORE_EXCEPTIONS No)
 
     target_link_libraries (pstore-http-ex PUBLIC
+        peejay
         pstore-adt-ex
         pstore-brokerface-ex
-        pstore-json-lib-ex
         pstore-romfs-ex
         pstore-os-ex
         pstore-support-ex

@@ -82,10 +82,10 @@ namespace pstore {
     /// Converts a string to a UUID following the convention defined by RFC4122. If the string
     /// is not valid, returns nothing<uuid>.
     ///
-    /// \param s  A string to be converted to a UUID.
+    /// \param str  A string to be converted to a UUID.
     /// \returns  just<uuid>() if the string \p s was valid according to the description in
     ///   RFC4122. If the string was invalid, nothing<uuid>.
-    static std::optional<uuid> from_string (std::string const & s);
+    static std::optional<uuid> from_string (std::string_view str);
 
     iterator begin () noexcept { return std::begin (data_); }
     const_iterator begin () const noexcept { return std::begin (data_); }

@@ -76,5 +76,5 @@ add_pstore_library (
     HEADER_DIR "${pstore_exchange_include_dir}"
     INCLUDES "${pstore_exchange_includes}"
 )
-target_link_libraries (pstore-exchange PUBLIC pstore-core pstore-json-lib pstore-mcrepo)
+target_link_libraries (pstore-exchange PUBLIC peejay pstore-core pstore-mcrepo)
 add_clang_tidy_target (pstore-exchange)

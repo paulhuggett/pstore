@@ -97,9 +97,9 @@ int main (int argc, char * argv[]) {
 
       parser.input (ptr, ptr + nread);
       if (parser.has_error ()) {
-        auto const coord = parser.coordinate ();
+        auto const coord = parser.pos ();
         error_stream << pstore::utf::to_native_string (input_name ()) << PSTORE_NATIVE_TEXT (":")
-                     << coord.row << PSTORE_NATIVE_TEXT (":") << coord.column
+                     << coord.line << PSTORE_NATIVE_TEXT (":") << coord.column
                      << PSTORE_NATIVE_TEXT (": error: ")
                      << pstore::utf::to_native_string (parser.last_error ().message ())
                      << std::endl;

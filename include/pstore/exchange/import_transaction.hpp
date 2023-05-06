@@ -47,7 +47,7 @@ namespace pstore::exchange::import_ns {
     transaction_contents & operator= (transaction_contents &&) noexcept = delete;
 
   private:
-    std::error_code key (std::string const & s) override;
+    std::error_code key (peejay::u8string_view s) override;
     std::error_code end_object () override;
     gsl::czstring name () const noexcept override;
 
@@ -68,7 +68,7 @@ namespace pstore::exchange::import_ns {
   // key
   // ~~~
   template <typename TransactionLock>
-  std::error_code transaction_contents<TransactionLock>::key (std::string const & s) {
+  std::error_code transaction_contents<TransactionLock>::key (peejay::u8string_view s) {
     // TODO: check that "names" is the first key that we see.
     if (s == "names") {
       return push_array_rule<strings_array_members> (this, &transaction_, names_);

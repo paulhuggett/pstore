@@ -32,7 +32,7 @@ namespace {
     return {};
   }
 
-  std::optional<std::uint64_t> get64 (std::string const & str, unsigned index) {
+  std::optional<std::uint64_t> get64 (std::string_view str, unsigned index) {
     PSTORE_ASSERT (index < str.length ());
     auto result = std::uint64_t{0};
     for (auto shift = 60; shift >= 0; shift -= 4, ++index) {
@@ -60,7 +60,7 @@ namespace pstore {
 
   // from hex string
   // ~~~~~~~~~~~~~~~
-  std::optional<uint128> uint128::from_hex_string (std::string const & str) {
+  std::optional<uint128> uint128::from_hex_string (std::string_view str) {
     if (str.length () != 32) {
       return {};
     }

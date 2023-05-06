@@ -22,11 +22,11 @@
 
 // 3rd party includes
 #include <gtest/gtest.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/exchange/import_section_to_importer.hpp"
 #include "pstore/exchange/import_strings_array.hpp"
-#include "pstore/json/json.hpp"
 
 // Local includes
 #include "add_export_strings.hpp"
@@ -59,8 +59,7 @@ namespace {
   template <typename ImportRule, typename... Args>
   decltype (auto) make_json_object_parser (pstore::database * const db, Args... args) {
     using namespace pstore::exchange::import_ns;
-    return pstore::json::make_parser (
-      callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
+    return peejay::make_parser (callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
   }
 
 } // end anonymous namespace
@@ -93,7 +92,7 @@ TEST_F (GenericSection, RoundTripForAnEmptySection) {
                                                            &imported_content, &inserter);
   parser.input (exported_json).eof ();
   ASSERT_FALSE (parser.has_error ())
-    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.coordinate () << '\n'
+    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.input_pos () << '\n'
     << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
@@ -169,7 +168,7 @@ TEST_F (GenericSection, RoundTripForPopulated) {
     using transaction_lock = std::unique_lock<mock_mutex>;
     auto transaction = begin (import_db_, transaction_lock{mutex});
 
-    auto parser = pstore::json::make_parser (
+    auto parser = peejay::make_parser (
       import_ns::callbacks::make<import_ns::array_rule<
         import_ns::strings_array_members, decltype (&transaction), decltype (&imported_names)>> (
         &import_db_, &transaction, &imported_names));

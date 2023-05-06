@@ -50,7 +50,7 @@ namespace pstore::exchange::import_ns {
     bss_section & operator= (bss_section const &) = delete;
     bss_section & operator= (bss_section &&) = delete;
 
-    std::error_code key (std::string const & k) override;
+    std::error_code key (peejay::u8string_view k) override;
     std::error_code end_object () override;
 
     gsl::czstring name () const noexcept override { return "bss section"; }
@@ -72,7 +72,7 @@ namespace pstore::exchange::import_ns {
   // key
   // ~~~
   template <typename OutputIterator>
-  std::error_code bss_section<OutputIterator>::key (std::string const & k) {
+  std::error_code bss_section<OutputIterator>::key (peejay::u8string_view k) {
     if (k == "align") {
       seen_[align] = true; // integer
       return this->push<uint64_rule> (&align_);

@@ -46,7 +46,8 @@ namespace pstore::exchange::import_ns {
     string_mapping & operator= (string_mapping const &) = delete;
     string_mapping & operator= (string_mapping &&) noexcept = delete;
 
-    std::error_code add_string (not_null<transaction_base *> transaction, std::string const & str);
+    std::error_code add_string (not_null<transaction_base *> transaction,
+                                peejay::u8string_view str);
 
     void flush (not_null<transaction_base *> transaction);
 

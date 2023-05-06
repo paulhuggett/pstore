@@ -32,7 +32,7 @@ namespace pstore::exchange::import_ns {
     uuid_rule & operator= (uuid_rule const &) = delete;
     uuid_rule & operator= (uuid_rule &&) = delete;
 
-    std::error_code string_value (std::string const & v) override;
+    std::error_code string_value (peejay::u8string_view v) override;
     gsl::czstring name () const noexcept override;
 
   private:

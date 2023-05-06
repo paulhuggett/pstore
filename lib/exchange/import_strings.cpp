@@ -33,8 +33,8 @@ namespace pstore::exchange::import_ns {
   // add string
   // ~~~~~~~~~~
   std::error_code string_mapping::add_string (not_null<transaction_base *> const transaction,
-                                              std::string const & str) {
-    strings_.push_back (str);
+                                              peejay::u8string_view str) {
+    strings_.push_back (std::string{str});
     std::string const & x = strings_.back ();
 
     views_.emplace_back (make_sstring_view (x));

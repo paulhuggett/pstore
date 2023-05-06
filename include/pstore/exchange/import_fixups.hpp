@@ -18,8 +18,13 @@
 #ifndef PSTORE_EXCHANGE_IMPORT_FIXUPS_HPP
 #define PSTORE_EXCHANGE_IMPORT_FIXUPS_HPP
 
+// standard library
 #include <bitset>
 
+// 3rd party
+#include "peejay/json.hpp"
+
+// pstore
 #include "pstore/exchange/import_strings.hpp"
 #include "pstore/exchange/import_terminals.hpp"
 #include "pstore/mcrepo/generic_section.hpp"
@@ -48,7 +53,7 @@ namespace pstore::exchange::import_ns {
       section_name & operator= (section_name &&) noexcept = delete;
 
       gsl::czstring name () const noexcept override { return "section name"; }
-      std::error_code string_value (std::string const & s) override;
+      std::error_code string_value (peejay::u8string_view s) override;
 
     private:
       not_null<repo::section_kind *> const section_;
@@ -78,7 +83,7 @@ namespace pstore::exchange::import_ns {
     internal_fixup & operator= (internal_fixup &&) noexcept = delete;
 
     gsl::czstring name () const noexcept override;
-    std::error_code key (std::string const & k) override;
+    std::error_code key (peejay::u8string_view k) override;
     std::error_code end_object () override;
 
   private:
@@ -115,7 +120,7 @@ namespace pstore::exchange::import_ns {
     external_fixup & operator= (external_fixup &&) noexcept = delete;
 
     gsl::czstring name () const noexcept override;
-    std::error_code key (std::string const & k) override;
+    std::error_code key (peejay::u8string_view k) override;
     std::error_code end_object () override;
 
   private:

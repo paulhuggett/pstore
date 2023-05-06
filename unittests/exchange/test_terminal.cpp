@@ -17,15 +17,16 @@
 
 // 3rd party includes
 #include <gmock/gmock.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/exchange/import_error.hpp"
-#include "pstore/json/json.hpp"
 
 // Local includes
 #include "empty_store.hpp"
 
 using namespace pstore::exchange::import_ns;
+using namespace std::string_view_literals;
 
 namespace {
 
@@ -49,7 +50,7 @@ namespace {
     ImportBool () = default;
 
     decltype (auto) make_json_bool_parser (pstore::gsl::not_null<bool *> v) {
-      return pstore::json::make_parser (callbacks::make<bool_rule> (&db_, v));
+      return peejay::make_parser (callbacks::make<bool_rule> (&db_, v));
     }
   };
 
@@ -58,7 +59,7 @@ namespace {
 TEST_F (ImportBool, True) {
   bool v = false;
   auto parser = make_json_bool_parser (&v);
-  parser.input ("true");
+  parser.input ("true"sv);
   parser.eof ();
 
   // Check the result.
@@ -69,7 +70,7 @@ TEST_F (ImportBool, True) {
 TEST_F (ImportBool, False) {
   bool v = true;
   auto parser = make_json_bool_parser (&v);
-  parser.input ("false");
+  parser.input ("false"sv);
   parser.eof ();
 
   // Check the result.
@@ -83,7 +84,7 @@ namespace {
   public:
     ImportInt64 () = default;
     decltype (auto) make_json_int64_parser (pstore::gsl::not_null<std::int64_t *> v) {
-      return pstore::json::make_parser (callbacks::make<int64_rule> (&db_, v));
+      return peejay::make_parser (callbacks::make<int64_rule> (&db_, v));
     }
   };
 
@@ -92,7 +93,7 @@ namespace {
 TEST_F (ImportInt64, Zero) {
   auto v = std::int64_t{0};
   auto parser = make_json_int64_parser (&v);
-  parser.input ("0");
+  parser.input ("0"sv);
   parser.eof ();
 
   // Check the result.
@@ -103,7 +104,7 @@ TEST_F (ImportInt64, Zero) {
 TEST_F (ImportInt64, One) {
   auto v = std::int64_t{0};
   auto parser = make_json_int64_parser (&v);
-  parser.input ("1");
+  parser.input ("1"sv);
   parser.eof ();
 
   // Check the result.
@@ -114,7 +115,7 @@ TEST_F (ImportInt64, One) {
 TEST_F (ImportInt64, NegativeOne) {
   auto v = std::int64_t{0};
   auto parser = make_json_int64_parser (&v);
-  parser.input ("-1");
+  parser.input ("-1"sv);
   parser.eof ();
 
   // Check the result.

@@ -28,11 +28,11 @@
 
 // 3rd party includes
 #include <gmock/gmock.h>
+#include "peejay/json.hpp"
 
 // pstore includes
 #include "pstore/exchange/export_fragment.hpp"
 #include "pstore/exchange/import_fragment.hpp"
-#include "pstore/json/json.hpp"
 
 // Local includes
 #include "empty_store.hpp"
@@ -95,7 +95,7 @@ namespace {
   template <typename ImportRule, typename... Args>
   decltype (auto) make_json_object_parser (database * const db, Args... args) {
     using namespace pstore::exchange::import_ns;
-    return json::make_parser (callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
+    return peejay::make_parser (callbacks::make<object_rule<ImportRule, Args...>> (db, args...));
   }
 
 
@@ -173,11 +173,10 @@ TEST_F (LinkedDefinitionsSection, RoundTripForPopulated) {
         &import_db_, &transaction, &imported_names, &imported_digest);
       parser.input (exported_json).eof ();
       ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ()
-                                         << ' ' << parser.coordinate () << '\n'
+                                         << ' ' << parser.input_pos () << '\n'
                                          << exported_json;
 
-      std::shared_ptr<exchange::import_ns::context> const & ctxt =
-        parser.callbacks ().get_context ();
+      std::shared_ptr<exchange::import_ns::context> const & ctxt = parser.backend ().get_context ();
       ctxt->apply_patches (&transaction);
     }
     transaction.commit ();

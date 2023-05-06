@@ -20,8 +20,13 @@
 #ifndef PSTORE_EXCHANGE_IMPORT_RULE_HPP
 #define PSTORE_EXCHANGE_IMPORT_RULE_HPP
 
+// standard library
 #include <sstream>
 
+// 3rd party
+#include "peejay/json.hpp"
+
+// pstore
 #include "pstore/exchange/import_context.hpp"
 #include "pstore/os/logging.hpp"
 
@@ -56,13 +61,13 @@ namespace pstore::exchange::import_ns {
     virtual std::error_code int64_value (std::int64_t value);
     virtual std::error_code uint64_value (std::uint64_t value);
     virtual std::error_code double_value (double value);
-    virtual std::error_code string_value (std::string const & value);
+    virtual std::error_code string_value (peejay::u8string_view value);
     virtual std::error_code boolean_value (bool value);
     virtual std::error_code null_value ();
     virtual std::error_code begin_array ();
     virtual std::error_code end_array ();
     virtual std::error_code begin_object ();
-    virtual std::error_code key (std::string const & key);
+    virtual std::error_code key (peejay::u8string_view key);
     virtual std::error_code end_object ();
 
     /// Creates an instance of type T and pushes it onto the parse stack. The provided
@@ -144,13 +149,13 @@ namespace pstore::exchange::import_ns {
     std::error_code int64_value (std::int64_t const v) { return top ()->int64_value (v); }
     std::error_code uint64_value (std::uint64_t const v) { return top ()->uint64_value (v); }
     std::error_code double_value (double const v) { return top ()->double_value (v); }
-    std::error_code string_value (std::string const & v) { return top ()->string_value (v); }
+    std::error_code string_value (peejay::u8string_view v) { return top ()->string_value (v); }
     std::error_code boolean_value (bool const v) { return top ()->boolean_value (v); }
     std::error_code null_value () { return top ()->null_value (); }
     std::error_code begin_array () { return top ()->begin_array (); }
     std::error_code end_array () { return top ()->end_array (); }
     std::error_code begin_object () { return top ()->begin_object (); }
-    std::error_code key (std::string const & k) { return top ()->key (k); }
+    std::error_code key (std::string_view k) { return top ()->key (k); }
     std::error_code end_object () { return top ()->end_object (); }
 
   private:
