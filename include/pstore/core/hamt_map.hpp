@@ -68,7 +68,7 @@ namespace pstore {
       using mapped_type = ValueType;
       using value_type = std::pair<KeyType const, ValueType>;
 
-      /// Inner class that describes a const_iterator and 'regular' iterator.
+      /// Inner class that describes both const- and non-const iterator.
       template <bool IsConstIterator = true>
       class iterator_base {
         // Make iterator_base<true> a friend class of iterator_base<false> so the copy
@@ -170,7 +170,7 @@ namespace pstore {
 
         /// Postfix increment operator (e.g., it++)
         iterator_base operator++ (int) {
-          iterator_base const old (*this);
+          auto const old = *this;
           ++(*this);
           return old;
         }
