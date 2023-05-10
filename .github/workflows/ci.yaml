@@ -37,22 +37,6 @@ jobs:
                       os: ubuntu-latest
 
 
-                    - name: Ubuntu-20.04/clang-8/Debug
-                      apt_install: clang-8 ninja-build
-                      build_type: Debug
-                      cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-8 -DCMAKE_C_COMPILER=clang-8
-                      generator: Ninja
-                      options: '-DPSTORE_ALWAYS_SPANNING=Yes'
-                      os: ubuntu-20.04
-
-                    - name: Ubuntu-20.04/clang-8/Release
-                      apt_install: clang-8 ninja-build
-                      build_type: Release
-                      cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-8 -DCMAKE_C_COMPILER=clang-8
-                      generator: Ninja
-                      os: ubuntu-20.04
-
-
                     - name: Ubuntu-latest/clang-12/Debug
                       apt_install: valgrind ninja-build
                       build_type: Debug
