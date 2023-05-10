@@ -57,7 +57,6 @@ list (APPEND PSTORE_SRC
 # Support #
 ###########
 list (APPEND pstore_core_includes
-    array_stack.hpp
     crc32.hpp
     sstring_view_archive.hpp
     time.hpp

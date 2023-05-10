@@ -19,8 +19,14 @@
 #ifndef PSTORE_CORE_HAMT_MAP_TYPES_HPP
 #define PSTORE_CORE_HAMT_MAP_TYPES_HPP
 
+// standard library
+#include <stack>
+
+// 3rd party
+#include "peejay/arrayvec.hpp"
+
+// pstore
 #include "pstore/adt/chunked_sequence.hpp"
-#include "pstore/core/array_stack.hpp"
 #include "pstore/core/db_archive.hpp"
 
 namespace pstore {
@@ -283,8 +289,7 @@ namespace pstore {
         std::size_t position = 0;
       };
 
-      using parent_stack = array_stack<parent_type, max_tree_depth>;
-
+      using parent_stack = std::stack<parent_type, peejay::arrayvec<parent_type, max_tree_depth>>;
 
       //*  _ _                                  _      *
       //* | (_)_ _  ___ __ _ _ _   _ _  ___  __| |___  *

@@ -18,7 +18,6 @@
 add_pstore_unit_test (pstore-core-unit-tests
     leak_check_fixture.hpp
     test_address.cpp
-    test_array_stack.cpp
     test_base32.cpp
     test_basic_logger.cpp
     test_crc32.cpp
