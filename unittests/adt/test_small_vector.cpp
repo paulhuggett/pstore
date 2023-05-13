@@ -313,3 +313,79 @@ TEST (SmallVector, CapacityReserve) {
   a.reserve (1U);
   EXPECT_EQ (a.capacity (), 10U);
 }
+
+TEST (SmallVector, PopBack) {
+  pstore::small_vector<int, 2> a{1, 2};
+  a.pop_back ();
+  EXPECT_THAT (a, testing::ElementsAre (1));
+  a.pop_back ();
+  EXPECT_TRUE (a.empty ());
+
+  pstore::small_vector<int, 2> b{1, 2, 3};
+  b.pop_back ();
+  EXPECT_THAT (b, testing::ElementsAre (1, 2));
+  b.pop_back ();
+  EXPECT_THAT (b, testing::ElementsAre (1));
+  b.pop_back ();
+  EXPECT_TRUE (b.empty ());
+}
+
+template <typename TypeParam>
+class SmallVectorErase : public testing::Test {
+};
+
+using Sizes = testing::Types<std::integral_constant<std::size_t, 2>,
+                             std::integral_constant<std::size_t, 3>,
+                             std::integral_constant<std::size_t, 4>>;
+TYPED_TEST_SUITE (SmallVectorErase, Sizes, );
+
+
+// NOLINTNEXTLINE
+TYPED_TEST (SmallVectorErase, SinglePos) {
+  pstore::small_vector<int, TypeParam::value> v{1, 2, 3};
+  EXPECT_EQ (v.erase (v.cbegin ()), v.begin());
+  EXPECT_THAT (v, testing::ElementsAre (2, 3));
+  EXPECT_EQ (v.erase (v.cbegin ()), v.begin());
+  EXPECT_THAT (v, testing::ElementsAre (3));
+  EXPECT_EQ (v.erase (v.cbegin ()), v.begin());
+  EXPECT_TRUE (v.empty ());
+}
+// NOLINTNEXTLINE
+TYPED_TEST (SmallVectorErase, SingleSecondElement) {
+  pstore::small_vector<int, TypeParam::value> v{1, 2, 3};
+  EXPECT_EQ (v.erase (v.begin () + 1), v.begin () + 1);
+  EXPECT_THAT (v, testing::ElementsAre (1, 3));
+}
+// NOLINTNEXTLINE
+TYPED_TEST (SmallVectorErase, SingleFinalElement) {
+  pstore::small_vector<int, TypeParam::value> v{1, 2, 3};
+  EXPECT_EQ (v.erase (v.begin () + 2), v.begin () + 2);
+  EXPECT_THAT (v, testing::ElementsAre (1, 2));
+}
+// NOLINTNEXTLINE
+TYPED_TEST (SmallVectorErase, RangeAll) {
+  pstore::small_vector<int, TypeParam::value> a{1, 2, 3};
+  EXPECT_EQ (a.erase (a.begin (), a.end ()), a.end());
+  EXPECT_TRUE (a.empty ());
+}
+// NOLINTNEXTLINE
+TYPED_TEST(SmallVectorErase, RangeFirstTwo) {
+  pstore::small_vector<int, TypeParam::value> b{1, 2, 3};
+  auto const first = b.begin ();
+  EXPECT_EQ (b.erase (first, first + 2), first);
+  EXPECT_THAT (b, testing::ElementsAre (3));
+}
+// NOLINTNEXTLINE
+TYPED_TEST(SmallVectorErase, RangeFirstOnly) {
+  pstore::small_vector<int, TypeParam::value> b{1, 2, 3};
+  auto const first = b.begin ();
+  EXPECT_EQ (b.erase (first, first + 1), first);
+  EXPECT_THAT (b, testing::ElementsAre (2, 3));
+}
+// NOLINTNEXTLINE
+TYPED_TEST(SmallVectorErase, RangeSecondToEnd) {
+  pstore::small_vector<int, TypeParam::value> b{1, 2, 3};
+  auto const first = b.begin () + 1;
+  EXPECT_EQ (b.erase (first, b.end ()), first);
+  EXPECT_THAT (b, testing::ElementsAre (1));
+}

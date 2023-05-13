@@ -177,6 +177,45 @@ namespace pstore {
       std::visit ([] (auto & a) { a.clear (); }, arr_);
     }
 
+    /// Erases the specified element from the container. Invalidates iterators
+    /// and references at or after the point of the erase, including the end()
+    /// iterator.
+    ///
+    /// \p pos Iterator to the element to remove.
+    /// \returns Iterator following the last removed element. If \p pos refers
+    ///   to the last element, then the end() iterator is returned.
+    iterator erase (const_iterator pos) {
+      return std::visit ([this, pos] (auto & v) {
+        // Convert 'pos' to an iterator in v.
+        auto const vpos = v.begin () + (pos.operator->() - data());
+        // Do the erase itself.
+        auto const it = v.erase (vpos);
+        // convert the result into an iterator in this.
+        return iterator{data() + (it - v.begin())};
+      }, arr_);
+    }
+    /// Erases the elements in the range [\p first, \p last). Invalidates
+    /// iterators and references at or after the point of the erase, including
+    /// the end() iterator.
+    ///
+    /// \p first  The first of the range of elements to remove.
+    /// \p last  The last of the range of elements to remove.
+    /// \returns Iterator following the last removed element. If last == end()
+    ///   prior to removal, then the updated end() iterator is returned. If
+    ///   [\p first, \p last) is an empty range, then last is returned.
+    iterator erase (const_iterator first, const_iterator last) {
+      return std::visit ([this, first, last] (auto & v) {
+        auto b = v.begin();
+        auto * const d = data();
+        auto const vfirst = b + (first.operator->() - d);
+        auto const vlast = b + (last.operator->() - d);
+
+        auto const it = v.erase (vfirst, vlast);
+        // convert the result into an iterator in this.
+        return iterator{data() + (it - v.begin())};
+      }, arr_);
+    }
+
     /// Adds an element to the end.
     void push_back (ElementType const & v);
     template <typename... Args>
@@ -196,6 +235,9 @@ namespace pstore {
       this->append (std::begin (ilist), std::end (ilist));
     }
 
+    void pop_back () {
+      std::visit ([] (auto & v) { v.pop_back (); }, arr_);
+    }
     ///@}
 
   private:

@@ -58,8 +58,13 @@ namespace pstore {
     using reference = value_type &;
     using iterator_category = std::random_access_iterator_tag;
 
-    explicit constexpr pointer_based_iterator (std::nullptr_t) noexcept
-            : pos_{nullptr} {}
+    explicit constexpr pointer_based_iterator (std::nullptr_t) noexcept {}
+
+    /// Copy constructor. Allows for implicit conversion from a regular iterator to a
+    /// const_iterator
+    // NOLINTNEXTLINE(hicpp-explicit-conversions)
+    template <typename OtherType, typename = typename std::enable_if_t<std::is_const_v<T> && !std::is_const_v<OtherType>>>
+    constexpr pointer_based_iterator (pointer_based_iterator<OtherType> rhs) noexcept : pos_{rhs.operator->()} {}
 
     template <typename Other,
               typename = std::enable_if_t<std::is_const_v<T> && !std::is_const_v<Other>>>
@@ -143,7 +148,7 @@ namespace pstore {
     }
 
   private:
-    pointer pos_;
+    pointer pos_ = nullptr;
   };
 
   /// Move an iterator \p i forwards by distance \p n. \p n can be both positive or negative.
