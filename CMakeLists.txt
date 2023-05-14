@@ -214,10 +214,6 @@ else ()
 endif (PSTORE_IS_INSIDE_LLVM)
 
 
-# On Windows, I have to explicitly run python to ensure that lit.py is treated as
-# a python program rather than something to be opened with a random text editor.
-find_package (Python COMPONENTS Interpreter Development)
-
 set (LIT_PARAMS "")
 # Add the examples to the collection of tests.
 if (PSTORE_EXAMPLES)
@@ -257,11 +253,12 @@ if (PSTORE_EXAMPLES)
 endif ()
 
 # Add a target to the build which will run the system tests.
-if (NOT Python_FOUND)
-    message (WARNING "Python was not found so the pstore-system-tests target is not available.")
+find_package (Python3)
+if (NOT Python3_FOUND)
+    message (WARNING "Python3 was not found so the pstore-system-tests target is not available.")
 else ()
     add_custom_target (pstore-system-tests
-        COMMAND "${Python_EXECUTABLE}"
+        COMMAND "${Python3_EXECUTABLE}"
                 "${LIT_EXECUTABLE}"
                 ${LIT_PARAMS}
                 --echo-all-commands
@@ -299,7 +296,7 @@ else ()
     if (PSTORE_EXAMPLES)
         add_dependencies (pstore-system-tests pstore-examples)
     endif (PSTORE_EXAMPLES)
-endif (NOT Python_FOUND)
+endif (NOT Python3_FOUND)
 
 
 
