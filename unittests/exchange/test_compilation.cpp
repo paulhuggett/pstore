@@ -34,6 +34,7 @@
 
 // local includes
 #include "add_export_strings.hpp"
+#include "json_error.hpp"
 
 using namespace std::literals::string_literals;
 
@@ -167,9 +168,7 @@ TEST_F (ExchangeCompilation, Empty) {
     auto name_parser = import_strings_parser (&transaction, &imported_names);
     name_parser.input (exported_names_stream.str ()).eof ();
     ASSERT_FALSE (name_parser.has_error ())
-      << "JSON error was: " << name_parser.last_error ().message () << ' '
-      << name_parser.input_pos () << '\n'
-      << exported_names_stream.str ();
+      << json_error (name_parser) << exported_names_stream.str ();
 
     auto const fragment_index =
       pstore::index::get_index<pstore::trailer::indices::fragment> (import_db_);
@@ -177,9 +176,7 @@ TEST_F (ExchangeCompilation, Empty) {
       import_compilation_parser (&transaction, &imported_names, fragment_index, compilation_digest);
     compilation_parser.input (exported_compilation_stream.str ()).eof ();
     ASSERT_FALSE (compilation_parser.has_error ())
-      << "JSON error was: " << compilation_parser.last_error ().message () << ' '
-      << compilation_parser.input_pos () << '\n'
-      << exported_compilation_stream.str ();
+      << json_error (compilation_parser) << exported_compilation_stream.str ();
 
     transaction.commit ();
   }
@@ -258,17 +255,13 @@ TEST_F (ExchangeCompilation, TwoDefinitions) {
     auto name_parser = import_strings_parser (&transaction, &imported_names);
     name_parser.input (exported_names_stream.str ()).eof ();
     ASSERT_FALSE (name_parser.has_error ())
-      << "JSON error was: " << name_parser.last_error ().message () << ' '
-      << name_parser.input_pos () << '\n'
-      << exported_names_stream.str ();
+      << json_error (name_parser) << exported_names_stream.str ();
   }
   {
     auto fragment_parser = import_fragment_parser (&transaction, &imported_names, &fragment_digest);
     fragment_parser.input (exported_fragment_stream.str ()).eof ();
     ASSERT_FALSE (fragment_parser.has_error ())
-      << "JSON error was: " << fragment_parser.last_error ().message () << ' '
-      << fragment_parser.input_pos () << '\n'
-      << exported_fragment_stream.str ();
+      << json_error (fragment_parser) << exported_fragment_stream.str ();
   }
   {
     auto const fragment_index =
@@ -277,9 +270,7 @@ TEST_F (ExchangeCompilation, TwoDefinitions) {
       import_compilation_parser (&transaction, &imported_names, fragment_index, compilation_digest);
     compilation_parser.input (exported_compilation_stream.str ()).eof ();
     ASSERT_FALSE (compilation_parser.has_error ())
-      << "JSON error was: " << compilation_parser.last_error ().message () << ' '
-      << compilation_parser.input_pos () << '\n'
-      << exported_compilation_stream.str ();
+      << json_error (compilation_parser) << exported_compilation_stream.str ();
   }
 
   // Everything is now imported. Let's check what the resulting compilation record looks like.
@@ -341,10 +332,7 @@ TEST_F (ExchangeCompilation, MissingDefinitions) {
   auto transaction = begin (import_db_, transaction_lock{mutex});
   auto name_parser = import_strings_parser (&transaction, &imported_names);
   name_parser.input (names).eof ();
-  ASSERT_FALSE (name_parser.has_error ())
-    << "JSON error was: " << name_parser.last_error ().message () << ' ' << name_parser.input_pos ()
-    << '\n'
-    << names;
+  ASSERT_FALSE (name_parser.has_error ()) << json_error (name_parser) << names;
 
   auto const fragment_index =
     pstore::index::get_index<pstore::trailer::indices::fragment> (import_db_);

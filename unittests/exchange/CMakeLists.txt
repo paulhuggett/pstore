@@ -17,6 +17,7 @@ include (add_pstore)
 add_pstore_unit_test (pstore-exchange-unit-tests
     add_export_strings.hpp
     compare_external_fixups.hpp
+    json_error.hpp
     section_helper.hpp
     test_bss_section.cpp
     test_compilation.cpp

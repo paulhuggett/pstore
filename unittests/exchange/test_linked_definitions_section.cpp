@@ -36,6 +36,7 @@
 
 // Local includes
 #include "empty_store.hpp"
+#include "json_error.hpp"
 
 using namespace pstore;
 
@@ -172,9 +173,7 @@ TEST_F (LinkedDefinitionsSection, RoundTripForPopulated) {
       auto parser = make_json_object_parser<exchange::import_ns::fragment_sections> (
         &import_db_, &transaction, &imported_names, &imported_digest);
       parser.input (exported_json).eof ();
-      ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ()
-                                         << ' ' << parser.input_pos () << '\n'
-                                         << exported_json;
+      ASSERT_FALSE (parser.has_error ()) << json_error (parser) << exported_json;
 
       std::shared_ptr<exchange::import_ns::context> const & ctxt = parser.backend ().get_context ();
       ctxt->apply_patches (&transaction);

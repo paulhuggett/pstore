@@ -36,6 +36,7 @@
 // Local includes
 #include "add_export_strings.hpp"
 #include "empty_store.hpp"
+#include "json_error.hpp"
 
 using namespace std::string_literals;
 
@@ -91,6 +92,7 @@ TEST_F (ExchangePaths, ExportEmpty) {
   EXPECT_EQ (exported_strings.size (), 0U);
 }
 
+
 TEST_F (ExchangePaths, ImportEmpty) {
   auto const exported_paths = "[]\n"s;
 
@@ -101,10 +103,7 @@ TEST_F (ExchangePaths, ImportEmpty) {
   {
     auto name_parser = import_strings_parser (&transaction, &imported_paths);
     name_parser.input (exported_paths).eof ();
-    ASSERT_FALSE (name_parser.has_error ())
-      << "JSON error was: " << name_parser.last_error ().message () << ' '
-      << name_parser.input_pos () << '\n'
-      << exported_paths;
+    ASSERT_FALSE (name_parser.has_error ()) << json_error (name_parser) << exported_paths;
   }
 
   imported_paths.flush (&transaction);
@@ -146,9 +145,7 @@ TEST_F (ExchangePaths, RoundTripForTwoPaths) {
       auto name_parser = import_strings_parser (&transaction, &imported_names);
       name_parser.input (exported_names_stream.str ()).eof ();
       ASSERT_FALSE (name_parser.has_error ())
-        << "JSON error was: " << name_parser.last_error ().message () << ' '
-        << name_parser.input_pos () << '\n'
-        << exported_names_stream.str ();
+        << json_error (name_parser) << exported_names_stream.str ();
     }
     transaction.commit ();
   }

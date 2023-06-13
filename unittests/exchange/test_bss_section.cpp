@@ -32,6 +32,7 @@
 #include "add_export_strings.hpp"
 #include "compare_external_fixups.hpp"
 #include "empty_store.hpp"
+#include "json_error.hpp"
 #include "section_helper.hpp"
 
 namespace {
@@ -92,9 +93,7 @@ TEST_F (BssSection, RoundTripForAnEmptySection) {
   auto parser = make_json_object_parser<section_importer> (&import_db_, kind, &imported_names,
                                                            &imported_content, &inserter);
   parser.input (exported_json).eof ();
-  ASSERT_FALSE (parser.has_error ())
-    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.input_pos () << '\n'
-    << exported_json;
+  ASSERT_FALSE (parser.has_error ()) << json_error{parser} << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
     << "Expected a single creation dispatcher to be added to the dispatchers container";
@@ -141,9 +140,7 @@ TEST_F (BssSection, RoundTripForPopulated) {
   auto parser = make_json_object_parser<section_importer> (&import_db_, kind, &imported_names,
                                                            &imported_content, &inserter);
   parser.input (exported_json).eof ();
-  ASSERT_FALSE (parser.has_error ())
-    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.input_pos () << '\n'
-    << exported_json;
+  ASSERT_FALSE (parser.has_error ()) << json_error{parser} << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
     << "Expected a single creation dispatcher to be added to the dispatchers container";

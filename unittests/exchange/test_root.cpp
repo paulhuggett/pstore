@@ -25,6 +25,7 @@
 
 // Local includes
 #include "empty_store.hpp"
+#include "json_error.hpp"
 
 using namespace std::string_view_literals;
 
@@ -43,7 +44,6 @@ namespace {
 
 } // end anonymous namespace
 
-
 TEST_F (ExchangeRoot, ImportId) {
   using namespace pstore::exchange;
 
@@ -52,9 +52,7 @@ TEST_F (ExchangeRoot, ImportId) {
 
   peejay::parser<import_ns::callbacks> parser = import_ns::create_parser (import_db_);
   parser.input (json).eof ();
-  ASSERT_FALSE (parser.has_error ())
-    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.input_pos () << '\n'
-    << json;
+  ASSERT_FALSE (parser.has_error ()) << json_error (parser) << json;
 
   EXPECT_EQ (import_db_.get_header ().id (), pstore::uuid{"7a73d64e-5873-439c-ac8f-2b3a68aebe53"})
     << "The file UUID was not preserved by import";

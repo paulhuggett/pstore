@@ -32,6 +32,7 @@
 #include "add_export_strings.hpp"
 #include "compare_external_fixups.hpp"
 #include "empty_store.hpp"
+#include "json_error.hpp"
 #include "section_helper.hpp"
 
 namespace {
@@ -91,9 +92,7 @@ TEST_F (GenericSection, RoundTripForAnEmptySection) {
   auto parser = make_json_object_parser<section_importer> (&import_db_, kind, &imported_names,
                                                            &imported_content, &inserter);
   parser.input (exported_json).eof ();
-  ASSERT_FALSE (parser.has_error ())
-    << "JSON error was: " << parser.last_error ().message () << ' ' << parser.input_pos () << '\n'
-    << exported_json;
+  ASSERT_FALSE (parser.has_error ()) << json_error (parser) << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
     << "Expected a single creation dispatcher to be added to the dispatchers container";
@@ -173,8 +172,7 @@ TEST_F (GenericSection, RoundTripForPopulated) {
         import_ns::strings_array_members, decltype (&transaction), decltype (&imported_names)>> (
         &import_db_, &transaction, &imported_names));
     parser.input (exported_names_stream.str ()).eof ();
-    ASSERT_FALSE (parser.has_error ())
-      << "Expected the JSON parse to succeed (" << parser.last_error ().message () << ')';
+    ASSERT_FALSE (parser.has_error ()) << json_error (parser);
 
     transaction.commit ();
   }
@@ -192,7 +190,7 @@ TEST_F (GenericSection, RoundTripForPopulated) {
   auto parser = make_json_object_parser<section_importer> (&import_db_, kind, &imported_names,
                                                            &imported_content, &inserter);
   parser.input (exported_json).eof ();
-  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  ASSERT_FALSE (parser.has_error ()) << json_error (parser);
 
   ASSERT_EQ (dispatchers.size (), 1U)
     << "Expected a single creation dispatcher to be added to the dispatchers container";
@@ -255,7 +253,7 @@ TEST_F (GenericSectionImport, TextEmptySuccess) {
   auto const & parser = parse<pstore::repo::section_kind::text> (
     R"({ "align":8, "data":"" })", &db_, pstore::exchange::import_ns::string_mapping{}, &inserter,
     &imported_content);
-  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  ASSERT_FALSE (parser.has_error ()) << json_error (parser);
 
   EXPECT_EQ (imported_content.kind, pstore::repo::section_kind::text);
   EXPECT_EQ (imported_content.align, 8U);
@@ -273,7 +271,7 @@ TEST_F (GenericSectionImport, TextMissingAlign) {
   auto const & parser = parse<pstore::repo::section_kind::text> (
     R"({ "data":"" })", &db_, pstore::exchange::import_ns::string_mapping{}, &inserter,
     &imported_content);
-  ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
+  ASSERT_FALSE (parser.has_error ()) << json_error (parser);
   EXPECT_EQ (imported_content.align, 1U);
   EXPECT_TRUE (imported_content.data.empty ());
 }

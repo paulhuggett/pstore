@@ -98,7 +98,8 @@ namespace pstore {
     ///@{
     /// Returns the number of elements.
     std::size_t size () const noexcept {
-      return std::visit ([] (auto const & a) { return a.size (); }, arr_);
+      return std::visit ([] (auto const & a) { return static_cast<std::size_t> (a.size ()); },
+                         arr_);
     }
     std::size_t size_bytes () const noexcept { return size () * sizeof (ElementType); }
 
@@ -260,7 +261,9 @@ namespace pstore {
   template <typename ElementType, std::size_t BodyElements>
   small_vector<ElementType, BodyElements>::small_vector (std::size_t const required_elements) {
     if (required_elements <= BodyElements) {
-      arr_.template emplace<small_type> (required_elements);
+      small_type s (static_cast<typename small_type::size_type> (required_elements));
+      arr_.template emplace<small_type> (
+        static_cast<typename small_type::size_type> (required_elements));
     } else {
       arr_.template emplace<large_type> (required_elements);
     }

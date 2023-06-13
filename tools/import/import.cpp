@@ -99,7 +99,8 @@ int main (int argc, char * argv[]) {
       if (parser.has_error ()) {
         auto const coord = parser.pos ();
         error_stream << pstore::utf::to_native_string (input_name ()) << PSTORE_NATIVE_TEXT (":")
-                     << coord.line << PSTORE_NATIVE_TEXT (":") << coord.column
+                     << static_cast<unsigned> (peejay::line{coord}) << PSTORE_NATIVE_TEXT (":")
+                     << static_cast<unsigned> (peejay::column{coord})
                      << PSTORE_NATIVE_TEXT (": error: ")
                      << pstore::utf::to_native_string (parser.last_error ().message ())
                      << std::endl;
