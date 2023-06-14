@@ -16,6 +16,8 @@
 #ifndef SWITCHES_HPP
 #define SWITCHES_HPP
 
+#define NOMINMAX
+
 #include <chrono>
 #include <memory>
 #include <optional>
