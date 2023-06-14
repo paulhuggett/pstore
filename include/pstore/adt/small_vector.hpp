@@ -79,10 +79,18 @@ namespace pstore {
     }
 
     const_reference operator[] (std::size_t n) const noexcept {
-      return std::visit ([n] (auto const & a) -> const_reference { return a[n]; }, arr_);
+      return std::visit (
+        [n] (auto const & a) -> const_reference {
+          return a[static_cast<typename std::decay_t<decltype (a)>::size_type> (n)];
+        },
+        arr_);
     }
     reference operator[] (std::size_t n) noexcept {
-      return std::visit ([n] (auto & a) -> reference { return a[n]; }, arr_);
+      return std::visit (
+        [n] (auto & a) -> reference {
+          return a[static_cast<typename std::decay_t<decltype (a)>::size_type> (n)];
+        },
+        arr_);
     }
 
     const_reference back () const {
@@ -315,7 +323,8 @@ namespace pstore {
 
     auto & arr = std::get<small_type> (arr_);
     if (new_elements <= BodyElements) {
-      arr.resize (new_elements); // Resize entirely within the small buffer.
+      arr.resize (static_cast<typename small_type::size_type> (
+        new_elements)); // Resize entirely within the small buffer.
     } else {
       to_large ()->resize (new_elements);
     }
