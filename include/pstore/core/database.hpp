@@ -58,9 +58,9 @@ namespace pstore {
   }
 
 #ifdef __clang_major__
-#  define PSTORE_CLANG_PRAGMA(x) _Pragma (x)
+#  define PSTORE_CLANG_PRAGMA(x) do { _Pragma (x); } while(0)
 #else
-#  define PSTORE_CLANG_PRAGMA(x)
+#  define PSTORE_CLANG_PRAGMA(x) do {} while(0)
 #endif
   template <typename To, typename From>
   unique_pointer<To> unique_pointer_cast (unique_pointer<From> && p) {
