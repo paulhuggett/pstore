@@ -47,9 +47,6 @@ namespace {
 
 namespace pstore {
 
-  constexpr std::uint64_t storage::full_region_size;
-  constexpr std::uint64_t storage::min_region_size;
-
   // truncate to physical size
   // ~~~~~~~~~~~~~~~~~~~~~~~~~
   void storage::truncate_to_physical_size () {

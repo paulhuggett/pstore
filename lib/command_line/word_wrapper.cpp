@@ -21,8 +21,6 @@
 
 namespace pstore::command_line {
 
-  constexpr std::size_t word_wrapper::default_width;
-
   // (ctor)
   // ~~~~~~
   word_wrapper::word_wrapper (std::string const & text, std::size_t const max_width,

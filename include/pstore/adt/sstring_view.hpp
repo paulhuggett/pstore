@@ -224,9 +224,6 @@ namespace pstore {
     static gsl::czstring data (sstring_view<PointerType> const & s) noexcept { return s.data (); }
   };
 
-  template <typename PointerType>
-  constexpr typename sstring_view<PointerType>::size_type sstring_view<PointerType>::npos;
-
   // compare
   // ~~~~~~~
   template <typename PointerType>

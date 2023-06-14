@@ -1629,8 +1629,6 @@ namespace {
     static std::map<std::string, std::uint64_t> const hashes_;
   };
 
-  constexpr unsigned CorruptInternalNodes::branch_children;
-
   std::map<std::string, std::uint64_t> const CorruptInternalNodes::hashes_{
     {"a", UINT64_C (0b0000'00000000)},
     {"b", UINT64_C (0b0000'00000001)},

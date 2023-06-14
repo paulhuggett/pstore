@@ -33,8 +33,6 @@ namespace {
     static constexpr revision_number db_head_revision = 8U;
   };
 
-  constexpr revision_number RevisionsFixture::db_head_revision;
-
 } // namespace
 
 TEST_F (RevisionsFixture, InitNothing) {

@@ -612,10 +612,6 @@ namespace pstore {
     //* | ' \/ _` | '  \  _| | '  \/ _` | '_ \ *
     //* |_||_\__,_|_|_|_\__| |_|_|_\__,_| .__/ *
     //*                                 |_|    *
-    template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
-    constexpr std::array<std::uint8_t, 8>
-      hamt_map<KeyType, ValueType, Hash, KeyEqual>::index_signature;
-
     // (ctor)
     // ~~~~~~
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>

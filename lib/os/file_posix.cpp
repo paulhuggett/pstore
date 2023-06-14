@@ -150,8 +150,6 @@ namespace {
 
 namespace pstore::file {
 
-  constexpr file_handle::oshandle file_handle::invalid_oshandle;
-
   //*   __ _ _       _                 _ _      *
   //*  / _(_) |___  | |_  __ _ _ _  __| | |___  *
   //* |  _| | / -_) | ' \/ _` | ' \/ _` | / -_) *

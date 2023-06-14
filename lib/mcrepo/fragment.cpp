@@ -87,8 +87,6 @@ namespace {
 //* |_| |_| \__,_\__, |_|_|_\___|_||_\__| *
 //*              |___/                    *
 
-constexpr std::array<char, 8> fragment::fragment_signature_;
-
 // load
 // ~~~~
 std::shared_ptr<fragment const> fragment::load (pstore::database const & db,

@@ -94,8 +94,6 @@ definition::definition (pstore::index::digest const d, pstore::extent<fragment> 
 //* / _/ _ \ '  \| '_ \ | / _` |  _| / _ \ ' \  *
 //* \__\___/_|_|_| .__/_|_\__,_|\__|_\___/_||_| *
 //*              |_|                            *
-constexpr std::array<char, 8> compilation::compilation_signature_;
-
 // operator new
 // ~~~~~~~~~~~~
 void * compilation::operator new (std::size_t const s, nmembers const size) {

@@ -44,7 +44,8 @@ namespace pstore {
   /// \param p  Points to the memory to be freed.
   template <typename T>
   void deleter (T * const p) noexcept {
-    delete[] p;
+    using T8 = std::conditional_t<std::is_const_v<T>, std::uint8_t const, std::uint8_t>;
+    delete[] (reinterpret_cast<T8 *> (p));
   }
 
   template <>
@@ -56,15 +57,25 @@ namespace pstore {
     deleter (reinterpret_cast<std::uint8_t const *> (p));
   }
 
+#ifdef __clang_major__
+#  define PSTORE_CLANG_PRAGMA(x) x
+#else
+#  define PSTORE_CLANG_PRAGMA(x)
+#endif
   template <typename To, typename From>
   unique_pointer<To> unique_pointer_cast (unique_pointer<From> && p) {
     // Note that we know that the cast of the deleter function is safe. This function will
     // either be deleter_nop (in the vast majority of instances) or deleter<> whose
     // underlying memory is always allocated as uint8_t[] by get_spanningu().
-    return unique_pointer<To const> (reinterpret_cast<To const *> (p.release ()),
-                                     reinterpret_cast<unique_deleter<To const>> (p.get_deleter ()));
+    PSTORE_CLANG_PRAGMA ("clang diagnostic push")
+#if defined(__clang_major__) && __clang_major__ >= 16
+    PSTORE_CLANG_PRAGMA ("clang diagnostic ignored \"-Wcast-function-type-strict\"")
+#endif
+    auto const deleter = reinterpret_cast<unique_deleter<To const>> (p.get_deleter ());
+    PSTORE_CLANG_PRAGMA ("clang diagnostic pop")
+    return unique_pointer<To const> (reinterpret_cast<To const *> (p.release ()), deleter);
   }
-
+#undef PSTORE_CLANG_PRAGMA
 
 
   //*       _       _        _                      *

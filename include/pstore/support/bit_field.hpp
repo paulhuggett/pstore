@@ -89,18 +89,6 @@ namespace pstore {
       static constexpr ValueType value = std::numeric_limits<std::uint64_t>::max ();
     };
 
-    template <typename ValueType, unsigned Bits>
-    constexpr ValueType max_value<ValueType, Bits>::value;
-    template <typename ValueType>
-    constexpr ValueType max_value<ValueType, 8U>::value;
-    template <typename ValueType>
-    constexpr ValueType max_value<ValueType, 16U>::value;
-    template <typename ValueType>
-    constexpr ValueType max_value<ValueType, 32U>::value;
-    template <typename ValueType>
-    constexpr ValueType max_value<ValueType, 64U>::value;
-
-
     template <typename ValueType, unsigned Index, unsigned Bits,
               typename = std::enable_if_t<std::is_unsigned_v<ValueType> &&
                                           Index + Bits <= sizeof (ValueType) * 8>>

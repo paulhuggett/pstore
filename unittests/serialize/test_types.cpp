@@ -375,9 +375,6 @@ namespace {
     static constexpr std::uint8_t zero_ = 0;
   };
 
-  constexpr std::array<std::uint8_t, 4> Flood::expected_;
-  constexpr std::uint8_t Flood::zero_;
-
 } // end anonymous namespace
 
 TEST_F (Flood, One) {

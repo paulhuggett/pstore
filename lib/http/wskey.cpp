@@ -56,8 +56,6 @@
 namespace pstore {
   namespace http {
 
-    constexpr std::array<std::uint32_t, sha1::hash_size / 4> sha1::initial_intermediate;
-
     // input
     // ~~~~~
     sha1 & sha1::input (gsl::span<std::uint8_t const> const & span) noexcept {

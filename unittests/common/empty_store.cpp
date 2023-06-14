@@ -21,9 +21,6 @@
 // pstore includes
 #include "pstore/support/error.hpp"
 
-constexpr std::size_t in_memory_store::file_size;
-constexpr std::size_t in_memory_store::page_size_;
-
 // (ctor)
 // ~~~~~~
 in_memory_store::in_memory_store ()

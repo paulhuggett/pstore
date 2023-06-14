@@ -23,7 +23,7 @@ private:
 };
 
 template <typename Parser>
-json_error (Parser) -> json_error<Parser>;
+json_error (Parser &) -> json_error<Parser>;
 
 template <typename Parser>
 inline std::ostream & operator<< (std::ostream & os, json_error<Parser> const & je) {

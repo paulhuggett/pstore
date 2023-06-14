@@ -156,13 +156,8 @@ function (pstore_add_additional_compiler_flags target_name)
         disable_warning_if_possible (${target_name}
             -Wno-zero-as-null-pointer-constant
             PSTORE_CLANG_SUPPORTS_NPC
-        )
-        # TODO: this warning is issued (at the time of writing) by gtest. It should only be disabled
-        # for that target.
-        disable_warning_if_possible (${target_name}
-            -Wno-inconsistent-missing-override
-            PSTORE_CLANG_SUPPORTS_IMO
-        )
+            )
+        disable_warning_if_possible (${target_name} -Wno-unsafe-buffer-usage PSTORE_CLANG_SUPPORTS_UNSAFE_BUFFER_USAGE)
 
         # Disable the "unused lambda capture" warning since we must capture extra variables for MSVC
         # to swallow the code. Remove when VS doesn't require capture.

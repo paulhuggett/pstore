@@ -40,8 +40,6 @@ namespace {
     std::shared_ptr<pstore::file::in_memory> file_;
   };
 
-  std::size_t constexpr db_file::file_size;
-
   db_file::db_file ()
           : buffer_ (pstore::aligned_valloc (file_size, 4096U))
           , file_ (std::make_shared<pstore::file::in_memory> (buffer_, file_size)) {

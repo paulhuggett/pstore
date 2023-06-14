@@ -42,8 +42,6 @@ namespace {
 
 namespace pstore::brokerface {
 
-  constexpr std::size_t message_type::payload_chars;
-
   std::uint32_t const message_type::process_id = static_cast<std::uint32_t> (getpid ());
 
   // (ctor)

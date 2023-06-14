@@ -44,8 +44,6 @@ namespace pstore {
 #endif
   }
 
-  constexpr std::size_t const database::sync_name_length;
-
   // (ctor)
   // ~~~~~~
   database::database (std::string const & path, access_mode const am,

@@ -424,11 +424,6 @@ namespace pstore {
     span (T * b, T * e) -> span<T>;
 
 
-    template <typename ElementType, std::ptrdiff_t Extent>
-    constexpr
-      typename span<ElementType, Extent>::index_type const span<ElementType, Extent>::extent;
-
-
     // [span.comparison], span comparison operators
     template <typename ElementType, std::ptrdiff_t FirstExtent, std::ptrdiff_t SecondExtent>
     constexpr bool operator== (span<ElementType, FirstExtent> const & lhs,

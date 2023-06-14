@@ -96,9 +96,6 @@ namespace {
     std::unique_ptr<pstore::database> db_;
   };
 
-  constexpr std::size_t MCRepoFixture::page_size_;
-  constexpr std::size_t MCRepoFixture::file_size_;
-
   // ctor
   // ~~~~
   MCRepoFixture::MCRepoFixture ()

@@ -79,8 +79,6 @@ namespace {
     std::thread thread_;
   };
 
-  constexpr std::chrono::seconds blocked_notifier::delay_;
-
   // ctor
   // ~~~~
   blocked_notifier::blocked_notifier ()
