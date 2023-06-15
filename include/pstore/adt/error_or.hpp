@@ -109,7 +109,7 @@ namespace pstore {
       copy_assign (rhs);
       return *this;
     }
-    error_or & operator= (error_or && rhs) {
+    error_or & operator= (error_or && rhs) noexcept {
       move_assign (std::move (rhs));
       return *this;
     }
@@ -176,7 +176,7 @@ namespace pstore {
     void move_construct (error_or<Other> && rhs) noexcept;
 
     template <typename Other>
-    error_or & move_assign (error_or<Other> && rhs);
+    error_or & move_assign (error_or<Other> && rhs) noexcept;
 
     pointer to_pointer (wrapper * PSTORE_NONNULL val) noexcept { return &val->get (); }
     pointer to_pointer (pointer val) noexcept { return val; }
@@ -277,7 +277,7 @@ namespace pstore {
   // ~~~~~~~~~~~
   template <typename T>
   template <typename Other>
-  auto error_or<T>::move_assign (error_or<Other> && rhs) -> error_or & {
+  auto error_or<T>::move_assign (error_or<Other> && rhs) noexcept -> error_or & {
     if (same_object (*this, rhs)) {
       return *this;
     }
