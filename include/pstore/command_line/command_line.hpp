@@ -99,7 +99,7 @@ namespace pstore::command_line {
     template <typename ErrorStream>
     void report_unknown_option (std::string const & program_name, std::string const & arg_name,
                                 std::optional<std::string> const & value, ErrorStream & errs) {
-      report_unknown_option (program_name, arg_name, value ? *value : "", errs);
+      report_unknown_option (program_name, arg_name, value.value_or (""), errs);
     }
 
 
