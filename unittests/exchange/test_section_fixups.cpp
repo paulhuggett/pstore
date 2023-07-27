@@ -256,8 +256,7 @@ TEST_F (InternalFixupMembersImport, OffsetErrors) {
     auto const & parser3 =
       this->parse (R"({ "section":"text", "type":17, "offset":-3, "addend":23 })");
     EXPECT_TRUE (parser3.has_error ()) << "Expected the parse to fail";
-    EXPECT_EQ (parser3.last_error (),
-               make_error_code (pstore::exchange::import_ns::error::unexpected_number));
+    EXPECT_EQ (parser3.last_error (), make_error_code (peejay::error::number_out_of_range));
   }
 }
 
@@ -567,8 +566,7 @@ TEST_F (ExternalFixupMembersImport, Offset) {
     auto const & parser3 =
       this->parse (R"({ "name":0, "type":17, "offset":-3, "addend":23 })", &db_, imported_names);
     EXPECT_TRUE (parser3.has_error ()) << "Expected the parse to fail";
-    EXPECT_EQ (parser3.last_error (),
-               make_error_code (pstore::exchange::import_ns::error::unexpected_number));
+    EXPECT_EQ (parser3.last_error (), make_error_code (peejay::error::number_out_of_range));
   }
 }
 

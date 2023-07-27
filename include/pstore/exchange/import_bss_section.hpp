@@ -75,11 +75,11 @@ namespace pstore::exchange::import_ns {
   std::error_code bss_section<OutputIterator>::key (peejay::u8string_view k) {
     if (k == "align") {
       seen_[align] = true; // integer
-      return this->push<uint64_rule> (&align_);
+      return this->push<uinteger_rule> (&align_);
     }
     if (k == "size") {
       seen_[size] = true;
-      return this->push<uint64_rule> (&size_);
+      return this->push<uinteger_rule> (&size_);
     }
     return error::unrecognized_section_object_key;
   }

@@ -47,7 +47,7 @@ namespace pstore::exchange::import_ns {
     }
     if (k == "name") {
       seen_[name_index] = true;
-      return push<uint64_rule> (&name_);
+      return push<uinteger_rule> (&name_);
     }
     if (k == "linkage") {
       seen_[linkage_index] = true;
@@ -187,7 +187,7 @@ namespace pstore::exchange::import_ns {
   std::error_code compilation::key (peejay::u8string_view k) {
     if (k == "triple") {
       seen_[triple_index] = true;
-      return push<uint64_rule> (&triple_);
+      return push<uinteger_rule> (&triple_);
     }
     if (k == "definitions") {
       seen_[definitions_index] = true;

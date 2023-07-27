@@ -36,40 +36,35 @@ namespace pstore::exchange::import_ns {
     return "bool";
   }
 
-  //*  _     _    __ _ _             _      *
-  //* (_)_ _| |_ / /| | |   _ _ _  _| |___  *
-  //* | | ' \  _/ _ \_  _| | '_| || | / -_) *
-  //* |_|_||_\__\___/ |_|  |_|  \_,_|_\___| *
-  //*                                       *
-  std::error_code int64_rule::int64_value (std::int64_t const v) {
+  //*  _     _                               _      *
+  //* (_)_ _| |_ ___ __ _ ___ _ _   _ _ _  _| |___  *
+  //* | | ' \  _/ -_) _` / -_) '_| | '_| || | / -_) *
+  //* |_|_||_\__\___\__, \___|_|   |_|  \_,_|_\___| *
+  //*               |___/                           *
+  std::error_code integer_rule::integer_value (std::int64_t const v) {
     *v_ = v;
     return pop ();
   }
 
-  std::error_code int64_rule::uint64_value (std::uint64_t const v) {
-    if (v > static_cast<std::uint64_t> (std::numeric_limits<std::int64_t>::max ())) {
-      return error::number_too_large;
+  gsl::czstring integer_rule::name () const noexcept {
+    return "integer";
+  }
+
+  //*       _     _                               _      *
+  //*  _  _(_)_ _| |_ ___ __ _ ___ _ _   _ _ _  _| |___  *
+  //* | || | | ' \  _/ -_) _` / -_) '_| | '_| || | / -_) *
+  //*  \_,_|_|_||_\__\___\__, \___|_|   |_|  \_,_|_\___| *
+  //*                    |___/                           *
+  std::error_code uinteger_rule::integer_value (std::int64_t const v) {
+    if (v < 0) {
+      return peejay::error::number_out_of_range;
     }
-    *v_ = static_cast<std::int64_t> (v);
+    *v_ = static_cast<std::uint64_t> (v);
     return pop ();
   }
 
-  gsl::czstring int64_rule::name () const noexcept {
-    return "int64";
-  }
-
-  //*       _     _    __ _ _             _      *
-  //*  _  _(_)_ _| |_ / /| | |   _ _ _  _| |___  *
-  //* | || | | ' \  _/ _ \_  _| | '_| || | / -_) *
-  //*  \_,_|_|_||_\__\___/ |_|  |_|  \_,_|_\___| *
-  //*                                            *
-  std::error_code uint64_rule::uint64_value (std::uint64_t const v) {
-    *v_ = v;
-    return pop ();
-  }
-
-  gsl::czstring uint64_rule::name () const noexcept {
-    return "uint64";
+  gsl::czstring uinteger_rule::name () const noexcept {
+    return "uinteger";
   }
 
   //*     _       _                      _      *

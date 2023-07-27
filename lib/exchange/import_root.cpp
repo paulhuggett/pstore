@@ -65,13 +65,13 @@ namespace {
   std::error_code root_object::key (peejay::u8string_view key) {
     using pstore::exchange::import_ns::error;
     using pstore::exchange::import_ns::transaction_array;
-    using pstore::exchange::import_ns::uint64_rule;
+    using pstore::exchange::import_ns::uinteger_rule;
     using pstore::exchange::import_ns::uuid_rule;
 
     // TODO: check that 'version' is the first key that we see.
     if (key == "version") {
       seen_[version] = true;
-      return push<uint64_rule> (&version_);
+      return push<uinteger_rule> (&version_);
     }
     if (key == "id") {
       seen_[id] = true;

@@ -85,7 +85,7 @@ namespace pstore::exchange::import_ns {
     }
     if (k == "align") {
       seen_[align] = true; // integer
-      return this->push<uint64_rule> (&align_);
+      return this->push<uinteger_rule> (&align_);
     }
     if (k == "ifixups") {
       seen_[ifixups] = true;

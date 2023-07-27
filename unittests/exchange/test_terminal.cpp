@@ -84,7 +84,7 @@ namespace {
   public:
     ImportInt64 () = default;
     decltype (auto) make_json_int64_parser (pstore::gsl::not_null<std::int64_t *> v) {
-      return peejay::make_parser (callbacks::make<int64_rule> (&db_, v));
+      return peejay::make_parser (callbacks::make<integer_rule> (&db_, v));
     }
   };
 
@@ -145,18 +145,4 @@ TEST_F (ImportInt64, Max) {
   // Check the result.
   ASSERT_FALSE (parser.has_error ()) << "JSON error was: " << parser.last_error ().message ();
   EXPECT_EQ (v, expected);
-}
-
-// Test for max int64+1. Note that we're not trying to test the JSON parser itself here which should
-// independently reject values < min int64.
-TEST_F (ImportInt64, ErrorOnMaxPlus1) {
-  auto v = std::int64_t{0};
-  auto parser = make_json_int64_parser (&v);
-  auto const expected = static_cast<std::uint64_t> (std::numeric_limits<std::int64_t>::max ()) + 1U;
-  parser.input (std::to_string (expected));
-  parser.eof ();
-
-  // Check the result.
-  EXPECT_TRUE (parser.has_error ());
-  EXPECT_EQ (parser.last_error (), make_error_code (error::number_too_large));
 }

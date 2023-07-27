@@ -58,8 +58,7 @@ namespace pstore::exchange::import_ns {
 
     virtual gsl::czstring name () const noexcept = 0;
 
-    virtual std::error_code int64_value (std::int64_t value);
-    virtual std::error_code uint64_value (std::uint64_t value);
+    virtual std::error_code integer_value (std::int64_t value);
     virtual std::error_code double_value (double value);
     virtual std::error_code string_value (peejay::u8string_view value);
     virtual std::error_code boolean_value (bool value);
@@ -146,8 +145,7 @@ namespace pstore::exchange::import_ns {
 
     std::shared_ptr<context> & get_context () { return context_; }
 
-    std::error_code int64_value (std::int64_t const v) { return top ()->int64_value (v); }
-    std::error_code uint64_value (std::uint64_t const v) { return top ()->uint64_value (v); }
+    std::error_code integer_value (std::int64_t const v) { return top ()->integer_value (v); }
     std::error_code double_value (double const v) { return top ()->double_value (v); }
     std::error_code string_value (peejay::u8string_view v) { return top ()->string_value (v); }
     std::error_code boolean_value (bool const v) { return top ()->boolean_value (v); }

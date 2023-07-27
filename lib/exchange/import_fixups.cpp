@@ -68,15 +68,15 @@ namespace pstore::exchange::import_ns {
     }
     if (k == "type") {
       seen_[type] = true;
-      return this->push<uint64_rule> (&type_);
+      return this->push<uinteger_rule> (&type_);
     }
     if (k == "offset") {
       seen_[offset] = true;
-      return this->push<uint64_rule> (&offset_);
+      return this->push<uinteger_rule> (&offset_);
     }
     if (k == "addend") {
       seen_[addend] = true;
-      return this->push<int64_rule> (&addend_);
+      return this->push<integer_rule> (&addend_);
     }
     return error::unrecognized_ifixup_key;
   }
@@ -122,11 +122,11 @@ namespace pstore::exchange::import_ns {
   std::error_code external_fixup::key (peejay::u8string_view k) {
     if (k == "name") {
       seen_[name_index] = true;
-      return this->push<uint64_rule> (&name_);
+      return this->push<uinteger_rule> (&name_);
     }
     if (k == "type") {
       seen_[type] = true;
-      return this->push<uint64_rule> (&type_);
+      return this->push<uinteger_rule> (&type_);
     }
     if (k == "is_weak") {
       seen_[is_weak] = true;
@@ -134,11 +134,11 @@ namespace pstore::exchange::import_ns {
     }
     if (k == "offset") {
       seen_[offset] = true;
-      return this->push<uint64_rule> (&offset_);
+      return this->push<uinteger_rule> (&offset_);
     }
     if (k == "addend") {
       seen_[addend] = true;
-      return this->push<int64_rule> (&addend_);
+      return this->push<integer_rule> (&addend_);
     }
     return error::unrecognized_xfixup_key;
   }

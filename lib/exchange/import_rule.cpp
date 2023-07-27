@@ -51,11 +51,7 @@ namespace pstore::exchange::import_ns {
 
   rule::~rule () = default;
 
-  std::error_code rule::int64_value (std::int64_t const value) {
-    (void) value;
-    return error::unexpected_number;
-  }
-  std::error_code rule::uint64_value (std::uint64_t const value) {
+  std::error_code rule::integer_value (std::int64_t const value) {
     (void) value;
     return error::unexpected_number;
   }

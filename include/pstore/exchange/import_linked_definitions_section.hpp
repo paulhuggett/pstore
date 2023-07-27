@@ -83,7 +83,7 @@ namespace pstore::exchange::import_ns {
     }
     if (k == "index") {
       seen_[index] = true;
-      return this->push<uint64_rule> (&index_);
+      return this->push<uinteger_rule> (&index_);
     }
     return error::unrecognized_section_object_key;
   }

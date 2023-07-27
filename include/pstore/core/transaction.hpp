@@ -39,7 +39,6 @@ namespace pstore {
   /// methods are called before the object is destroyed, a commit() is performed by the
   /// destructor (unless an exception is being unwound). A transaction is a scope in which
   /// operations are performed together and committed, or completely reversed.
-
   class transaction_base {
   public:
     virtual ~transaction_base () noexcept = default;
@@ -126,8 +125,8 @@ namespace pstore {
 
     ///@{
 
-    /// Allocates sufficient space in the transaction for 'size' bytes
-    /// at an alignment given by 'align' and returns both a writable pointer
+    /// Allocates sufficient space in the transaction for \p size bytes
+    /// at an alignment given by \p align and returns both a writable pointer
     /// to the new space and its address.
     ///
     /// \param size  The number of bytes of storage to allocate.
