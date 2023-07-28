@@ -18,6 +18,7 @@ from __future__ import print_function
 import os
 import platform
 import sys
+import tempfile
 
 PLATFORM_NAME = platform.system()
 IS_WINDOWS = PLATFORM_NAME == 'Windows'
@@ -42,7 +43,7 @@ def executable(path):
 
 
 def pipe_root_dir():
-    return r'\\.\pipe' if IS_WINDOWS or IS_CYGWIN else '/tmp'
+    return r'\\.\pipe' if IS_WINDOWS or IS_CYGWIN else tempfile.gettempdir()
 
 
 def report_error(argv0, tool_name, timed_process):
