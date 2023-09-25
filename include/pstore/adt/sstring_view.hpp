@@ -108,7 +108,7 @@ namespace pstore {
                    "PointerType is not a known pointer type!");
 
     using value_type = char const;
-    using traits = std::char_traits<value_type>;
+    using traits = std::char_traits<std::remove_const_t<value_type>>;
     using pointer = value_type *;
     using const_pointer = value_type const *;
     using reference = value_type &;
