@@ -26,5 +26,5 @@ add_pstore_executable (pstore-httpd
     httpd.cpp
     "${pstore_http_fs_source}"
 )
-target_link_libraries (pstore-httpd PRIVATE pstore-http pstore-command-line)
+target_link_libraries (pstore-httpd PUBLIC pstore-http pstore-command-line)
 run_pstore_unit_test  (pstore-httpd pstore-http-unit-tests)

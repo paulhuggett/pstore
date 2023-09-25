@@ -24,4 +24,4 @@ add_pstore_unit_test (pstore-command-line-unit-tests
     test_string_distance.cpp
     test_word_wrapper.cpp
 )
-target_link_libraries (pstore-command-line-unit-tests PRIVATE pstore-command-line)
+target_link_libraries (pstore-command-line-unit-tests PUBLIC pstore-command-line)

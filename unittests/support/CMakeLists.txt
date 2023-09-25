@@ -33,10 +33,8 @@ add_pstore_unit_test (pstore-support-unit-tests
     test_utf_win32.cpp
     test_varint.cpp
 )
-target_link_libraries (pstore-support-unit-tests
-    PRIVATE
-        pstore-support
-        pstore-unit-test-common
-)
+
+# The pstore-support library is already linked by pstore-unit-test-common.
+target_link_libraries (pstore-support-unit-tests PUBLIC pstore-unit-test-common)
 
 add_subdirectory (klee EXCLUDE_FROM_ALL)

@@ -17,5 +17,5 @@
 add_pstore_executable (pstore-index-stats
     index_stats.cpp
 )
-target_link_libraries (pstore-index-stats PRIVATE pstore-core pstore-support pstore-command-line)
+target_link_libraries (pstore-index-stats PUBLIC pstore-core pstore-command-line)
 add_clang_tidy_target (pstore-index-stats)

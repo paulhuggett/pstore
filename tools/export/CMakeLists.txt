@@ -14,4 +14,4 @@
 #
 #===----------------------------------------------------------------------===//
 add_pstore_tool (pstore-export export.cpp)
-target_link_libraries (pstore-export PRIVATE pstore-command-line pstore-exchange)
+target_link_libraries (pstore-export PUBLIC pstore-command-line pstore-exchange)

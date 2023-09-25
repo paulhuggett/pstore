@@ -22,9 +22,6 @@ set (PSTORE_OS_UNIT_TEST_SRC
     test_process_file_name.cpp
 )
 add_pstore_unit_test (pstore-os-unit-tests ${PSTORE_OS_UNIT_TEST_SRC})
-target_link_libraries (pstore-os-unit-tests
-    PRIVATE
-        pstore-os
-        pstore-unit-test-common
-)
+# The unit-test-common library already links pstore-os.
+target_link_libraries (pstore-os-unit-tests PUBLIC pstore-unit-test-common)
 add_subdirectory (klee EXCLUDE_FROM_ALL)

@@ -20,4 +20,4 @@ add_pstore_tool (pstore-read
     switches.hpp
     switches.cpp
 )
-target_link_libraries (pstore-read PRIVATE pstore-core pstore-command-line)
+target_link_libraries (pstore-read PUBLIC pstore-core pstore-command-line)

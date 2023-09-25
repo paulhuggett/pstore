@@ -16,4 +16,4 @@
 
 include (add_pstore)
 add_pstore_unit_test (pstore-vacuum-unit-tests test_fake.cpp)
-target_link_libraries (pstore-vacuum-unit-tests PRIVATE pstore-vacuum-lib)
+target_link_libraries (pstore-vacuum-unit-tests PUBLIC pstore-vacuum-lib)

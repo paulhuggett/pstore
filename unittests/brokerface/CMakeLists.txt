@@ -18,8 +18,6 @@ add_pstore_unit_test (pstore-brokerface-unit-tests
     test_pubsub.cpp
     test_send_message.cpp
 )
-target_link_libraries (pstore-brokerface-unit-tests
-    PRIVATE
-        pstore-brokerface
-        pstore-unit-test-common
-)
+
+# The pstore-brokerface library is already linked by pstore-unit-test-common.
+target_link_libraries (pstore-brokerface-unit-tests PUBLIC pstore-unit-test-common)

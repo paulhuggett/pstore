@@ -21,5 +21,5 @@ add_pstore_unit_test (pstore-adt-unit-tests
     test_sparse_array.cpp
     test_sstring_view.cpp
 )
-target_link_libraries (pstore-adt-unit-tests PRIVATE pstore-adt)
+target_link_libraries (pstore-adt-unit-tests PUBLIC pstore-adt)
 add_subdirectory (klee EXCLUDE_FROM_ALL)

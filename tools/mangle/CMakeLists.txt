@@ -15,7 +15,4 @@
 #===----------------------------------------------------------------------===//
 
 add_pstore_executable (pstore-mangle mangle.cpp)
-target_link_libraries (pstore-mangle PRIVATE
-    pstore-core
-    pstore-os
-)
+target_link_libraries (pstore-mangle PUBLIC pstore-core)

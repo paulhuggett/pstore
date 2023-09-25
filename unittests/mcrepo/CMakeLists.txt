@@ -23,7 +23,7 @@ add_pstore_unit_test (pstore-mcrepo-unit-tests
     transaction.hpp
 )
 target_link_libraries (pstore-mcrepo-unit-tests
-    PRIVATE
+    PUBLIC
         pstore-mcrepo
         pstore-unit-test-common
 )

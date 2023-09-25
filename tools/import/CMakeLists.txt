@@ -16,7 +16,7 @@
 add_pstore_tool (pstore-import
     import.cpp
 )
-target_link_libraries (pstore-import PRIVATE
+target_link_libraries (pstore-import PUBLIC
     pstore-command-line
     pstore-exchange
 )

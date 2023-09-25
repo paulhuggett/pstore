@@ -22,8 +22,7 @@ add_pstore_executable (pstore-broker-poker
     switches.cpp
     switches.hpp
 )
-target_link_libraries (pstore-broker-poker PRIVATE
-    pstore-adt
+target_link_libraries (pstore-broker-poker PUBLIC
     pstore-brokerface
     pstore-command-line
 )

@@ -19,4 +19,4 @@ add_pstore_tool (pstore-index-structure
     switches.cpp
     switches.hpp
 )
-target_link_libraries (pstore-index-structure PRIVATE pstore-core pstore-command-line)
+target_link_libraries (pstore-index-structure PUBLIC pstore-core pstore-command-line)

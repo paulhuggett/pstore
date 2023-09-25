@@ -36,7 +36,7 @@ add_pstore_unit_test (pstore-exchange-unit-tests
 # Access the library's private include directory.
 target_include_directories (pstore-exchange-unit-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/exchange")
 target_link_libraries (pstore-exchange-unit-tests
-    PRIVATE
+    PUBLIC
         pstore-exchange
         pstore-unit-test-common
 )

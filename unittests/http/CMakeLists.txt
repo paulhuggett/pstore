@@ -28,6 +28,6 @@ add_pstore_unit_test (pstore-http-unit-tests
     test_wskey.cpp
     test_ws_server.cpp
 )
-target_link_libraries (pstore-http-unit-tests PRIVATE pstore-http)
+target_link_libraries (pstore-http-unit-tests PUBLIC pstore-http)
 
 add_subdirectory (klee EXCLUDE_FROM_ALL)

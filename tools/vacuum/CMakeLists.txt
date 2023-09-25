@@ -24,5 +24,5 @@ add_pstore_tool ("${PSTORE_VACUUM_TOOL_NAME}"
     switches.hpp
 )
 
-target_link_libraries ("${PSTORE_VACUUM_TOOL_NAME}" PRIVATE pstore-vacuum-lib pstore-command-line)
+target_link_libraries ("${PSTORE_VACUUM_TOOL_NAME}" PUBLIC pstore-vacuum-lib pstore-command-line)
 run_pstore_unit_test ("${PSTORE_VACUUM_TOOL_NAME}" pstore-vacuum-unit-tests)

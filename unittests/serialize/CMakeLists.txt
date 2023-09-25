@@ -21,8 +21,6 @@ add_pstore_unit_test (pstore-serialize-unit-tests
     test_standard_types.cpp
     test_types.cpp
 )
-target_link_libraries (pstore-serialize-unit-tests
-    PRIVATE
-        pstore-serialize
-        pstore-unit-test-common
-)
+
+# The pstore-serialize library is already linked by pstore-unit-test-common
+target_link_libraries (pstore-serialize-unit-tests PUBLIC pstore-unit-test-common)

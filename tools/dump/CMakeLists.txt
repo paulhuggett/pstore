@@ -19,6 +19,6 @@ add_pstore_tool (pstore-dump
     switches.cpp
     switches.hpp
 )
-target_link_libraries (pstore-dump PRIVATE pstore-dump-lib pstore-command-line)
+target_link_libraries (pstore-dump PUBLIC pstore-dump-lib pstore-command-line)
 
 run_pstore_unit_test (pstore-dump pstore-dump-unit-tests)

@@ -332,11 +332,11 @@ add_pstore_library (
 )
 
 function (pstore_config_support_library target)
-    target_link_libraries (${target} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
     target_include_directories (${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}")
+    target_link_libraries (${target} PUBLIC ${CMAKE_THREAD_LIBS_INIT})
     if (Backtrace_FOUND)
         target_include_directories (${target} PRIVATE ${Backtrace_INCLUDE_DIRS})
-        target_link_libraries (${target} PRIVATE ${Backtrace_LIBRARY})
+        target_link_libraries (${target} PUBLIC ${Backtrace_LIBRARY})
     endif ()
 endfunction (pstore_config_support_library)
 

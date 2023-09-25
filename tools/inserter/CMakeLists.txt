@@ -15,4 +15,4 @@
 #===----------------------------------------------------------------------===//
 
 add_pstore_executable (pstore-inserter main.cpp)
-target_link_libraries (pstore-inserter PRIVATE pstore-core pstore-command-line)
+target_link_libraries (pstore-inserter PUBLIC pstore-core pstore-command-line)

@@ -31,5 +31,5 @@ else ()
     # Access the library's private include directory.
     target_include_directories (pstore-broker-unit-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/pstore")
 
-    target_link_libraries (pstore-broker-unit-tests PRIVATE pstore-broker)
+    target_link_libraries (pstore-broker-unit-tests PUBLIC pstore-broker)
 endif ()
