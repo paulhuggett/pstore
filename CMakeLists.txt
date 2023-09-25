@@ -22,6 +22,7 @@ include (CPack)
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+set (pstore_cxx_version "17" CACHE STRING "The version of C++ used by pstore")
 
 # Work out whether the pstore library is being built inside the
 # larger LLVM framework or if it's a standalone build.

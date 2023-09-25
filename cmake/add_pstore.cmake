@@ -17,8 +17,6 @@ include (CheckCSourceCompiles)
 include (CheckCXXCompilerFlag)
 include (GNUInstallDirs)
 
-set (pstore_cxx_version "17" CACHE STRING "The version of C++ used by pstore")
-
 macro(add_pstore_subdirectory name)
     if (PSTORE_IS_INSIDE_LLVM)
         add_llvm_subdirectory(PSTORE TOOL ${name})
