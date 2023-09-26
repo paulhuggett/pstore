@@ -14,47 +14,47 @@
 #
 #===----------------------------------------------------------------------===//
 
-##########################
+# ##############################################################################
 # pstore Dump Core Library
-##########################
+# ##############################################################################
 
-set (LLVM_LINK_COMPONENTS
-    AllTargetsDescs
-    AllTargetsDisassemblers
-    AllTargetsInfos
-    CodeGen
-    DebugInfoDWARF
-    DebugInfoPDB
-    Demangle
-    MC
-    MCDisassembler
-    Object
-    Support
-    Symbolize
+set (
+  LLVM_LINK_COMPONENTS
+  AllTargetsDescs
+  AllTargetsDisassemblers
+  AllTargetsInfos
+  CodeGen
+  DebugInfoDWARF
+  DebugInfoPDB
+  Demangle
+  MC
+  MCDisassembler
+  Object
+  Support
+  Symbolize
 )
 add_pstore_library (
-    TARGET pstore-dump-lib
-    NAME dump
-    SOURCES
-        db_value.cpp
-        error.cpp
-        line_splitter.cpp
-        mcdebugline_value.cpp
-        mcdisassembler_value.cpp
-        mcrepo_value.cpp
-        value.cpp
-    HEADER_DIR
-        "${PSTORE_ROOT_DIR}/include/pstore/dump"
-    INCLUDES
-        db_value.hpp
-        digest_opt.hpp
-        error.hpp
-        index_value.hpp
-        line_splitter.hpp
-        mcdebugline_value.hpp
-        mcdisassembler_value.hpp
-        mcrepo_value.hpp
-        parameter.hpp
-        value.hpp
+  TARGET pstore-dump-lib
+  NAME dump
+  SOURCES db_value.cpp
+          error.cpp
+          line_splitter.cpp
+          mcdebugline_value.cpp
+          mcdisassembler_value.cpp
+          mcrepo_value.cpp
+          value.cpp
+  HEADER_DIR "${PSTORE_ROOT_DIR}/include/pstore/dump"
+  INCLUDES db_value.hpp
+           digest_opt.hpp
+           error.hpp
+           index_value.hpp
+           line_splitter.hpp
+           mcdebugline_value.hpp
+           mcdisassembler_value.hpp
+           mcrepo_value.hpp
+           parameter.hpp
+           value.hpp
 )
-target_link_libraries (pstore-dump-lib PUBLIC pstore-adt pstore-core pstore-mcrepo)
+target_link_libraries (
+  pstore-dump-lib PUBLIC pstore-adt pstore-core pstore-mcrepo
+)

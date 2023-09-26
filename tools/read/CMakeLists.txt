@@ -15,9 +15,5 @@
 #===----------------------------------------------------------------------===//
 
 include (add_pstore)
-add_pstore_tool (pstore-read
-    main.cpp
-    switches.hpp
-    switches.cpp
-)
+add_pstore_tool (pstore-read main.cpp switches.hpp switches.cpp)
 target_link_libraries (pstore-read PUBLIC pstore-core pstore-command-line)

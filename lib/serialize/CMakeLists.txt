@@ -15,16 +15,10 @@
 #===----------------------------------------------------------------------===//
 
 add_pstore_library (
-    NAME serialize
-    SOURCES
-        archive.cpp
-    HEADER_DIR
-        "${PSTORE_ROOT_DIR}/include/pstore/serialize"
-    INCLUDES
-        archive.hpp
-        common.hpp
-        standard_types.hpp
-        types.hpp
+  NAME serialize
+  SOURCES archive.cpp
+  HEADER_DIR "${PSTORE_ROOT_DIR}/include/pstore/serialize"
+  INCLUDES archive.hpp common.hpp standard_types.hpp types.hpp
 )
 add_clang_tidy_target (pstore-serialize)
 target_link_libraries (pstore-serialize PUBLIC pstore-support)

@@ -15,11 +15,11 @@
 #===----------------------------------------------------------------------===//
 
 # The pstore unit test common/shared sources
-add_pstore_test_library (pstore-unit-test-common
-    check_for_error.hpp
-    empty_store.cpp
-    empty_store.hpp
-    split.hpp
+add_pstore_test_library (
+  pstore-unit-test-common check_for_error.hpp empty_store.cpp empty_store.hpp
+  split.hpp
 )
-target_include_directories (pstore-unit-test-common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")
+target_include_directories (
+  pstore-unit-test-common PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}"
+)
 target_link_libraries (pstore-unit-test-common PUBLIC pstore-core)

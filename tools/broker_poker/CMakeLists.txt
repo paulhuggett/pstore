@@ -14,17 +14,17 @@
 #
 #===----------------------------------------------------------------------===//
 
-add_pstore_executable (pstore-broker-poker
-    flood_server.cpp
-    flood_server.hpp
-    iota_generator.hpp
-    poke.cpp
-    switches.cpp
-    switches.hpp
+add_pstore_executable (
+  pstore-broker-poker
+  flood_server.cpp
+  flood_server.hpp
+  iota_generator.hpp
+  poke.cpp
+  switches.cpp
+  switches.hpp
 )
-target_link_libraries (pstore-broker-poker PUBLIC
-    pstore-brokerface
-    pstore-command-line
+target_link_libraries (
+  pstore-broker-poker PUBLIC pstore-brokerface pstore-command-line
 )
 
 run_pstore_unit_test (pstore-broker-poker pstore-broker-poker-unit-tests)

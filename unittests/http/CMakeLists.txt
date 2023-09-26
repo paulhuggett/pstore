@@ -13,20 +13,20 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 #===----------------------------------------------------------------------===//
-add_pstore_unit_test (pstore-http-unit-tests
-    buffered_reader_mocks.cpp
-    buffered_reader_mocks.hpp
-
-    test_buffered_reader.cpp
-    test_error_reporting.cpp
-    test_headers.cpp
-    test_media_type.cpp
-    test_query_to_kvp.cpp
-    test_request.cpp
-    test_serve_dynamic_content.cpp
-    test_serve_static_content.cpp
-    test_wskey.cpp
-    test_ws_server.cpp
+add_pstore_unit_test (
+  pstore-http-unit-tests
+  buffered_reader_mocks.cpp
+  buffered_reader_mocks.hpp
+  test_buffered_reader.cpp
+  test_error_reporting.cpp
+  test_headers.cpp
+  test_media_type.cpp
+  test_query_to_kvp.cpp
+  test_request.cpp
+  test_serve_dynamic_content.cpp
+  test_serve_static_content.cpp
+  test_wskey.cpp
+  test_ws_server.cpp
 )
 target_link_libraries (pstore-http-unit-tests PUBLIC pstore-http)
 

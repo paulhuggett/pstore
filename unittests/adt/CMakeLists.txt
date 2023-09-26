@@ -13,13 +13,14 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 #===----------------------------------------------------------------------===//
-add_pstore_unit_test (pstore-adt-unit-tests
-    test_chunked_sequence.cpp
-    test_error_or.cpp
-    test_pointer_based_iterator.cpp
-    test_small_vector.cpp
-    test_sparse_array.cpp
-    test_sstring_view.cpp
+add_pstore_unit_test (
+  pstore-adt-unit-tests
+  test_chunked_sequence.cpp
+  test_error_or.cpp
+  test_pointer_based_iterator.cpp
+  test_small_vector.cpp
+  test_sparse_array.cpp
+  test_sstring_view.cpp
 )
 target_link_libraries (pstore-adt-unit-tests PUBLIC pstore-adt)
 add_subdirectory (klee EXCLUDE_FROM_ALL)

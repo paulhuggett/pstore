@@ -14,24 +14,15 @@
 #
 #===----------------------------------------------------------------------===//
 
-################
+# ##############################################################################
 # Vacuum Core Library
-################
+# ##############################################################################
 
 add_pstore_library (
-    TARGET pstore-vacuum-lib
-    NAME vacuum
-    SOURCES
-        copy.cpp
-        quit.cpp
-        watch.cpp
-    HEADER_DIR
-        "${PSTORE_ROOT_DIR}/include/pstore/vacuum"
-    INCLUDES
-        copy.hpp
-        quit.hpp
-        status.hpp
-        watch.hpp
-        user_options.hpp
+  TARGET pstore-vacuum-lib
+  NAME vacuum
+  SOURCES copy.cpp quit.cpp watch.cpp
+  HEADER_DIR "${PSTORE_ROOT_DIR}/include/pstore/vacuum"
+  INCLUDES copy.hpp quit.hpp status.hpp watch.hpp user_options.hpp
 )
 target_link_libraries (pstore-vacuum-lib PUBLIC pstore-brokerface pstore-core)

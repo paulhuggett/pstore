@@ -14,8 +14,6 @@
 #
 #===----------------------------------------------------------------------===//
 include (add_pstore)
-add_pstore_unit_test (pstore-romfs-unit-tests
-    test_romfs.cpp
-)
+add_pstore_unit_test (pstore-romfs-unit-tests test_romfs.cpp)
 target_link_libraries (pstore-romfs-unit-tests PUBLIC pstore-romfs)
 add_subdirectory (klee EXCLUDE_FROM_ALL)

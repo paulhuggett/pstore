@@ -15,14 +15,15 @@
 #===----------------------------------------------------------------------===//
 
 include (add_pstore)
-add_pstore_tool (pstore-write
-    error.cpp
-    error.hpp
-    main.cpp
-    switches.cpp
-    switches.hpp
-    to_value_pair.cpp
-    to_value_pair.hpp
+add_pstore_tool (
+  pstore-write
+  error.cpp
+  error.hpp
+  main.cpp
+  switches.cpp
+  switches.hpp
+  to_value_pair.cpp
+  to_value_pair.hpp
 )
 target_link_libraries (pstore-write PUBLIC pstore-core pstore-command-line)
 

@@ -15,32 +15,35 @@
 #===----------------------------------------------------------------------===//
 
 # The pstore unit test sources
-add_pstore_unit_test (pstore-core-unit-tests
-    leak_check_fixture.hpp
-    test_address.cpp
-    test_base32.cpp
-    test_basic_logger.cpp
-    test_crc32.cpp
-    test_database.cpp
-    test_db_archive.cpp
-    test_diff.cpp
-    test_generation_iterator.cpp
-    test_hamt_map.cpp
-    test_hamt_set.cpp
-    test_indirect_string.cpp
-    test_protect.cpp
-    test_region.cpp
-    test_rotating_log.cpp
-    test_sstring_view_archive.cpp
-    test_storage.cpp
-    test_sync.cpp
-    test_transaction.cpp
-    test_two_connections.cpp
-    test_uuid.cpp
+add_pstore_unit_test (
+  pstore-core-unit-tests
+  leak_check_fixture.hpp
+  test_address.cpp
+  test_base32.cpp
+  test_basic_logger.cpp
+  test_crc32.cpp
+  test_database.cpp
+  test_db_archive.cpp
+  test_diff.cpp
+  test_generation_iterator.cpp
+  test_hamt_map.cpp
+  test_hamt_set.cpp
+  test_indirect_string.cpp
+  test_protect.cpp
+  test_region.cpp
+  test_rotating_log.cpp
+  test_sstring_view_archive.cpp
+  test_storage.cpp
+  test_sync.cpp
+  test_transaction.cpp
+  test_two_connections.cpp
+  test_uuid.cpp
 )
 
 # The pstore-core library is alread linked by pstore-unit-test-common
 target_link_libraries (pstore-core-unit-tests PUBLIC pstore-unit-test-common)
 
 # Access the library's private include directory.
-target_include_directories (pstore-core-unit-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/core")
+target_include_directories (
+  pstore-core-unit-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/core"
+)

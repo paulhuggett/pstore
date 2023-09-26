@@ -15,27 +15,24 @@
 #===----------------------------------------------------------------------===//
 
 add_pstore_library (
-    NAME mcrepo
-    SOURCES
-        bss_section.cpp
-        compilation.cpp
-        debug_line_section.cpp
-        linked_definitions_section.cpp
-        fragment.cpp
-        generic_section.cpp
-        repo_error.cpp
-        section.cpp
-    HEADER_DIR
-        "${PSTORE_ROOT_DIR}/include/pstore/mcrepo"
-    INCLUDES
-        bss_section.hpp
-        compilation.hpp
-        debug_line_section.hpp
-        linked_definitions_section.hpp
-        fragment.hpp
-        generic_section.hpp
-        repo_error.hpp
-        section.hpp
-        section_sparray.hpp
+  NAME mcrepo
+  SOURCES bss_section.cpp
+          compilation.cpp
+          debug_line_section.cpp
+          linked_definitions_section.cpp
+          fragment.cpp
+          generic_section.cpp
+          repo_error.cpp
+          section.cpp
+  HEADER_DIR "${PSTORE_ROOT_DIR}/include/pstore/mcrepo"
+  INCLUDES bss_section.hpp
+           compilation.hpp
+           debug_line_section.hpp
+           linked_definitions_section.hpp
+           fragment.hpp
+           generic_section.hpp
+           repo_error.hpp
+           section.hpp
+           section_sparray.hpp
 )
 target_link_libraries (pstore-mcrepo PUBLIC pstore-adt pstore-core)

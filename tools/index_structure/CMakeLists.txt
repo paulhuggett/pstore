@@ -14,9 +14,9 @@
 #
 #===----------------------------------------------------------------------===//
 
-add_pstore_tool (pstore-index-structure
-    index_structure.cpp
-    switches.cpp
-    switches.hpp
+add_pstore_tool (
+  pstore-index-structure index_structure.cpp switches.cpp switches.hpp
 )
-target_link_libraries (pstore-index-structure PUBLIC pstore-core pstore-command-line)
+target_link_libraries (
+  pstore-index-structure PUBLIC pstore-core pstore-command-line
+)

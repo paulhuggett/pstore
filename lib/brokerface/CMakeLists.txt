@@ -16,49 +16,52 @@
 
 set (pstore_broker_include_dir "${PSTORE_ROOT_DIR}/include/pstore/brokerface")
 
-set (pstore_brokerface_includes
-    fifo_path.hpp
-    message_type.hpp
-    pubsub.hpp
-    send_message.hpp
-    writer.hpp
+set (pstore_brokerface_includes fifo_path.hpp message_type.hpp pubsub.hpp
+                                send_message.hpp writer.hpp
 )
 
-set (pstore_brokerface_src
-    fifo_path_common.cpp
-    fifo_path_posix.cpp
-    fifo_path_win32.cpp
-    message_type.cpp
-    send_message.cpp
-    writer_common.cpp
-    writer_posix.cpp
-    writer_win32.cpp
+set (
+  pstore_brokerface_src
+  fifo_path_common.cpp
+  fifo_path_posix.cpp
+  fifo_path_win32.cpp
+  message_type.cpp
+  send_message.cpp
+  writer_common.cpp
+  writer_posix.cpp
+  writer_win32.cpp
 )
 
 include (add_pstore)
-add_pstore_library (TARGET pstore-brokerface
-    NAME brokerface
+add_pstore_library (
+  TARGET pstore-brokerface
+  NAME brokerface
+  SOURCES "${pstore_brokerface_src}"
+  HEADER_DIR "${pstore_broker_include_dir}"
+  INCLUDES "${pstore_brokerface_includes}"
+)
+target_link_libraries (
+  pstore-brokerface PUBLIC pstore-adt pstore-os pstore-support
+)
+
+if (PSTORE_ENABLE_BROKER AND NOT PSTORE_EXCEPTIONS)
+  set (LLVM_REQUIRES_EH Yes)
+  set (LLVM_REQUIRES_RTTI Yes)
+  set (PSTORE_EXCEPTIONS Yes)
+
+  add_pstore_library (
+    TARGET pstore-brokerface-ex
+    NAME brokerface-ex
     SOURCES "${pstore_brokerface_src}"
     HEADER_DIR "${pstore_broker_include_dir}"
     INCLUDES "${pstore_brokerface_includes}"
-)
-target_link_libraries (pstore-brokerface PUBLIC pstore-adt pstore-os pstore-support)
+  )
 
-if (PSTORE_ENABLE_BROKER AND NOT PSTORE_EXCEPTIONS)
-    set (LLVM_REQUIRES_EH Yes)
-    set (LLVM_REQUIRES_RTTI Yes)
-    set (PSTORE_EXCEPTIONS Yes)
+  set (LLVM_REQUIRES_EH No)
+  set (LLVM_REQUIRES_RTTI No)
+  set (PSTORE_EXCEPTIONS No)
 
-    add_pstore_library (TARGET pstore-brokerface-ex
-        NAME brokerface-ex
-        SOURCES "${pstore_brokerface_src}"
-        HEADER_DIR "${pstore_broker_include_dir}"
-        INCLUDES "${pstore_brokerface_includes}"
-    )
-
-    set (LLVM_REQUIRES_EH No)
-    set (LLVM_REQUIRES_RTTI No)
-    set (PSTORE_EXCEPTIONS No)
-
-    target_link_libraries (pstore-brokerface-ex PUBLIC pstore-adt-ex pstore-os-ex pstore-support-ex)
+  target_link_libraries (
+    pstore-brokerface-ex PUBLIC pstore-adt-ex pstore-os-ex pstore-support-ex
+  )
 endif (PSTORE_ENABLE_BROKER AND NOT PSTORE_EXCEPTIONS)

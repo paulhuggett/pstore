@@ -24,17 +24,17 @@ add_subdirectory (vector_string_reader)
 add_subdirectory (write_integers)
 add_subdirectory (write_pod_struct)
 
-add_custom_target (pstore-examples-serialize
-                   ALL
-                   DEPENDS
-                           example-istream-reader
-                           example-nonpod1
-                           example-nonpod2
-                           example-nonpod-multiple
-                           example-ostream-writer
-                           example-vector-int-reader
-                           example-vector-string-reader
-                           example-write-integers
-                           example-write-pod-struct
-                   COMMENT "Building Serialization Examples"
-                   VERBATIM)
+add_custom_target (
+  pstore-examples-serialize ALL
+  DEPENDS example-istream-reader
+          example-nonpod1
+          example-nonpod2
+          example-nonpod-multiple
+          example-ostream-writer
+          example-vector-int-reader
+          example-vector-string-reader
+          example-write-integers
+          example-write-pod-struct
+  COMMENT "Building Serialization Examples"
+  VERBATIM
+)

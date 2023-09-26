@@ -13,11 +13,6 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 #===----------------------------------------------------------------------===//
-add_pstore_tool (pstore-import
-    import.cpp
-)
-target_link_libraries (pstore-import PUBLIC
-    pstore-command-line
-    pstore-exchange
-)
+add_pstore_tool (pstore-import import.cpp)
+target_link_libraries (pstore-import PUBLIC pstore-command-line pstore-exchange)
 run_pstore_unit_test (pstore-import pstore-exchange-unit-tests)

@@ -29,14 +29,15 @@ if (PSTORE_VALGRIND)
   endif ()
 endif ()
 
-
 function (run_pstore_unit_test prelink_target test_target)
   if (CMAKE_HOST_SYSTEM_NAME MATCHES "SunOS")
     message (WARNING "Unit tests disabled because of a crash in Google Mock")
   else ()
     set (OUT_XML "${CMAKE_BINARY_DIR}/${test_target}.xml")
 
-    set (command_line "$<TARGET_FILE:${test_target}>" "--gtest_output=xml:${OUT_XML}")
+    set (command_line "$<TARGET_FILE:${test_target}>"
+                      "--gtest_output=xml:${OUT_XML}"
+    )
     if (PSTORE_NOISY_UNIT_TESTS)
       list (APPEND command_line "--loud")
     endif ()
@@ -45,20 +46,14 @@ function (run_pstore_unit_test prelink_target test_target)
       add_custom_command (
         TARGET ${prelink_target}
         PRE_LINK
-        COMMAND "${VALGRIND_PATH}"
-                --tool=memcheck
-                "--suppressions=${PSTORE_ROOT_DIR}/unittests/std_string_wchar_t.supp"
-                --leak-check=full
-                --show-reachable=yes
-                --undef-value-errors=yes
-                --track-origins=no
-                --child-silent-after-fork=no
-                --trace-children=no
-                --error-exitcode=13
-                ${command_line}
+        COMMAND
+          "${VALGRIND_PATH}" --tool=memcheck
+          "--suppressions=${PSTORE_ROOT_DIR}/unittests/std_string_wchar_t.supp"
+          --leak-check=full --show-reachable=yes --undef-value-errors=yes
+          --track-origins=no --child-silent-after-fork=no --trace-children=no
+          --error-exitcode=13 ${command_line}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Valgrind Running ${test_target}"
-        DEPENDS ${test_target}
+        COMMENT "Valgrind Running ${test_target}" DEPENDS ${test_target}
         BYPRODUCTS ${OUT_XML}
         VERBATIM
       )
@@ -66,12 +61,12 @@ function (run_pstore_unit_test prelink_target test_target)
       add_custom_command (
         TARGET ${prelink_target}
         PRE_LINK
-        COMMAND ${CMAKE_COMMAND}
-                -E env "LLVM_PROFILE_FILE=$<TARGET_FILE:${test_target}>.profraw"
-                ${command_line}
+        COMMAND
+          ${CMAKE_COMMAND} -E env
+          "LLVM_PROFILE_FILE=$<TARGET_FILE:${test_target}>.profraw"
+          ${command_line}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Running ${test_target}"
-        DEPENDS ${test_target}
+        COMMENT "Running ${test_target}" DEPENDS ${test_target}
         BYPRODUCTS ${OUT_XML}
         VERBATIM
       )
@@ -81,8 +76,7 @@ function (run_pstore_unit_test prelink_target test_target)
         PRE_LINK
         COMMAND ${command_line}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Running ${test_target}"
-        DEPENDS ${test_target}
+        COMMENT "Running ${test_target}" DEPENDS ${test_target}
         BYPRODUCTS ${OUT_XML}
         VERBATIM
       )

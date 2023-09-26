@@ -13,19 +13,19 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 #===----------------------------------------------------------------------===//
-add_pstore_executable (pstore-genromfs
-    genromfs.cpp
-
-    copy.cpp
-    copy.hpp
-    directory_entry.hpp
-    dump_tree.cpp
-    dump_tree.hpp
-    indent.hpp
-    scan.cpp
-    scan.hpp
-    vars.cpp
-    vars.hpp
+add_pstore_executable (
+  pstore-genromfs
+  genromfs.cpp
+  copy.cpp
+  copy.hpp
+  directory_entry.hpp
+  dump_tree.cpp
+  dump_tree.hpp
+  indent.hpp
+  scan.cpp
+  scan.hpp
+  vars.cpp
+  vars.hpp
 )
 target_link_libraries (pstore-genromfs PUBLIC pstore-romfs pstore-command-line)
 add_clang_tidy_target (pstore-genromfs)

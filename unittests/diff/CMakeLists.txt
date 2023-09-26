@@ -15,12 +15,7 @@
 #===----------------------------------------------------------------------===//
 
 include (add_pstore)
-add_pstore_unit_test (pstore-diff-unit-tests
-    test_indices.cpp
-    test_revision.cpp
-)
-target_link_libraries (pstore-diff-unit-tests
-    PUBLIC
-        pstore-diff-dump
-        pstore-unit-test-common
+add_pstore_unit_test (pstore-diff-unit-tests test_indices.cpp test_revision.cpp)
+target_link_libraries (
+  pstore-diff-unit-tests PUBLIC pstore-diff-dump pstore-unit-test-common
 )

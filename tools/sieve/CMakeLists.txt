@@ -14,10 +14,7 @@
 #
 #===----------------------------------------------------------------------===//
 
-add_pstore_executable (pstore-sieve
-    main.cpp
-    switches.cpp
-    switches.hpp
-    write_output.hpp
+add_pstore_executable (
+  pstore-sieve main.cpp switches.cpp switches.hpp write_output.hpp
 )
 target_link_libraries (pstore-sieve PUBLIC pstore-command-line)

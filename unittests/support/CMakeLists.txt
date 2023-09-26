@@ -14,24 +14,25 @@
 #
 #===----------------------------------------------------------------------===//
 
-add_pstore_unit_test (pstore-support-unit-tests
-    test_aligned.cpp
-    test_base64.cpp
-    test_bit_count.cpp
-    test_bit_field.cpp
-    test_error.cpp
-    test_fnv.cpp
-    test_gsl.cpp
-    test_maybe.cpp
-    test_parallel_for_each.cpp
-    test_pointee_adaptor.cpp
-    test_quoted.cpp
-    test_round2.cpp
-    test_uint128.cpp
-    test_unsigned_cast.cpp
-    test_utf.cpp
-    test_utf_win32.cpp
-    test_varint.cpp
+add_pstore_unit_test (
+  pstore-support-unit-tests
+  test_aligned.cpp
+  test_base64.cpp
+  test_bit_count.cpp
+  test_bit_field.cpp
+  test_error.cpp
+  test_fnv.cpp
+  test_gsl.cpp
+  test_maybe.cpp
+  test_parallel_for_each.cpp
+  test_pointee_adaptor.cpp
+  test_quoted.cpp
+  test_round2.cpp
+  test_uint128.cpp
+  test_unsigned_cast.cpp
+  test_utf.cpp
+  test_utf_win32.cpp
+  test_varint.cpp
 )
 
 # The pstore-support library is already linked by pstore-unit-test-common.

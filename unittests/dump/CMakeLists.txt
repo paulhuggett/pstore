@@ -14,26 +14,25 @@
 #
 #===----------------------------------------------------------------------===//
 
-########################
+# ##############################################################################
 # pstore Dump Unit Tests
-########################
+# ##############################################################################
 
 include (add_pstore)
-set (PSTORE_DUMP_UNIT_TEST_SRC
-    convert.cpp
-    convert.hpp
-    test_array.cpp
-    test_base16.cpp
-    test_db.cpp
-    test_line_splitter.cpp
-    test_mcrepo.cpp
-    test_number.cpp
-    test_object.cpp
-    test_string.cpp
+set (
+  PSTORE_DUMP_UNIT_TEST_SRC
+  convert.cpp
+  convert.hpp
+  test_array.cpp
+  test_base16.cpp
+  test_db.cpp
+  test_line_splitter.cpp
+  test_mcrepo.cpp
+  test_number.cpp
+  test_object.cpp
+  test_string.cpp
 )
 add_pstore_unit_test (pstore-dump-unit-tests ${PSTORE_DUMP_UNIT_TEST_SRC})
-target_link_libraries (pstore-dump-unit-tests
-    PUBLIC
-        pstore-dump-lib
-        pstore-unit-test-common
+target_link_libraries (
+  pstore-dump-unit-tests PUBLIC pstore-dump-lib pstore-unit-test-common
 )

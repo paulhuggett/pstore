@@ -18,107 +18,97 @@ include (add_pstore)
 include (clang_tidy)
 
 set (pstore_core_include_dir "${PSTORE_ROOT_DIR}/include/pstore/core")
-set (PSTORE_SRC )
+set (PSTORE_SRC)
 
-########
+#
 # Core #
-########
-list (APPEND pstore_core_includes
-    address.hpp
-    database.hpp
-    db_archive.hpp
-    diff.hpp
-    file_header.hpp
-    generation_iterator.hpp
-    index_types.hpp
-    indirect_string.hpp
-    region.hpp
-    start_vacuum.hpp
-    storage.hpp
-    transaction.hpp
-    vacuum_intf.hpp
+#
+list (
+  APPEND
+  pstore_core_includes
+  address.hpp
+  database.hpp
+  db_archive.hpp
+  diff.hpp
+  file_header.hpp
+  generation_iterator.hpp
+  index_types.hpp
+  indirect_string.hpp
+  region.hpp
+  start_vacuum.hpp
+  storage.hpp
+  transaction.hpp
+  vacuum_intf.hpp
 )
-list (APPEND PSTORE_SRC
-    address.cpp
-    database.cpp
-    file_header.cpp
-    generation_iterator.cpp
-    index_types.cpp
-    indirect_string.cpp
-    region.cpp
-    start_vacuum.cpp
-    storage.cpp
-    transaction.cpp
-    vacuum_intf.cpp
+list (
+  APPEND
+  PSTORE_SRC
+  address.cpp
+  database.cpp
+  file_header.cpp
+  generation_iterator.cpp
+  index_types.cpp
+  indirect_string.cpp
+  region.cpp
+  start_vacuum.cpp
+  storage.cpp
+  transaction.cpp
+  vacuum_intf.cpp
 )
 
-
-###########
+# ##############################################################################
 # Support #
-###########
-list (APPEND pstore_core_includes
-    crc32.hpp
-    sstring_view_archive.hpp
-    time.hpp
-    uuid.hpp
+# ##############################################################################
+list (APPEND pstore_core_includes crc32.hpp sstring_view_archive.hpp time.hpp
+      uuid.hpp
 )
-list (APPEND PSTORE_SRC
-    base32.cpp
-    base32.hpp
-    crc32.cpp
-    time.cpp
-    uuid.cpp
+list (
+  APPEND
+  PSTORE_SRC
+  base32.cpp
+  base32.hpp
+  crc32.cpp
+  time.cpp
+  uuid.cpp
 )
 
-
-######
+#
 # OS #
-######
+#
 list (APPEND pstore_core_includes errno_exception.hpp)
 list (APPEND PSTORE_SRC errno_exception.cpp)
 
-
-#########
+#
 # Index #
-#########
-list (APPEND pstore_core_includes
-    hamt_map.hpp
-    hamt_map_fwd.hpp
-    hamt_map_types.hpp
-    hamt_set.hpp
+#
+list (APPEND pstore_core_includes hamt_map.hpp hamt_map_fwd.hpp
+      hamt_map_types.hpp hamt_set.hpp
 )
-list (APPEND PSTORE_SRC
-    hamt_map_types.cpp
-)
-
+list (APPEND PSTORE_SRC hamt_map_types.cpp)
 
 add_pstore_library (
-    NAME core
-    SOURCES "${PSTORE_SRC}"
-    HEADER_DIR "${pstore_core_include_dir}"
-    INCLUDES "${pstore_core_includes}"
+  NAME core
+  SOURCES "${PSTORE_SRC}"
+  HEADER_DIR "${pstore_core_include_dir}"
+  INCLUDES "${pstore_core_includes}"
 )
 
-
-
-target_link_libraries (pstore-core PUBLIC
-    pstore-adt
-    pstore-brokerface
-    pstore-os
-    pstore-serialize
-    pstore-support
+target_link_libraries (
+  pstore-core PUBLIC pstore-adt pstore-brokerface pstore-os pstore-serialize
+                     pstore-support
 )
 add_clang_tidy_target (pstore-core)
-
 
 # Our use of shared memory needs an extra library on a Linux system.
 include (CheckLibraryExists)
 check_library_exists (rt shm_open "" NEED_LIBRT)
 if (NEED_LIBRT)
-    target_link_libraries (pstore-core PUBLIC rt)
+  target_link_libraries (pstore-core PUBLIC rt)
 endif ()
 
 include (check_atomic)
-if (NOT PSTORE_HAVE_CXX_ATOMICS_WITHOUT_LIB AND PSTORE_HAVE_CXX_ATOMICS_WITH_LIB)
-    target_link_libraries (pstore-core PUBLIC atomic)
-endif()
+if (NOT PSTORE_HAVE_CXX_ATOMICS_WITHOUT_LIB
+    AND PSTORE_HAVE_CXX_ATOMICS_WITH_LIB
+)
+  target_link_libraries (pstore-core PUBLIC atomic)
+endif ()

@@ -13,11 +13,12 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 #===----------------------------------------------------------------------===//
-add_pstore_unit_test (pstore-brokerface-unit-tests
-    test_message_type.cpp
-    test_pubsub.cpp
-    test_send_message.cpp
+add_pstore_unit_test (
+  pstore-brokerface-unit-tests test_message_type.cpp test_pubsub.cpp
+  test_send_message.cpp
 )
 
 # The pstore-brokerface library is already linked by pstore-unit-test-common.
-target_link_libraries (pstore-brokerface-unit-tests PUBLIC pstore-unit-test-common)
+target_link_libraries (
+  pstore-brokerface-unit-tests PUBLIC pstore-unit-test-common
+)

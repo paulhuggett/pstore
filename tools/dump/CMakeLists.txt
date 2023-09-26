@@ -14,11 +14,7 @@
 #
 #===----------------------------------------------------------------------===//
 
-add_pstore_tool (pstore-dump
-    main.cpp
-    switches.cpp
-    switches.hpp
-)
+add_pstore_tool (pstore-dump main.cpp switches.cpp switches.hpp)
 target_link_libraries (pstore-dump PUBLIC pstore-dump-lib pstore-command-line)
 
 run_pstore_unit_test (pstore-dump pstore-dump-unit-tests)

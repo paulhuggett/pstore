@@ -14,21 +14,18 @@
 #
 #===----------------------------------------------------------------------===//
 
-##########################
+# ##############################################################################
 # pstore diff-dump library
-##########################
+# ##############################################################################
 
 add_pstore_library (
-    TARGET pstore-diff-dump
-    NAME diff-dump
-    SOURCES
-        revision.cpp
-        diff_value.cpp
-    HEADER_DIR
-        "${PSTORE_ROOT_DIR}/include/pstore/diff_dump"
-    INCLUDES
-        revision.hpp
-        diff_value.hpp
+  TARGET pstore-diff-dump
+  NAME diff-dump
+  SOURCES revision.cpp diff_value.cpp
+  HEADER_DIR "${PSTORE_ROOT_DIR}/include/pstore/diff_dump"
+  INCLUDES revision.hpp diff_value.hpp
 )
-target_link_libraries (pstore-diff-dump PUBLIC pstore-adt pstore-core pstore-dump-lib)
+target_link_libraries (
+  pstore-diff-dump PUBLIC pstore-adt pstore-core pstore-dump-lib
+)
 add_clang_tidy_target (pstore-diff-dump)

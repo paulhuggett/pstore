@@ -15,12 +15,12 @@
 #===----------------------------------------------------------------------===//
 
 include (add_pstore)
-add_pstore_unit_test (pstore-serialize-unit-tests
-    test_archive.cpp
-    test_common.cpp
-    test_standard_types.cpp
-    test_types.cpp
+add_pstore_unit_test (
+  pstore-serialize-unit-tests test_archive.cpp test_common.cpp
+  test_standard_types.cpp test_types.cpp
 )
 
 # The pstore-serialize library is already linked by pstore-unit-test-common
-target_link_libraries (pstore-serialize-unit-tests PUBLIC pstore-unit-test-common)
+target_link_libraries (
+  pstore-serialize-unit-tests PUBLIC pstore-unit-test-common
+)

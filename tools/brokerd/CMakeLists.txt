@@ -15,59 +15,63 @@
 #===----------------------------------------------------------------------===//
 
 if (NOT PSTORE_ENABLE_BROKER)
-    message (STATUS "pstore broker tool is excluded (PSTORE_ENABLE_BROKER)")
+  message (STATUS "pstore broker tool is excluded (PSTORE_ENABLE_BROKER)")
 else ()
 
-    include (add_pstore)
-    include (clang_tidy)
+  include (add_pstore)
+  include (clang_tidy)
 
-    ###########################
-    # pstore-brokerd Executable
-    ###########################
+  # ############################################################################
+  # pstore-brokerd Executable
+  # ############################################################################
 
-    set (old_llvm_requires_eh ${LLVM_REQUIRES_EH})
-    set (old_llvm_requires_rtti ${LLVM_REQUIRES_RTTI})
-    set (old_pstore_exceptions ${PSTORE_EXCEPTIONS})
+  set (old_llvm_requires_eh ${LLVM_REQUIRES_EH})
+  set (old_llvm_requires_rtti ${LLVM_REQUIRES_RTTI})
+  set (old_pstore_exceptions ${PSTORE_EXCEPTIONS})
 
-    set (LLVM_REQUIRES_EH Yes)
-    set (LLVM_REQUIRES_RTTI Yes)
-    set (PSTORE_EXCEPTIONS Yes)
+  set (LLVM_REQUIRES_EH Yes)
+  set (LLVM_REQUIRES_RTTI Yes)
+  set (PSTORE_EXCEPTIONS Yes)
 
-    set (pstore_http_fs_source "${CMAKE_CURRENT_BINARY_DIR}/fs.cpp")
+  set (pstore_http_fs_source "${CMAKE_CURRENT_BINARY_DIR}/fs.cpp")
 
-    add_pstore_tool (pstore-brokerd
-        main.cpp
-        run_broker.cpp
-        run_broker.hpp
-        switches.cpp
-        switches.hpp
-        "${pstore_http_fs_source}"
-    )
+  add_pstore_tool (
+    pstore-brokerd
+    main.cpp
+    run_broker.cpp
+    run_broker.hpp
+    switches.cpp
+    switches.hpp
+    "${pstore_http_fs_source}"
+  )
 
-    set (LLVM_REQUIRES_EH ${old_llvm_requires_eh})
-    set (LLVM_REQUIRES_RTTI ${old_llvm_requires_rtti})
-    set (PSTORE_EXCEPTIONS ${old_pstore_exceptions})
+  set (LLVM_REQUIRES_EH ${old_llvm_requires_eh})
+  set (LLVM_REQUIRES_RTTI ${old_llvm_requires_rtti})
+  set (PSTORE_EXCEPTIONS ${old_pstore_exceptions})
 
-    if (PSTORE_EXCEPTIONS)
-        target_link_libraries (pstore-brokerd PUBLIC pstore-command-line)
-    else ()
-        target_link_libraries (pstore-brokerd PUBLIC pstore-command-line-ex)
-    endif ()
-    target_link_libraries (pstore-brokerd PUBLIC pstore-broker)
+  if (PSTORE_EXCEPTIONS)
+    target_link_libraries (pstore-brokerd PUBLIC pstore-command-line)
+  else ()
+    target_link_libraries (pstore-brokerd PUBLIC pstore-command-line-ex)
+  endif ()
+  target_link_libraries (pstore-brokerd PUBLIC pstore-broker)
 
-    add_clang_tidy_target (pstore-brokerd)
-    run_pstore_unit_test (pstore-brokerd pstore-brokerface-unit-tests)
-    run_pstore_unit_test (pstore-brokerd pstore-broker-unit-tests)
+  add_clang_tidy_target (pstore-brokerd)
+  run_pstore_unit_test (pstore-brokerd pstore-brokerface-unit-tests)
+  run_pstore_unit_test (pstore-brokerd pstore-broker-unit-tests)
 
-    # Run pstore-genromfs to create the structures for the HTTP server's built-in file system.
-    add_custom_command (
-        COMMENT "genromfs from ${CMAKE_CURRENT_SOURCE_DIR}/html to ${pstore_http_fs_source}"
-        COMMAND pstore-genromfs --var "::fs" "${CMAKE_CURRENT_SOURCE_DIR}/html" > "${pstore_http_fs_source}"
-        OUTPUT "${pstore_http_fs_source}"
-        DEPENDS pstore-genromfs
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        VERBATIM
-    )
+  # Run pstore-genromfs to create the structures for the HTTP server's built-in
+  # file system.
+  add_custom_command (
+    COMMENT
+      "genromfs from ${CMAKE_CURRENT_SOURCE_DIR}/html to ${pstore_http_fs_source}"
+    COMMAND pstore-genromfs --var "::fs" "${CMAKE_CURRENT_SOURCE_DIR}/html" >
+            "${pstore_http_fs_source}"
+    OUTPUT "${pstore_http_fs_source}"
+    DEPENDS pstore-genromfs
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+    VERBATIM
+  )
 
-    add_subdirectory (service)
+  add_subdirectory (service)
 endif ()

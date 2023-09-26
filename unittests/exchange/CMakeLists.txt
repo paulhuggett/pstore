@@ -14,29 +14,31 @@
 #
 #===----------------------------------------------------------------------===//
 include (add_pstore)
-add_pstore_unit_test (pstore-exchange-unit-tests
-    add_export_strings.hpp
-    compare_external_fixups.hpp
-    json_error.hpp
-    section_helper.hpp
-    test_bss_section.cpp
-    test_compilation.cpp
-    test_export_emit.cpp
-    test_export_ostream.cpp
-    test_fragment.cpp
-    test_generic_section.cpp
-    test_linked_definitions_section.cpp
-    test_paths.cpp
-    test_root.cpp
-    test_section_fixups.cpp
-    test_terminal.cpp
-    test_uuid.cpp
+add_pstore_unit_test (
+  pstore-exchange-unit-tests
+  add_export_strings.hpp
+  compare_external_fixups.hpp
+  json_error.hpp
+  section_helper.hpp
+  test_bss_section.cpp
+  test_compilation.cpp
+  test_export_emit.cpp
+  test_export_ostream.cpp
+  test_fragment.cpp
+  test_generic_section.cpp
+  test_linked_definitions_section.cpp
+  test_paths.cpp
+  test_root.cpp
+  test_section_fixups.cpp
+  test_terminal.cpp
+  test_uuid.cpp
 )
 
 # Access the library's private include directory.
-target_include_directories (pstore-exchange-unit-tests PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/exchange")
-target_link_libraries (pstore-exchange-unit-tests
-    PUBLIC
-        pstore-exchange
-        pstore-unit-test-common
+target_include_directories (
+  pstore-exchange-unit-tests
+  PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../../lib/exchange"
+)
+target_link_libraries (
+  pstore-exchange-unit-tests PUBLIC pstore-exchange pstore-unit-test-common
 )

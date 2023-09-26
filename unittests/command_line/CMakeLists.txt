@@ -14,14 +14,17 @@
 #
 #===----------------------------------------------------------------------===//
 
-add_pstore_unit_test (pstore-command-line-unit-tests
-    test_cl_parser.cpp
-    test_command_line.cpp
-    test_csv.cpp
-    test_help.cpp
-    test_modifiers.cpp
-    test_str_to_revision.cpp
-    test_string_distance.cpp
-    test_word_wrapper.cpp
+add_pstore_unit_test (
+  pstore-command-line-unit-tests
+  test_cl_parser.cpp
+  test_command_line.cpp
+  test_csv.cpp
+  test_help.cpp
+  test_modifiers.cpp
+  test_str_to_revision.cpp
+  test_string_distance.cpp
+  test_word_wrapper.cpp
 )
-target_link_libraries (pstore-command-line-unit-tests PUBLIC pstore-command-line)
+target_link_libraries (
+  pstore-command-line-unit-tests PUBLIC pstore-command-line
+)

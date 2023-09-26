@@ -13,17 +13,16 @@
 # SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 #===----------------------------------------------------------------------===//
-add_pstore_unit_test (pstore-mcrepo-unit-tests
-    test_bss_section.cpp
-    test_compilation.cpp
-    test_debug_line_section.cpp
-    test_fragment.cpp
-    test_section_sparray.cpp
-    transaction.cpp
-    transaction.hpp
+add_pstore_unit_test (
+  pstore-mcrepo-unit-tests
+  test_bss_section.cpp
+  test_compilation.cpp
+  test_debug_line_section.cpp
+  test_fragment.cpp
+  test_section_sparray.cpp
+  transaction.cpp
+  transaction.hpp
 )
-target_link_libraries (pstore-mcrepo-unit-tests
-    PUBLIC
-        pstore-mcrepo
-        pstore-unit-test-common
+target_link_libraries (
+  pstore-mcrepo-unit-tests PUBLIC pstore-mcrepo pstore-unit-test-common
 )

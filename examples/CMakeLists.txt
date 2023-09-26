@@ -14,20 +14,19 @@
 #
 #===----------------------------------------------------------------------===//
 if (NOT PSTORE_EXAMPLES)
-    message (STATUS "pstore examples are excluded (PSTORE_EXAMPLES)")
+  message (STATUS "pstore examples are excluded (PSTORE_EXAMPLES)")
 else ()
-    add_subdirectory (serialize)
+  add_subdirectory (serialize)
 
-    add_subdirectory (write_basic)
-    add_subdirectory (write_using_serializer)
+  add_subdirectory (write_basic)
+  add_subdirectory (write_using_serializer)
 
-    add_custom_target (pstore-examples
-                       ALL
-                       DEPENDS
-                               pstore-examples-serialize
-                               example-write-basic
-                               example-write-using-serializer
-                       COMMENT "Building pstore Examples"
-                       VERBATIM)
+  add_custom_target (
+    pstore-examples ALL
+    DEPENDS pstore-examples-serialize example-write-basic
+            example-write-using-serializer
+    COMMENT "Building pstore Examples"
+    VERBATIM
+  )
 
-endif()
+endif ()
