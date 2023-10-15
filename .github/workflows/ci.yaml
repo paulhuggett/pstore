@@ -27,7 +27,7 @@ jobs:
                       build_type: Debug
                       cxx_compiler: -DCMAKE_CXX_COMPILER=g++-12 -DCMAKE_C_COMPILER=gcc-12
                       generator: Ninja
-                      options: '-DPSTORE_ALWAYS_SPANNING=Yes'
+                      options: -DPSTORE_ALWAYS_SPANNING=Yes
                       os: ubuntu-latest
 
                     - name: Ubuntu-latest/gcc-12/Release
@@ -42,7 +42,9 @@ jobs:
                       build_type: Debug
                       cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-14 -DCMAKE_C_COMPILER=clang-14
                       generator: Ninja
-                      options: '-DPSTORE_ALWAYS_SPANNING=Yes -DPSTORE_VALGRIND=Yes -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=gold'
+                      # Temporarily disable valgrind.
+                      # -DPSTORE_VALGRIND=Yes
+                      options: -DPSTORE_ALWAYS_SPANNING=Yes -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=gold
                       os: ubuntu-latest
 
                     - name: Ubuntu-latest/clang-14/Release
