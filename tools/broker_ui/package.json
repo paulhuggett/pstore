@@ -14,7 +14,7 @@
     "start": "electron ."
   },
   "dependencies": {
-    "bootstrap": "^4.4.1",
+    "bootstrap": "^5.3.2",
     "d3": "^7.8.0",
     "electron": "^26.2.4",
     "humanize-duration": "^3.27.0",
