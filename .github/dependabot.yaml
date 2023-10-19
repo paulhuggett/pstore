@@ -9,3 +9,13 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
+
+  - package-ecosystem: npm
+    directory: /tools/broker_ui
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /utils/exchange_schema
+    schedule:
+      interval: daily
