@@ -16,17 +16,17 @@
 //===----------------------------------------------------------------------===//
 'use strict';
 
-const Ajv = require ('ajv');
-const fs = require ('fs');
-const strip_json_comments = require ('strip-json-comments');
-const util = require ('util');
+import Ajv from "ajv"
+import stripJsonComments from "strip-json-comments"
+import fs from "fs"
+import util from "util"
 
 // Convert `fs.readFile()` into a function that takes the
 // same parameters but returns a promise.
 const read_file = util.promisify (fs.readFile);
 
 async function read_json (path) {
-    return JSON.parse(strip_json_comments (await read_file (path, 'utf-8')));
+    return JSON.parse(stripJsonComments (await read_file (path, 'utf-8')));
 }
 
 async function read_schema (schema_path) {
