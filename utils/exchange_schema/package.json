@@ -1,6 +1,7 @@
 {
   "name": "validate",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "schema_check.js",
   "scripts": {
@@ -10,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "ajv": "^6.12.6",
-    "strip-json-comments": "^3.1.1"
+    "strip-json-comments": "^5.0.1"
   }
 }
