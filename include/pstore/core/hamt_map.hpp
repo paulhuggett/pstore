@@ -41,11 +41,9 @@ namespace pstore {
     /// \tparam KeyType  The map key type.
     /// \tparam ValueType  The map value type.
     /// \tparam Hash  A function which produces the hash of a supplied key. The signature must
-    ///   be compatible with:
-    ///     index::details::hash_type(KeyType)
+    ///   be compatible with: index::details::hash_type(KeyType)
     /// \tparam KeyEqual  A function used to compare keys for equality. The signature must be
-    ///   compatible with:
-    ///     bool(KeyType, KeyType)
+    ///   compatible with: bool(KeyType, KeyType)
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
     class hamt_map final : public index_base {
       using hash_type = details::hash_type;
@@ -62,152 +60,19 @@ namespace pstore {
                                                         serialize::is_compatible_v<ValueType, V>> {
       };
 
-    public:
-      using key_equal = KeyEqual;
-      using key_type = KeyType;
-      using mapped_type = ValueType;
-      using value_type = std::pair<KeyType const, ValueType>;
-
       /// Inner class that describes both const- and non-const iterator.
       template <bool IsConstIterator = true>
-      class iterator_base {
-        // Make iterator_base<true> a friend class of iterator_base<false> so the copy
-        // constructor can access the private member variables.
-        friend class iterator_base<true>;
-        friend class hamt_map;
-        using parent_stack = typename hamt_map<KeyType, ValueType, Hash, KeyEqual>::parent_stack;
-        using index_pointer = typename hamt_map<KeyType, ValueType, Hash, KeyEqual>::index_pointer;
+      class iterator_base;
 
-      public:
-        using iterator_category = std::forward_iterator_tag;
-        using value_type = hamt_map<KeyType, ValueType, Hash, KeyEqual>::value_type;
-        using difference_type = std::ptrdiff_t;
-        using pointer = value_type *;
-        using reference = value_type &;
-
-        /// For const_iterator: define value_reference_type to be a 'value_type const &'
-        /// For iterator:       define value_reference_type to be a 'value_type &'
-        using value_reference_type =
-          typename std::conditional_t<IsConstIterator, value_type const &, value_type &>;
-
-        /// For const_iterator:   define value_pointer_type to be a 'value_type const *'
-        /// For regular iterator: define value_pointer_type to be a 'value_type *'
-        using value_pointer_type =
-          typename std::conditional_t<IsConstIterator, value_type const *, value_type *>;
-
-        using database_reference =
-          typename std::conditional_t<IsConstIterator, database const &, database &>;
-
-        iterator_base (database_reference db, parent_stack && parents, hamt_map const * idx)
-                : db_{db}
-                , visited_parents_ (std::move (parents))
-                , index_ (idx) {}
-
-        iterator_base (iterator_base const & other) noexcept
-                : db_{other.db_}
-                , visited_parents_ (other.visited_parents_)
-                , index_ (other.index_) {
-          pos_.reset ();
-        }
-        iterator_base (iterator_base && other) noexcept
-                : db_{other.db_}
-                , visited_parents_{std::move (other.visited_parents_)}
-                , index_{other.index_}
-                , pos_{std::move (other.pos_)} {}
-
-        /// Copy constructor. Allows for implicit conversion from a regular iterator to a
-        /// const_iterator
-        template <bool Enable = IsConstIterator, typename = std::enable_if_t<Enable>>
-        // NOLINTNEXTLINE(hicpp-explicit-conversions)
-        iterator_base (iterator_base<false> const & other) noexcept
-                : db_{other.db_}
-                , visited_parents_ (other.visited_parents_)
-                , index_ (other.index_) {
-          pos_.reset ();
-        }
-
-        ~iterator_base () noexcept = default;
-
-        iterator_base & operator= (iterator_base const & rhs) noexcept {
-          if (&rhs != this) {
-            PSTORE_ASSERT (&db_ == &rhs.db_);
-            visited_parents_ = rhs.visited_parents_;
-            index_ = rhs.index_;
-            pos_.reset ();
-          }
-          return *this;
-        }
-
-        iterator_base & operator= (iterator_base && rhs) noexcept {
-          if (&rhs != this) {
-            PSTORE_ASSERT (&db_ == &rhs.db_);
-            visited_parents_ = std::move (rhs.visited_parents_);
-            index_ = rhs.index_;
-            pos_ = std::move (rhs.pos_);
-          }
-          return *this;
-        }
-
-        bool operator== (iterator_base const & other) const {
-          return index_ == other.index_ && visited_parents_ == other.visited_parents_;
-        }
-
-        bool operator!= (iterator_base const & other) const { return !operator== (other); }
-
-        /// Dereference operator
-        /// \return The value of the element to which this iterator is currently pointing.
-        value_reference_type operator* () const {
-          if (pos_ == nullptr) {
-            pos_ = std::make_unique<value_type> (index_->load_leaf (db_, this->get_address ()));
-          }
-          return *pos_;
-        }
-
-        value_pointer_type operator->() const { return &operator* (); }
-
-        /// Prefix increment
-        iterator_base & operator++ ();
-
-        /// Postfix increment operator (e.g., it++)
-        iterator_base operator++ (int) {
-          auto const old = *this;
-          ++(*this);
-          return old;
-        }
-
-        /// Returns the pstore address of the serialized value_type instance to which the
-        /// iterator is currently pointing.
-        address get_address () const {
-          PSTORE_ASSERT (visited_parents_.size () >= 1);
-          details::parent_type const & parent = visited_parents_.top ();
-          PSTORE_ASSERT (parent.node.is_leaf () && parent.position == details::not_found);
-          return parent.node.to_address ();
-        }
-
-      private:
-        void increment_branch ();
-
-        template <typename>
-        inline static bool always_false_v = false;
-
-        std::pair<std::shared_ptr<void const>, std::variant<branch const *, linear_node const *>>
-        get_non_leaf () const;
-
-        /// Walks the iterator's position to point to the deepest, left-most leaf of the
-        /// the current node. The iterator must be pointing to an branch when this
-        /// function is called.
-        void move_to_left_most_child (index_pointer node);
-
-        unsigned get_shift_bits () const {
-          PSTORE_ASSERT (visited_parents_.size () >= 1);
-          return static_cast<unsigned> ((visited_parents_.size () - 1) * details::hash_index_bits);
-        }
-
-        database_reference db_;
-        parent_stack visited_parents_;
-        hamt_map const * index_;
-        mutable std::unique_ptr<value_type> pos_;
-      };
+    public:
+      /// A function used to compare keys for equality.
+      using key_equal = KeyEqual;
+      /// The map key type.
+      using key_type = KeyType;
+      /// The map value type.
+      using mapped_type = ValueType;
+      /// The type of a key/value pair in the map.
+      using value_type = std::pair<KeyType const, ValueType>;
 
       using iterator = iterator_base<false>;
       using const_iterator = iterator_base<true>;
@@ -253,13 +118,13 @@ namespace pstore {
       ///@{
 
       /// Checks whether the container is empty
-      bool empty () const noexcept {
+      [[nodiscard]] bool empty () const noexcept {
         PSTORE_ASSERT (root_.is_empty () == (size_ == 0));
         return size_ == 0;
       }
 
-      /// Returns the number of elements
-      std::size_t size () const noexcept { return size_; }
+      /// Returns the number of elements in the container.
+      [[nodiscard]] std::size_t size () const noexcept { return size_; }
       ///@}
 
       /// \name Modifiers
@@ -501,12 +366,152 @@ namespace pstore {
 #  pragma warning(pop)
 #endif
 
-    //*  _ _                 _               _                     *
-    //* (_) |_ ___ _ __ __ _| |_ ___  _ __  | |__   __ _ ___  ___  *
-    //* | | __/ _ \ '__/ _` | __/ _ \| '__| | '_ \ / _` / __|/ _ \ *
-    //* | | ||  __/ | | (_| | || (_) | |    | |_) | (_| \__ \  __/ *
-    //* |_|\__\___|_|  \__,_|\__\___/|_|    |_.__/ \__,_|___/\___| *
-    //*                                                            *
+    //*  _ _                _             _                   *
+    //* (_) |_ ___ _ _ __ _| |_ ___ _ _  | |__  __ _ ___ ___  *
+    //* | |  _/ -_) '_/ _` |  _/ _ \ '_| | '_ \/ _` (_-</ -_) *
+    //* |_|\__\___|_| \__,_|\__\___/_|   |_.__/\__,_/__/\___| *
+    //*                                                       *
+    template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
+    template <bool IsConstIterator>
+    class hamt_map<KeyType, ValueType, Hash, KeyEqual>::iterator_base {
+      // Make iterator_base<true> a friend class of iterator_base<false> so the copy
+      // constructor can access the private member variables.
+      friend class iterator_base<true>;
+      friend class hamt_map;
+      using parent_stack = typename hamt_map<KeyType, ValueType, Hash, KeyEqual>::parent_stack;
+      using index_pointer = typename hamt_map<KeyType, ValueType, Hash, KeyEqual>::index_pointer;
+
+    public:
+      using iterator_category = std::forward_iterator_tag;
+      using value_type = hamt_map<KeyType, ValueType, Hash, KeyEqual>::value_type;
+      using difference_type = std::ptrdiff_t;
+      using pointer = value_type *;
+      using reference = value_type &;
+
+      /// For const_iterator: define value_reference_type to be a 'value_type const &'
+      /// For iterator:       define value_reference_type to be a 'value_type &'
+      using value_reference_type =
+        typename std::conditional_t<IsConstIterator, value_type const &, value_type &>;
+
+      /// For const_iterator:   define value_pointer_type to be a 'value_type const *'
+      /// For regular iterator: define value_pointer_type to be a 'value_type *'
+      using value_pointer_type =
+        typename std::conditional_t<IsConstIterator, value_type const *, value_type *>;
+
+      using database_reference =
+        typename std::conditional_t<IsConstIterator, database const &, database &>;
+
+      iterator_base (database_reference db, parent_stack && parents, hamt_map const * idx)
+              : db_{db}
+              , visited_parents_ (std::move (parents))
+              , index_ (idx) {}
+
+      iterator_base (iterator_base const & other) noexcept
+              : db_{other.db_}
+              , visited_parents_ (other.visited_parents_)
+              , index_ (other.index_) {
+        pos_.reset ();
+      }
+      iterator_base (iterator_base && other) noexcept
+              : db_{other.db_}
+              , visited_parents_{std::move (other.visited_parents_)}
+              , index_{other.index_}
+              , pos_{std::move (other.pos_)} {}
+
+      /// Copy constructor. Allows for implicit conversion from a regular iterator to a
+      /// const_iterator
+      template <bool Enable = IsConstIterator, typename = std::enable_if_t<Enable>>
+      // NOLINTNEXTLINE(hicpp-explicit-conversions)
+      iterator_base (iterator_base<false> const & other) noexcept
+              : db_{other.db_}
+              , visited_parents_ (other.visited_parents_)
+              , index_ (other.index_) {
+        pos_.reset ();
+      }
+
+      ~iterator_base () noexcept = default;
+
+      iterator_base & operator= (iterator_base const & rhs) noexcept {
+        if (&rhs != this) {
+          PSTORE_ASSERT (&db_ == &rhs.db_);
+          visited_parents_ = rhs.visited_parents_;
+          index_ = rhs.index_;
+          pos_.reset ();
+        }
+        return *this;
+      }
+
+      iterator_base & operator= (iterator_base && rhs) noexcept {
+        if (&rhs != this) {
+          PSTORE_ASSERT (&db_ == &rhs.db_);
+          visited_parents_ = std::move (rhs.visited_parents_);
+          index_ = rhs.index_;
+          pos_ = std::move (rhs.pos_);
+        }
+        return *this;
+      }
+
+      bool operator== (iterator_base const & other) const {
+        return index_ == other.index_ && visited_parents_ == other.visited_parents_;
+      }
+
+      bool operator!= (iterator_base const & other) const { return !operator== (other); }
+
+      /// Dereference operator
+      /// \return The value of the element to which this iterator is currently pointing.
+      value_reference_type operator* () const {
+        if (pos_ == nullptr) {
+          pos_ = std::make_unique<value_type> (index_->load_leaf (db_, this->get_address ()));
+        }
+        return *pos_;
+      }
+
+      value_pointer_type operator->() const { return &operator* (); }
+
+      /// Prefix increment
+      iterator_base & operator++ ();
+
+      /// Postfix increment operator (e.g., it++)
+      iterator_base operator++ (int) {
+        auto const old = *this;
+        ++(*this);
+        return old;
+      }
+
+      /// Returns the pstore address of the serialized value_type instance to which the
+      /// iterator is currently pointing.
+      address get_address () const {
+        PSTORE_ASSERT (visited_parents_.size () >= 1);
+        details::parent_type const & parent = visited_parents_.top ();
+        PSTORE_ASSERT (parent.node.is_leaf () && parent.position == details::not_found);
+        return parent.node.to_address ();
+      }
+
+    private:
+      void increment_branch ();
+
+      template <typename>
+      inline static bool always_false_v = false;
+
+      std::pair<std::shared_ptr<void const>, std::variant<branch const *, linear_node const *>>
+      get_non_leaf () const;
+
+      /// Walks the iterator's position to point to the deepest, left-most leaf of the
+      /// the current node. The iterator must be pointing to an branch when this
+      /// function is called.
+      void move_to_left_most_child (index_pointer node);
+
+      unsigned get_shift_bits () const {
+        PSTORE_ASSERT (visited_parents_.size () >= 1);
+        return static_cast<unsigned> ((visited_parents_.size () - 1) * details::hash_index_bits);
+      }
+
+      database_reference db_;
+      parent_stack visited_parents_;
+      hamt_map const * index_;
+      mutable std::unique_ptr<value_type> pos_;
+    };
+
     // Prefix increment
     // ~~~~~~~~~~~~~~~~
     template <typename KeyType, typename ValueType, typename Hash, typename KeyEqual>
