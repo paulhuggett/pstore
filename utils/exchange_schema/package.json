@@ -1,6 +1,7 @@
 {
   "name": "validate",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
   "main": "schema_check.js",
   "scripts": {
