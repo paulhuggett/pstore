@@ -309,7 +309,7 @@ namespace pstore {
     /// start of a character.
     template <typename CharType>
     constexpr auto is_utf_char_start (CharType c) noexcept -> bool {
-      using uchar_type = typename std::make_unsigned<CharType>::type;
+      using uchar_type = typename std::make_unsigned_t<CharType>;
       return (static_cast<uchar_type> (c) & 0xC0U) != 0x80U;
     }
 
@@ -321,7 +321,7 @@ namespace pstore {
       auto const result =
         std::count_if (first, last, [] (char const c) { return is_utf_char_start (c); });
       PSTORE_ASSERT (result >= 0);
-      using utype = typename std::make_unsigned<decltype (result)>::type;
+      using utype = typename std::make_unsigned_t<decltype (result)>;
       static_assert (std::numeric_limits<utype>::max () <= std::numeric_limits<std::size_t>::max (),
                      "std::size_t cannot hold result of count_if");
       return static_cast<std::size_t> (result);

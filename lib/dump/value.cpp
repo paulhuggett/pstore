@@ -94,7 +94,7 @@ namespace pstore::dump {
   // should be quoted
   // ~~~~~~~~~~~~~~~~
   bool string::should_be_quoted (std::string const & v) {
-    using uchar_type = typename std::make_unsigned<std::string::value_type>::type;
+    using uchar_type = typename std::make_unsigned_t<std::string::value_type>;
     return v.length () == 0 || std::isspace (static_cast<uchar_type> (v.front ())) ||
            std::isspace (static_cast<uchar_type> (v.back ())) ||
            std::find_if (std::begin (v), std::end (v), [] (char const c) {

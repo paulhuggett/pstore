@@ -218,7 +218,7 @@ namespace pstore {
         // Work out whether appending message would cause the current file size to
         // exceed max_size_.
         std::streamoff const remaining = max_size_ - pos;
-        using ustreamoff = std::make_unsigned<std::streamoff>::type;
+        using ustreamoff = std::make_unsigned_t<std::streamoff>;
         if (remaining < 0 || message.length () > static_cast<ustreamoff> (remaining)) {
           resl = true;
         }

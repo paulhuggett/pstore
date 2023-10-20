@@ -47,8 +47,7 @@ namespace {
     using namespace pstore;
 
     if (offset % system_page_size ().get () != 0 ||
-        offset >
-          static_cast<std::make_unsigned<off_t>::type> (std::numeric_limits<off_t>::max ())) {
+        offset > static_cast<std::make_unsigned_t<off_t>> (std::numeric_limits<off_t>::max ())) {
       raise (std::errc::invalid_argument, "mmap");
     }
     return static_cast<off_t> (offset);

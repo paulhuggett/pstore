@@ -53,7 +53,7 @@ namespace pstore::brokerface {
 
     using difference_type = std::iterator_traits<decltype (first)>::difference_type;
     static_assert (message_type::payload_chars <=
-                     static_cast<std::make_unsigned<difference_type>::type> (
+                     static_cast<std::make_unsigned_t<difference_type>> (
                        std::numeric_limits<difference_type>::max ()),
                    "payload_chars is too large to be represented as "
                    "string::iterator::difference_type");

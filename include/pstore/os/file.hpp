@@ -217,7 +217,7 @@ namespace pstore {
       std::size_t read_span (SpanType const & s) {
         auto const size = s.size_bytes ();
         PSTORE_ASSERT (size >= 0);
-        using utype = typename std::make_unsigned<decltype (size)>::type;
+        using utype = typename std::make_unsigned_t<decltype (size)>;
         return this->read_buffer (s.data (), static_cast<utype> (s.size_bytes ()));
       }
 
@@ -238,8 +238,7 @@ namespace pstore {
       void write_span (SpanType const & s) {
         auto const bytes = s.size_bytes ();
         PSTORE_ASSERT (bytes >= 0);
-        auto const ubytes =
-          static_cast<typename std::make_unsigned<decltype (bytes)>::type> (bytes);
+        auto const ubytes = static_cast<typename std::make_unsigned_t<decltype (bytes)>> (bytes);
         this->write_buffer (s.data (), ubytes);
       }
 
