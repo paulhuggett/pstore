@@ -343,9 +343,7 @@ namespace pstore {
       if (size <= 0) {
         return 0;
       }
-      using common =
-        typename std::common_type<IntType,
-                                  typename std::make_unsigned<decltype (size)>::type>::type;
+      using common = typename std::common_type_t<IntType, std::make_unsigned_t<decltype (size)>>;
       return static_cast<IntType> (std::min (
         static_cast<common> (size), static_cast<common> (std::numeric_limits<IntType>::max ())));
     }

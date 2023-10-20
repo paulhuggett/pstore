@@ -130,16 +130,15 @@ namespace pstore {
     auto const segment_end = std::end (*sat_);
     using segment_difference_type = std::iterator_traits<decltype (segment_it)>::difference_type;
 
-    PSTORE_ASSERT (last_sat_entry <=
-                   static_cast<std::make_unsigned<segment_difference_type>::type> (
-                     std::numeric_limits<segment_difference_type>::max ()));
+    PSTORE_ASSERT (last_sat_entry <= static_cast<std::make_unsigned_t<segment_difference_type>> (
+                                       std::numeric_limits<segment_difference_type>::max ()));
     std::advance (segment_it, static_cast<segment_difference_type> (last_sat_entry));
 
     auto region_it = std::begin (regions_);
     auto const region_end = std::end (regions_);
 
     using region_difference_type = std::iterator_traits<decltype (region_it)>::difference_type;
-    PSTORE_ASSERT (old_length <= static_cast<std::make_unsigned<region_difference_type>::type> (
+    PSTORE_ASSERT (old_length <= static_cast<std::make_unsigned_t<region_difference_type>> (
                                    std::numeric_limits<region_difference_type>::max ()));
     std::advance (region_it, static_cast<region_difference_type> (old_length));
 

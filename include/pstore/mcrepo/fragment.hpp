@@ -448,7 +448,7 @@ case section_kind::k: name = #k; break;
       auto const num_contents = std::distance (first, last);
       PSTORE_ASSERT (num_contents >= 0);
       auto const unum_contents =
-        static_cast<typename std::make_unsigned<decltype (num_contents)>::type> (num_contents);
+        static_cast<typename std::make_unsigned_t<decltype (num_contents)>> (num_contents);
 
       // Space needed by the signature and section offset array.
       std::size_t size_bytes =

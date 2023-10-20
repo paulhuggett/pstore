@@ -59,7 +59,7 @@
 
 namespace {
 
-  using uoff_type = std::make_unsigned<off_t>::type;
+  using uoff_type = std::make_unsigned_t<off_t>;
   constexpr auto uoff_max = pstore::unsigned_cast (std::numeric_limits<off_t>::max ());
 
   template <typename ErrorCode, typename MessageStr, typename PathStr>

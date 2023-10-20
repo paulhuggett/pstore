@@ -124,7 +124,7 @@ void copy (std::string const & path, unsigned file_no) {
       // Absolute guarantee of nul termination.
       vbuf[vbuf.size () - 1U] = '\0';
       os << vbuf.data ();
-      width += static_cast<std::make_unsigned<decltype (written)>::type> (written);
+      width += static_cast<std::make_unsigned_t<decltype (written)>> (written);
       separator = ",";
     }
   } while (num_read >= buffer_size);

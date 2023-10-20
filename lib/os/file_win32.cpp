@@ -244,7 +244,7 @@ namespace pstore {
       using quad_part_type = decltype (LARGE_INTEGER::QuadPart);
       static_assert (sizeof (quad_part_type) == sizeof (LARGE_INTEGER),
                      "QuadPart may not be the largest member of LARGE_INTEGER");
-      PSTORE_ASSERT (position < static_cast<std::make_unsigned<quad_part_type>::type> (
+      PSTORE_ASSERT (position < static_cast<std::make_unsigned_t<quad_part_type>> (
                                   std::numeric_limits<quad_part_type>::max ()));
 
       LARGE_INTEGER distance;

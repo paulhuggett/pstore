@@ -34,7 +34,7 @@ namespace pstore {
     }
 
     using difference_type = typename std::iterator_traits<InputIt>::difference_type;
-    using udifference_type = typename std::make_unsigned<difference_type>::type;
+    using udifference_type = typename std::make_unsigned_t<difference_type>;
     using wide_type =
       typename std::conditional_t<sizeof (udifference_type) >= sizeof (unsigned int),
                                   udifference_type, unsigned int>;

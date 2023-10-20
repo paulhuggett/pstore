@@ -113,7 +113,7 @@ namespace pstore::serialize::archive {
 
   template <typename T>
   auto unsigned_cast (T const & t) -> std::make_unsigned_t<T> {
-    using unsigned_type = typename std::make_unsigned<T>::type;
+    using unsigned_type = typename std::make_unsigned_t<T>;
     PSTORE_ASSERT (t >= 0);
     return static_cast<unsigned_type> (t);
   }
