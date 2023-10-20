@@ -14,7 +14,7 @@ jobs:
     env:
       # Find the latest version on this page:
       # https://docs.sonarcloud.io/advanced-setup/ci-based-analysis/sonarscanner-cli/
-      SONAR_SCANNER_VERSION: 5.0
+      SONAR_SCANNER_VERSION: "5.0.1.3006"
       SONAR_SERVER_URL: "https://sonarcloud.io"
       BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
       SONAR_CACHE_DIR: build_cache_dir
