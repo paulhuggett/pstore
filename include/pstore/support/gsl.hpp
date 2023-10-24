@@ -17,6 +17,7 @@
 #define PSTORE_SUPPORT_GSL_HPP
 
 #include <array>
+#include <cstdint>
 #include <iterator>
 #include <limits>
 #include <memory>
