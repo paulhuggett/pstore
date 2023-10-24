@@ -139,8 +139,7 @@ namespace pstore {
 
   void descriptor_condition_variable::wait (std::unique_lock<std::mutex> & lock) {
     lock.unlock ();
-    auto const _ = //! OCLINT(PH - variable is intentionally unused)
-      make_scope_guard ([&lock] () { lock.lock (); });
+    scope_exit _ ([&lock] () { lock.lock (); }); //! OCLINT(PH - variable is intentionally unused)
     this->wait ();
   }
 
