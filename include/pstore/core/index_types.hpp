@@ -48,7 +48,7 @@ namespace pstore {
       /// \param archive  The archive to which the span will be written.
       /// \param span     The span which is to be written.
       template <typename Archive, typename SpanType>
-      static auto writen (Archive && archive, SpanType span) -> archive_result_type<Archive> {
+      static auto writen (Archive & archive, SpanType span) -> archive_result_type<Archive> {
         static_assert (std::is_same_v<typename SpanType::element_type, uint128>,
                        "span type does not match the serializer type");
         return archive.putn (span);

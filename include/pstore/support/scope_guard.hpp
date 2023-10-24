@@ -25,24 +25,25 @@ namespace pstore {
 
   /// An implementation of std::scope_exit<> which is based loosely on P0052r7 "Generic Scope
   /// Guard and RAII Wrapper for the Standard Library".
-  template <typename ExitFunction>
-  class scope_guard {
+  template <typename ExitFunction, typename = std::enable_if_t<std::is_invocable_v<ExitFunction>>>
+  class scope_exit {
   public:
-    template <typename OtherExitFunction>
-    explicit scope_guard (OtherExitFunction && other)
+    template <typename OtherExitFunction,
+              typename = std::enable_if_t<std::is_invocable_v<OtherExitFunction>>>
+    explicit scope_exit (OtherExitFunction && other)
             : exit_function_{std::forward<OtherExitFunction> (other)} {}
 
-    scope_guard (scope_guard const &) = delete;
-    scope_guard (scope_guard && rhs) noexcept
+    scope_exit (scope_exit const &) = delete;
+    scope_exit (scope_exit && rhs) noexcept
             : execute_on_destruction_{rhs.execute_on_destruction_}
             , exit_function_{std::move (rhs.exit_function_)} {
       rhs.release ();
     }
 
-    scope_guard & operator= (scope_guard const &) = delete;
-    scope_guard & operator= (scope_guard &&) = delete;
+    scope_exit & operator= (scope_exit const &) = delete;
+    scope_exit & operator= (scope_exit &&) = delete;
 
-    ~scope_guard () noexcept {
+    ~scope_exit () noexcept {
       if (execute_on_destruction_) {
         no_ex_escape ([this] () { exit_function_ (); });
       }
@@ -55,9 +56,12 @@ namespace pstore {
     ExitFunction exit_function_;
   };
 
+  template <typename ExitFunction>
+  scope_exit (ExitFunction &&) -> scope_exit<ExitFunction>;
+
   template <typename Function>
-  scope_guard<std::decay_t<Function>> make_scope_guard (Function && f) {
-    return scope_guard<std::decay_t<Function>> (std::forward<Function> (f));
+  scope_exit<std::decay_t<Function>> make_scope_exit (Function && f) {
+    return scope_exit<std::decay_t<Function>> (std::forward<Function> (f));
   }
 
 } // namespace pstore
