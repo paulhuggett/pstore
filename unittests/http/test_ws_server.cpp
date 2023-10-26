@@ -74,9 +74,9 @@ TEST (WsServer, Ping) {
   std::vector<std::uint8_t> send_frames;
   {
     pstore::http::frame_fixed_layout sf1{};
-    sf1.mask = true;
-    sf1.opcode = static_cast<std::uint16_t> (pstore::http::opcode::ping);
-    sf1.fin = true;
+    sf1.set_mask (true);
+    sf1.set_opcode (static_cast<std::uint16_t> (pstore::http::opcode::ping));
+    sf1.set_fin (true);
     sf1 = pstore::http::host_to_network (sf1);
     auto const sf1_span = as_bytes (make_span (&sf1, 1));
     std::copy (std::begin (sf1_span), std::end (sf1_span), std::back_inserter (send_frames));
@@ -85,9 +85,9 @@ TEST (WsServer, Ping) {
   }
   {
     pstore::http::frame_fixed_layout sf2{};
-    sf2.mask = true;
-    sf2.opcode = static_cast<std::uint16_t> (pstore::http::opcode::close);
-    sf2.fin = true;
+    sf2.set_mask (true);
+    sf2.set_opcode (static_cast<std::uint16_t> (pstore::http::opcode::close));
+    sf2.set_fin (true);
     sf2 = pstore::http::host_to_network (sf2);
     auto const sf2_span = as_bytes (make_span (&sf2, 1));
     std::copy (std::begin (sf2_span), std::end (sf2_span), std::back_inserter (send_frames));
@@ -99,19 +99,20 @@ TEST (WsServer, Ping) {
   std::vector<std::uint8_t> expected_frames;
   {
     pstore::http::frame_fixed_layout xf1{};
-    xf1.mask = false;
-    xf1.opcode = static_cast<std::uint16_t> (pstore::http::opcode::pong);
-    xf1.fin = true;
+    xf1.set_mask (false);
+    xf1.set_opcode (static_cast<std::uint16_t> (pstore::http::opcode::pong));
+    xf1.set_fin (true);
     xf1 = pstore::http::host_to_network (xf1);
     auto const xf1_span = as_bytes (make_span (&xf1, 1));
     std::copy (std::begin (xf1_span), std::end (xf1_span), std::back_inserter (expected_frames));
   }
   {
     pstore::http::frame_fixed_layout xf2{};
-    xf2.payload_length = std::uint16_t{sizeof (std::uint16_t)}; // payload is the close status code.
-    xf2.mask = false;
-    xf2.opcode = static_cast<std::uint16_t> (pstore::http::opcode::close);
-    xf2.fin = true;
+    xf2.set_payload_length (
+      std::uint16_t{sizeof (std::uint16_t)}); // payload is the close status code.
+    xf2.set_mask (false);
+    xf2.set_opcode (static_cast<std::uint16_t> (pstore::http::opcode::close));
+    xf2.set_fin (true);
     xf2 = pstore::http::host_to_network (xf2);
     auto const xf2_span = as_writeable_bytes (make_span (&xf2, 1));
     std::copy (std::begin (xf2_span), std::end (xf2_span), std::back_inserter (expected_frames));

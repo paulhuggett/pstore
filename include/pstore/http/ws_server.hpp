@@ -76,6 +76,33 @@ namespace std {
 
 namespace pstore::http {
 
+  namespace details {
+
+    template <typename ValueType, unsigned Bits,
+              typename = std::enable_if_t<Bits<sizeof (ValueType) * 8>> struct max_value {
+      static constexpr auto value = static_cast<ValueType> ((ValueType{1} << Bits) - 1);
+    };
+
+    template <unsigned Index, unsigned Bits, typename ValueType,
+              typename = std::enable_if_t<std::is_unsigned_v<ValueType> &&
+                                          Index + Bits <= sizeof (ValueType) * 8>>
+    ValueType & assign (ValueType & value_, ValueType v) noexcept {
+      static constexpr auto mask = max_value<ValueType, Bits>::value;
+      PSTORE_ASSERT (v <= mask);
+      value_ = static_cast<ValueType> (value_ & ~(mask << Index)) |
+               static_cast<ValueType> ((v & mask) << Index);
+      return value_;
+    }
+
+    template <unsigned Index, unsigned Bits, typename ValueType,
+              typename = std::enable_if_t<std::is_unsigned_v<ValueType> &&
+                                          Index + Bits <= sizeof (ValueType) * 8>>
+    ValueType extract (ValueType const value_) noexcept {
+      return (value_ >> Index) & max_value<ValueType, Bits>::value;
+    }
+
+  } // end namespace details
+
   // Frame format:
   //
   //  0                   1                   2                   3
@@ -97,13 +124,20 @@ namespace pstore::http {
   // |                     Payload Data continued ...                |
   // +---------------------------------------------------------------+
 
-  union frame_fixed_layout {
-    std::uint16_t raw;
-    bit_field<std::uint16_t, 0, 7> payload_length;
-    bit_field<std::uint16_t, 7, 1> mask;
-    bit_field<std::uint16_t, 8, 4> opcode;
-    bit_field<std::uint16_t, 12, 3> rsv;
-    bit_field<std::uint16_t, 15, 1> fin;
+  struct frame_fixed_layout {
+    std::uint16_t raw = 0;
+
+    uint16_t payload_length () const { return details::extract<0, 7> (raw); }
+    bool mask () const { return details::extract<7, 1> (raw) != 0; }
+    uint16_t opcode () const { return details::extract<8, 4> (raw); }
+    uint16_t rsv () const { return details::extract<12, 3> (raw); }
+    bool fin () const { return details::extract<15, 1> (raw) != 0; }
+
+    void set_payload_length (std::uint16_t v) { details::assign<0, 7> (raw, v); }
+    void set_mask (bool v) { details::assign<7, 1> (raw, static_cast<std::uint16_t> (v)); }
+    void set_opcode (std::uint16_t v) { details::assign<8, 4> (raw, v); }
+    void set_rsv (std::uint16_t v) { details::assign<12, 3> (raw, v); }
+    void set_fin (bool v) { details::assign<15, 1> (raw, static_cast<std::uint16_t> (v)); }
   };
 
   template <>
@@ -238,28 +272,28 @@ namespace pstore::http {
          part1.raw = network_to_host (part1.raw);
 
          if (log_frame_info) {
-           log (logger::priority::info, "fin: ", part1.fin);
-           log (logger::priority::info, "rsv: ", part1.rsv);
+           log (logger::priority::info, "fin: ", part1.fin ());
+           log (logger::priority::info, "rsv: ", part1.rsv ());
            log (logger::priority::info,
-                "opcode: ", opcode_name (static_cast<opcode> (part1.opcode.value ())));
-           log (logger::priority::info, "mask: ", part1.mask);
-           log (logger::priority::info, "payload_length: ", part1.payload_length);
+                "opcode: ", opcode_name (static_cast<opcode> (part1.opcode ())));
+           log (logger::priority::info, "mask: ", part1.mask ());
+           log (logger::priority::info, "payload_length: ", part1.payload_length ());
          }
 
          // "The rsv[n] fields MUST be 0 unless an extension is negotiated that defines
          // meanings for non-zero values. If a nonzero value is received and none of the
          // negotiated extensions defines the meaning of such a nonzero value, the receiving
          // endpoint MUST _Fail the WebSocket Connection_."
-         if (part1.rsv != 0) {
+         if (part1.rsv () != 0) {
            return return_type{ws_error::reserved_bit_set};
          }
 
          // "The server MUST close the connection upon receiving a frame that is not masked."
-         if (!part1.mask) {
+         if (!part1.mask ()) {
            return return_type{ws_error::unmasked_frame};
          }
 
-         return details::read_payload_length (reader, io1, part1.payload_length) >>=
+         return details::read_payload_length (reader, io1, part1.payload_length ()) >>=
                 [&] (IO io2, std::uint64_t const payload_length) {
                   log (logger::priority::info, "Payload length: ", payload_length);
                   if ((payload_length & (std::uint64_t{1} << 63U)) != 0U) {
@@ -284,9 +318,9 @@ namespace pstore::http {
                                     return details::decode_payload (payload_length, mask,
                                                                     payload_span) >>=
                                            [&] (gsl::span<std::uint8_t> const &) {
-                                             return return_type{
-                                               std::in_place, io4,
-                                               frame{part1.opcode, part1.fin, std::move (payload)}};
+                                             return return_type{std::in_place, io4,
+                                                                frame{part1.opcode (), part1.fin (),
+                                                                      std::move (payload)}};
                                            };
                                   };
                          };
@@ -321,21 +355,21 @@ namespace pstore::http {
   error_or<IO> send_message (Sender const sender, IO const io, opcode const op,
                              gsl::span<std::uint8_t const> const & span) {
     frame_fixed_layout f{};
-    f.fin = true;
-    f.rsv = std::uint16_t{0};
-    f.opcode = static_cast<std::uint16_t> (op);
-    f.mask = false;
+    f.set_fin (true);
+    f.set_rsv (std::uint16_t{0});
+    f.set_opcode (static_cast<std::uint16_t> (op));
+    f.set_mask (false);
 
     auto const length = span.size ();
     if (length < 126) {
-      f.payload_length = static_cast<std::uint16_t> (length);
+      f.set_payload_length (static_cast<std::uint16_t> (length));
       return send (sender, io, f.raw) >>=
              [sender, &span] (IO io2) { return send (sender, io2, span); };
     }
 
     if (length <= std::numeric_limits<std::uint16_t>::max ()) {
       // Length is sent as 16-bits.
-      f.payload_length = std::uint16_t{126};
+      f.set_payload_length (std::uint16_t{126});
       return details::send_extended_length_message<std::uint16_t> (sender, io, f, span);
     }
 
@@ -345,7 +379,7 @@ namespace pstore::http {
     }
 
     // Send the length as a full 64-bit value.
-    f.payload_length = std::uint16_t{127};
+    f.set_payload_length (std::uint16_t{127});
     return details::send_extended_length_message<std::uint64_t> (sender, io, f, span);
   }
 
