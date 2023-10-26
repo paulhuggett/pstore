@@ -28,8 +28,10 @@ namespace pstore {
   template <typename ExitFunction, typename = std::enable_if_t<std::is_invocable_v<ExitFunction>>>
   class scope_exit {
   public:
-    template <typename OtherExitFunction,
-              typename = std::enable_if_t<std::is_invocable_v<OtherExitFunction>>>
+    template <
+      typename OtherExitFunction,
+      typename = std::enable_if_t<std::is_invocable_v<OtherExitFunction> &&
+                                  !std::is_same_v<scope_exit, remove_cvref_t<OtherExitFunction>>>>
     explicit scope_exit (OtherExitFunction && other)
             : exit_function_{std::forward<OtherExitFunction> (other)} {}
 

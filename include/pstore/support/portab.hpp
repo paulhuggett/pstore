@@ -17,6 +17,8 @@
 #ifndef PSTORE_SUPPORT_PORTAB_HPP
 #define PSTORE_SUPPORT_PORTAB_HPP
 
+#include <type_traits>
+
 #ifdef _WIN32
 #  define WIN32_LEAN_AND_MEAN
 #  include <Windows.h>
@@ -201,5 +203,12 @@ namespace pstore {
 #ifdef _WIN32
 using ssize_t = SSIZE_T;
 #endif
+
+namespace pstore {
+
+  template <typename T>
+  using remove_cvref_t = std::remove_cv_t<std::remove_reference_t<T>>;
+
+} // end namespace pstore
 
 #endif // PSTORE_SUPPORT_PORTAB_HPP
