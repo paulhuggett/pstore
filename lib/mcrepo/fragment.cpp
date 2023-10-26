@@ -34,7 +34,7 @@ namespace {
 
   /// A type which is suitable for holding an instance of any of the dispatcher subclasses.
   using dispatcher_buffer =
-    std::aligned_storage<dispatcher_characteristics::size, dispatcher_characteristics::align>::type;
+    std::aligned_storage_t<dispatcher_characteristics::size, dispatcher_characteristics::align>;
 
   struct nop_deleter {
     void operator() (dispatcher * const) const noexcept {}
@@ -47,8 +47,7 @@ namespace {
   dispatcher_ptr
   make_dispatcher_for_kind (fragment const & f,
                             pstore::gsl::not_null<dispatcher_buffer *> const buffer) {
-    using dispatcher_type =
-      typename section_to_dispatcher<typename enum_to_section<Kind>::type>::type;
+    using dispatcher_type = typename section_to_dispatcher<enum_to_section_t<Kind>>::type;
     static_assert (sizeof (dispatcher_type) <= sizeof (dispatcher_buffer),
                    "dispatcher buffer is too small");
     static_assert (alignof (dispatcher_type) <= alignof (dispatcher_buffer),

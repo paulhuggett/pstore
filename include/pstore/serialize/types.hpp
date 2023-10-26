@@ -102,7 +102,7 @@
 namespace pstore::serialize {
 
   template <typename Archive>
-  using archive_result_type = typename std::remove_reference<Archive>::type::result_type;
+  using archive_result_type = typename std::remove_reference_t<Archive>::result_type;
 
   /// \brief The primary template for serialization of non standard layout types.
   ///
@@ -178,7 +178,7 @@ namespace pstore::serialize {
       /// This overload is called if Archive has a getn() method.
       template <typename Archive, typename Span>
       static void invoke (Archive && archive, Span span,
-                          decltype (&std::remove_reference<Archive>::type::template getn<Span>)) {
+                          decltype (&std::remove_reference_t<Archive>::template getn<Span>)) {
         archive.getn (span);
       }
     };
@@ -206,7 +206,7 @@ namespace pstore::serialize {
       template <typename Archive, typename SpanType>
       static void invoke (Archive && archive, SpanType span,
                           decltype (&serializer<typename SpanType::element_type>::template readn<
-                                    typename std::remove_reference<Archive>::type, SpanType>)) {
+                                    std::remove_reference_t<Archive>, SpanType>)) {
         serializer<typename SpanType::element_type>::readn (std::forward<Archive> (archive), span);
       }
     };
@@ -249,7 +249,7 @@ namespace pstore::serialize {
       template <typename Archive, typename SpanType>
       static auto invoke (Archive && archive, SpanType span,
                           decltype (&serializer<typename SpanType::element_type>::template writen<
-                                    typename std::remove_reference<Archive>::type, SpanType>))
+                                    std::remove_reference_t<Archive>, SpanType>))
         -> archive_result_type<Archive> {
         return serializer<typename SpanType::element_type>::writen (std::forward<Archive> (archive),
                                                                     span);

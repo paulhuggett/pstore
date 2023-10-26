@@ -252,7 +252,7 @@ namespace pstore::file {
   void file_handle::seek (std::uint64_t position) {
     this->ensure_open ();
 
-    using common_type = std::common_type<uoff_type, std::uint64_t>::type;
+    using common_type = std::common_type_t<uoff_type, std::uint64_t>;
     static constexpr auto max = static_cast<common_type> (std::numeric_limits<off_t>::max ());
 
     int mode = SEEK_SET;

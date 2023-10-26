@@ -178,8 +178,7 @@ namespace pstore::exchange::export_ns {
       }
     };
 
-    template <repo::section_kind Kind,
-              typename Content = typename repo::enum_to_section<Kind>::type>
+    template <repo::section_kind Kind, typename Content = repo::enum_to_section_t<Kind>>
     struct section_exporter {
       template <typename OStream>
       OStream & operator() (OStream & os, indent const ind, class database const & db,
@@ -192,7 +191,7 @@ namespace pstore::exchange::export_ns {
   } // end namespace details
 
   template <repo::section_kind Kind, typename OStream,
-            typename Content = typename repo::enum_to_section<Kind>::type>
+            typename Content = repo::enum_to_section_t<Kind>>
   OStream & emit_section (OStream & os, indent const ind, class database const & db,
                           string_mapping const & strings, Content const & content,
                           bool const comments) {

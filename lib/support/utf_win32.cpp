@@ -257,7 +257,7 @@ namespace pstore {
         }
 
         // Find out the number of wchars that the conversion will produce.
-        using common = std::common_type<int, std::size_t>::type;
+        using common = std::common_type_t<int, std::size_t>;
         auto const input_length = std::min (static_cast<common> (length),
                                             static_cast<common> (std::numeric_limits<int>::max ()));
         int size_needed = ::MultiByteToWideChar (CP_ACP, MB_ERR_INVALID_CHARS, mbcs,

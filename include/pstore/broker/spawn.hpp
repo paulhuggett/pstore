@@ -85,7 +85,7 @@ namespace pstore::broker {
     private:
       static void close_handle (HANDLE h) noexcept;
 
-      std::unique_ptr<std::remove_pointer<HANDLE>::type, decltype (&close_handle)> const process_;
+      std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype (&close_handle)> const process_;
       DWORD const group_;
     };
 

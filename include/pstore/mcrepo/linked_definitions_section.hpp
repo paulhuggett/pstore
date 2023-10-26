@@ -148,7 +148,7 @@ namespace pstore {
 
     private:
       template <typename LinkedDefinitions,
-                typename ResultType = typename inherit_const<LinkedDefinitions, value_type>::type>
+                typename ResultType = inherit_const_t<LinkedDefinitions, value_type>>
       static ResultType & index_impl (LinkedDefinitions & v, std::size_t pos) {
         PSTORE_ASSERT (pos < v.size ());
         return v.definitions_[pos];
@@ -159,7 +159,7 @@ namespace pstore {
       value_type definitions_[1];
     };
 
-    PSTORE_STATIC_ASSERT (std::is_standard_layout<linked_definitions::value_type>::value);
+    PSTORE_STATIC_ASSERT (std::is_standard_layout_v<linked_definitions::value_type>);
     PSTORE_STATIC_ASSERT (sizeof (linked_definitions::value_type) == 32);
     PSTORE_STATIC_ASSERT (alignof (linked_definitions::value_type) == 16);
     PSTORE_STATIC_ASSERT (offsetof (linked_definitions::value_type, compilation) == 0);
@@ -173,7 +173,7 @@ namespace pstore {
       std::copy (begin, end, &definitions_[0]);
 
       unused_ = 0; // to suppress a warning about the field being unused.
-      PSTORE_STATIC_ASSERT (std::is_standard_layout<linked_definitions>::value);
+      PSTORE_STATIC_ASSERT (std::is_standard_layout_v<linked_definitions>);
       PSTORE_STATIC_ASSERT (alignof (linked_definitions) == 16);
       PSTORE_STATIC_ASSERT (offsetof (linked_definitions, size_) == 0);
       PSTORE_STATIC_ASSERT (offsetof (linked_definitions, unused_) == 8);

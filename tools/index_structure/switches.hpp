@@ -24,14 +24,14 @@
 #include "pstore/config/config.hpp"
 
 struct switches {
-  std::bitset<static_cast<std::underlying_type<pstore::trailer::indices>::type> (
+  std::bitset<static_cast<std::underlying_type_t<pstore::trailer::indices>> (
     pstore::trailer::indices::last)>
     selected;
   unsigned revision = pstore::head_revision;
   std::string db_path;
 
   bool test (pstore::trailer::indices idx) const {
-    auto const position = static_cast<std::underlying_type<pstore::trailer::indices>::type> (idx);
+    auto const position = static_cast<std::underlying_type_t<pstore::trailer::indices>> (idx);
     PSTORE_ASSERT (idx < pstore::trailer::indices::last);
     return selected.test (position);
   }

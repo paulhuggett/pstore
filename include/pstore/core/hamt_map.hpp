@@ -303,14 +303,12 @@ namespace pstore {
                         gsl::not_null<parent_stack *> parents, bool is_upsert)
         -> std::pair<index_pointer, bool>;
 
-      template <
-        typename Database, typename HamtMap,
-        typename Iterator = typename inherit_const<Database, iterator, const_iterator>::type>
+      template <typename Database, typename HamtMap,
+                typename Iterator = inherit_const_t<Database, iterator, const_iterator>>
       static Iterator make_begin_iterator (Database & db, HamtMap & m);
 
-      template <
-        typename Database, typename HamtMap,
-        typename Iterator = typename inherit_const<Database, iterator, const_iterator>::type>
+      template <typename Database, typename HamtMap,
+                typename Iterator = inherit_const_t<Database, iterator, const_iterator>>
       static Iterator make_end_iterator (Database & db, HamtMap & m);
 
       /// Insert or insert_or_assign a node into a hamt_map.
