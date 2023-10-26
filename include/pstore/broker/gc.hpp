@@ -33,7 +33,7 @@ namespace pstore::broker {
     friend gc_watch_thread & getgc ();
 
   public:
-    // The gc-watch thread is normally managed by makind calls to
+    // The gc-watch thread is normally managed by making calls to
     // start_vacuum(). It is exposed here for unit testing.
     gc_watch_thread () = default;
     virtual ~gc_watch_thread () noexcept;

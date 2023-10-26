@@ -16,6 +16,11 @@
 /// \file ws_server.cpp
 /// \brief Implementation of the WebSockets server.
 
+#ifdef _WIN32
+#  define NOMINMAX
+#  define WIN32_LEAN_AND_MEAN
+#endif
+
 #include "pstore/http/ws_server.hpp"
 
 #include "pstore/support/unsigned_cast.hpp"

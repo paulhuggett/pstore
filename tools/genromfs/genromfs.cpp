@@ -14,7 +14,7 @@
 //
 //===----------------------------------------------------------------------===//
 #ifdef _WIN32
-#  define NO_MIN_MAX
+#  define NOMINMAX
 #  define WIN32_LEAN_AND_MEAN
 #endif
 

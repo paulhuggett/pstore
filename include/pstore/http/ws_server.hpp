@@ -26,6 +26,8 @@
 #  include <arpa/inet.h>
 #endif //_WIN32
 
+#include "peejay/icubaby.hpp"
+
 #include "pstore/brokerface/pubsub.hpp"
 #include "pstore/http/block_for_input.hpp"
 #include "pstore/http/buffered_reader.hpp"
@@ -375,9 +377,12 @@ namespace pstore::http {
   // ~~~~~~~~~~~~~
   template <typename Iterator>
   bool is_valid_utf8 (Iterator const first, Iterator const last) {
-    utf::utf8_decoder decoder;
-    std::for_each (first, last, [&decoder] (std::uint8_t const cu) { decoder.get (cu); });
-    return decoder.is_well_formed ();
+    icubaby::transcoder<icubaby::char8, char32_t> decoder;
+    return std::find_if_not (first, last, [&decoder] (std::uint8_t const cu) {
+             auto output = char32_t{0};
+             decoder (static_cast<icubaby::char8> (cu), &output);
+             return decoder.well_formed ();
+           }) == last;
   }
 
   // close message
@@ -428,7 +433,6 @@ namespace pstore::http {
       // the byte stream is not, in fact, a valid UTF-8 stream, that endpoint MUST
       // _Fail the WebSocket Connection_.
       if (op == opcode::text && !is_valid_utf8 (std::begin (payload), std::end (payload))) {
-
         send_close_frame (sender, io, close_status_code::invalid_payload);
         return false;
       }
