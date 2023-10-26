@@ -208,8 +208,7 @@ namespace pstore {
     auto utf16_to_code_point (InputIterator first, InputIterator last, SwapperFunction swapper)
       -> std::pair<InputIterator, char32_t> {
 
-      using value_type =
-        typename std::remove_cv<typename std::iterator_traits<InputIterator>::value_type>::type;
+      using value_type = std::remove_cv_t<typename std::iterator_traits<InputIterator>::value_type>;
       static_assert (std::is_same_v<value_type, char16_t>, "iterator must produce char16_t");
 
       PSTORE_ASSERT (first != last);

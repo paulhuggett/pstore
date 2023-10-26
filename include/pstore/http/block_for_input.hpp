@@ -57,7 +57,7 @@ namespace pstore {
       constexpr auto timeout_seconds = 60L;
 
 #ifdef _WIN32
-      std::unique_ptr<std::remove_pointer<WSAEVENT>::type, decltype (&::WSACloseEvent)> event{
+      std::unique_ptr<std::remove_pointer_t<WSAEVENT>, decltype (&::WSACloseEvent)> event{
         ::WSACreateEvent (), &::WSACloseEvent};
       if (::WSAEventSelect (socket_fd.native_handle (), event.get (), FD_READ | FD_CLOSE) != 0) {
         // WSAGetLastError ()

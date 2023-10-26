@@ -119,9 +119,8 @@ namespace pstore {
 
     /// Returns a pointer to a index, loading it from the store on first access. If 'create' is
     /// false and the index does not already exist then nullptr is returned.
-    template <
-      pstore::trailer::indices Index, typename Database = pstore::database,
-      typename Return = typename inherit_const<Database, typename enum_to_index<Index>::type>::type>
+    template <pstore::trailer::indices Index, typename Database = pstore::database,
+              typename Return = inherit_const_t<Database, typename enum_to_index<Index>::type>>
     std::shared_ptr<Return> get_index (Database & db, bool const create = true) {
       auto & dx = db.get_mutable_index (Index);
 

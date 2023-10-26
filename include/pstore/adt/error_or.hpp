@@ -185,8 +185,7 @@ namespace pstore {
       return &val->get ();
     }
 
-    template <typename ErrorOr,
-              typename ResultType = typename inherit_const<ErrorOr, storage_type>::type>
+    template <typename ErrorOr, typename ResultType = inherit_const_t<ErrorOr, storage_type>>
     static ResultType * PSTORE_NONNULL value_storage_impl (ErrorOr && e) noexcept {
       PSTORE_ASSERT (!e.has_error_);
       return reinterpret_cast<ResultType *> (&e.storage_);
@@ -197,8 +196,7 @@ namespace pstore {
       return value_storage_impl (*this);
     }
 
-    template <typename ErrorOr,
-              typename ResultType = typename inherit_const<ErrorOr, std::error_code>::type>
+    template <typename ErrorOr, typename ResultType = inherit_const_t<ErrorOr, std::error_code>>
     static ResultType * PSTORE_NONNULL error_storage_impl (ErrorOr && e) noexcept {
       PSTORE_ASSERT (e.has_error_);
       return reinterpret_cast<ResultType *> (&e.error_storage_);
@@ -207,9 +205,8 @@ namespace pstore {
     std::error_code const * PSTORE_NONNULL get_error_storage () const noexcept;
 
     union {
-      typename std::aligned_storage_t<sizeof (storage_type), alignof (storage_type)> storage_;
-      std::aligned_storage<sizeof (std::error_code), alignof (std::error_code)>::type
-        error_storage_;
+      std::aligned_storage_t<sizeof (storage_type), alignof (storage_type)> storage_;
+      std::aligned_storage_t<sizeof (std::error_code), alignof (std::error_code)> error_storage_;
     };
     bool has_error_ = true;
   };

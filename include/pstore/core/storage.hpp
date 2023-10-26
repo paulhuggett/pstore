@@ -206,8 +206,8 @@ namespace pstore {
                                 sat_iterator segment_it, sat_iterator segment_end);
 
     template <typename Storage,
-              typename ResultType = typename inherit_const<Storage, std::shared_ptr<void> const &,
-                                                           std::shared_ptr<void const>>::type>
+              typename ResultType = inherit_const_t<Storage, std::shared_ptr<void> const &,
+                                                    std::shared_ptr<void const>>>
     static auto segment_base_impl (Storage & storage, address::segment_type const segment) noexcept
       -> ResultType;
 
@@ -221,9 +221,8 @@ namespace pstore {
     /// \param storage  The instance of the storage class.
     /// \param addr  The store address.
     /// \returns  The pointer which corresponds to \p addr.
-    template <typename Storage,
-              typename ResultType = typename inherit_const<Storage, std::shared_ptr<void>,
-                                                           std::shared_ptr<void const>>::type>
+    template <typename Storage, typename ResultType = inherit_const_t<
+                                  Storage, std::shared_ptr<void>, std::shared_ptr<void const>>>
     static ResultType address_to_pointer_impl (Storage & storage, address const addr) noexcept;
 
     /// Converts a store address to the corresponding raw pointer.
@@ -236,8 +235,8 @@ namespace pstore {
     /// \param storage  The instance of the storage class.
     /// \param addr  The store address.
     /// \returns  The raw pointer which corresponds to \p addr.
-    template <typename Storage, typename ResultType = typename inherit_const<
-                                  Storage, std::uint8_t *, std::uint8_t const *>::type>
+    template <typename Storage,
+              typename ResultType = inherit_const_t<Storage, std::uint8_t *, std::uint8_t const *>>
     static ResultType address_to_raw_pointer_impl (Storage & storage, address addr) noexcept;
 
 
@@ -270,7 +269,7 @@ namespace pstore {
   inline auto storage::address_to_pointer_impl (Storage & storage, address const addr) noexcept
     -> ResultType {
     auto segment_base = storage.segment_base (addr.segment ());
-    using uint8_type = typename inherit_const<Storage, std::uint8_t>::type;
+    using uint8_type = inherit_const_t<Storage, std::uint8_t>;
     return {segment_base,
             std::static_pointer_cast<uint8_type> (segment_base).get () + addr.offset ()};
   }

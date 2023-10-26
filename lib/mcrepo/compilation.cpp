@@ -46,8 +46,8 @@ namespace {
   constexpr void assert_enum_field_width (std::initializer_list<Enum> init) noexcept {
     (void) init;
     PSTORE_ASSERT (pstore::round_to_power_of_2 (
-                     static_cast<typename std::underlying_type<Enum>::type> (std::max (init)) +
-                     1U) == Bitfield::max () + 1U);
+                     static_cast<std::underlying_type_t<Enum>> (std::max (init)) + 1U) ==
+                   Bitfield::max () + 1U);
   }
 
 } // end anonymous namespace
@@ -84,8 +84,8 @@ definition::definition (pstore::index::digest const d, pstore::extent<fragment> 
 #define X(a) repo::visibility::a,
   assert_enum_field_width<enum visibility, decltype (visibility_)> ({PSTORE_REPO_VISIBILITIES});
 #undef X
-  linkage_ = static_cast<std::underlying_type<enum linkage>::type> (l);
-  visibility_ = static_cast<std::underlying_type<enum visibility>::type> (v);
+  linkage_ = static_cast<std::underlying_type_t<enum linkage>> (l);
+  visibility_ = static_cast<std::underlying_type_t<enum visibility>> (v);
 }
 
 

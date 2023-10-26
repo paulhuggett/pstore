@@ -66,7 +66,7 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
   sw.revision = static_cast<unsigned> (revision.get ());
   sw.db_path = db_path.get ();
   for (pstore::trailer::indices idx : index_names_opt) {
-    sw.selected.set (static_cast<std::underlying_type<pstore::trailer::indices>::type> (idx));
+    sw.selected.set (static_cast<std::underlying_type_t<pstore::trailer::indices>> (idx));
   }
   return {sw, EXIT_SUCCESS};
 }

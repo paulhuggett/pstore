@@ -37,7 +37,7 @@ namespace pstore {
     }
 
     std::error_code make_error_code (pstore::repo::error_code const e) {
-      static_assert (std::is_same_v<std::underlying_type<decltype (e)>::type, int>,
+      static_assert (std::is_same_v<std::underlying_type_t<decltype (e)>, int>,
                      "base type of error_code must be int to permit safe static cast");
       static pstore::repo::error_category const cat;
       return {static_cast<int> (e), cat};
