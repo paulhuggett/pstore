@@ -13,9 +13,14 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
+#ifdef _WIN32
+#  define NOMINMAX
+#  define WIN32_LEAN_AND_MEAN
+#endif
+
 #include "pstore/http/ws_server.hpp"
 
-// 3rd part includes
+// 3rd party includes
 #include <gmock/gmock.h>
 // pstore includes
 #include "pstore/http/block_for_input.hpp"
