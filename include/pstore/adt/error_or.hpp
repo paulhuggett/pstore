@@ -61,7 +61,8 @@ namespace pstore {
       new (get_error_storage ()) std::error_code (erc);
     }
 
-    template <typename Other, typename = std::enable_if_t<std::is_convertible_v<Other, T>>>
+    template <typename Other, typename = std::enable_if_t<std::is_convertible_v<Other, T> &&
+                                                          !std::is_same_v<Other, error_or<T>>>>
     explicit error_or (Other && other)
             : has_error_{false} {
       new (get_storage ()) storage_type (std::forward<Other> (other));
