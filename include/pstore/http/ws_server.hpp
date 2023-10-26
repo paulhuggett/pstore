@@ -380,7 +380,7 @@ namespace pstore::http {
     icubaby::transcoder<icubaby::char8, char32_t> decoder;
     return std::find_if_not (first, last, [&decoder] (std::uint8_t const cu) {
              auto output = char32_t{0};
-             decoder (cu, &output);
+             decoder (static_cast<icubaby::char8> (cu), &output);
              return decoder.well_formed ();
            }) == last;
   }
