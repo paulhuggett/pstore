@@ -15,6 +15,7 @@
 #===----------------------------------------------------------------------===//
 
 add_subdirectory (brokerd)
+add_subdirectory (broker_ui)
 add_subdirectory (broker_poker) # A utility for exercising the broker agent
 add_subdirectory (diff) # Dumps diff between two pstore revisions as YAML
 add_subdirectory (dump) # Dumps pstore contents as YAML
