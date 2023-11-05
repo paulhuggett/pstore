@@ -227,32 +227,35 @@ namespace pstore::serialize {
 
     struct writen_helper {
     public:
-      template <typename Archive, typename SpanType>
-      static auto writen (Archive && archive, SpanType span) -> archive_result_type<Archive> {
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
+      static auto writen (Archive && archive, gsl::span<ElementType, Extent> span)
+        -> archive_result_type<std::decay_t<Archive>> {
         return writen_helper::invoke (std::forward<Archive> (archive), span, nullptr);
       }
 
     private:
-      template <typename Archive, typename SpanType>
-      static auto invoke (Archive && archive, SpanType span, ...) -> archive_result_type<Archive> {
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
+      static auto invoke (Archive && archive, gsl::span<ElementType, Extent> span, ...)
+        -> archive_result_type<std::decay_t<Archive>> {
         // A simmple implementation of writen() which loops over the span calling
         // write() for each element.
         sticky_assign<archive_result_type<Archive>> r;
         for (auto & v : span) {
-          r = serializer<typename SpanType::element_type>::write (archive, v);
+          r = serializer<std::decay_t<ElementType>>::write (archive, v);
         }
         return r.get ();
       }
 
       // This overload is called if Archive has a writen() method. SFINAE means that we
       // fall back to the ellipsis overload if it does not.
-      template <typename Archive, typename SpanType>
-      static auto invoke (Archive && archive, SpanType span,
-                          decltype (&serializer<typename SpanType::element_type>::template writen<
-                                    std::remove_reference_t<Archive>, SpanType>))
-        -> archive_result_type<Archive> {
-        return serializer<typename SpanType::element_type>::writen (std::forward<Archive> (archive),
-                                                                    span);
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
+      static auto
+      invoke (Archive && archive, gsl::span<ElementType, Extent> span,
+              decltype (&serializer<std::decay_t<ElementType>>::template writen<
+                        std::remove_reference_t<Archive>, gsl::span<ElementType, Extent>>))
+        -> archive_result_type<std::decay_t<Archive>> {
+        return serializer<std::decay_t<ElementType>>::writen (std::forward<Archive> (archive),
+                                                              span);
       }
     };
 
@@ -276,8 +279,9 @@ namespace pstore::serialize {
     /// \param span     The span which is to be written.
     template <typename Archive, typename SpanType>
     static auto writen (Archive && archive, SpanType span) -> archive_result_type<Archive> {
-      static_assert (std::is_same_v<typename SpanType::element_type, Ty>,
-                     "span type does not match the serializer type");
+      static_assert (
+        std::is_same_v<std::decay_t<typename SpanType::element_type>, std::decay_t<Ty>>,
+        "span type does not match the serializer type");
       return archive.putn (span);
     }
 
