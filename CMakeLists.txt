@@ -18,7 +18,6 @@ cmake_minimum_required (VERSION 3.13)
 
 include (CheckCSourceCompiles)
 include (CMakeDependentOption)
-include (CPack)
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -356,15 +355,4 @@ include (GNUInstallDirs)
 install (EXPORT pstore DESTINATION "${CMAKE_INSTALL_LIBDIR}/pstore"
          NAMESPACE pstore::
 )
-
-# List of four values that specify what project to install. The four values are: Build directory,
-# Project Name, Project Component, Directory. If omitted, CPack will build an installer that
-# installs everything.
-#set (CPACK_INSTALL_CMAKE_PROJECTS
-#  "${CMAKE_CURRENT_BINARY_DIR}"
-#  "${CMAKE_PROJECT_NAME}"
-#  ALL
-#  /
-#)
-
-
+include (CPack)
