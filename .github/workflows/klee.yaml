@@ -26,11 +26,11 @@ jobs:
                 submodules: 'True'
 
             - name: Create Build Environment
-              run: cmake -E make_directory "${{ runner.workspace }}/build"
+              run: cmake -E make_directory "${{ github.workspace }}/build"
 
             - name: Configure
               run: |
-                  cd "${{ runner.workspace }}/build"
+                  cd "${{ github.workspace }}/build"
                   cmake -G "Unix Makefiles"             \
                         -D CMAKE_BUILD_TYPE=Debug       \
                         -D CMAKE_CXX_COMPILER=clang++   \
@@ -43,5 +43,5 @@ jobs:
 
             - name: Build
               run: |
-                  cd "${{ runner.workspace }}/build"
+                  cd "${{ github.workspace }}/build"
                   cmake --build . --target pstore-klee-run-all
