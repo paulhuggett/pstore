@@ -20,21 +20,17 @@
 #include "pstore/os/descriptor.hpp"
 #include "pstore/support/gsl.hpp"
 
-namespace pstore {
-  namespace http {
-    namespace net {
+namespace pstore::http::net {
 
-      // refiller
-      // ~~~~~~~~
-      /// Called when the buffered_reader<> needs more characters from the data stream.
-      pstore::error_or<std::pair<socket_descriptor &, gsl::span<std::uint8_t>::iterator>>
-      refiller (socket_descriptor & socket, gsl::span<std::uint8_t> const & s);
+  // refiller
+  // ~~~~~~~~
+  /// Called when the buffered_reader<> needs more characters from the data stream.
+  pstore::error_or<std::pair<socket_descriptor &, gsl::span<std::uint8_t>::iterator>>
+  refiller (socket_descriptor & socket, gsl::span<std::uint8_t> const & s);
 
-      error_or<socket_descriptor &> network_sender (socket_descriptor & socket,
-                                                    gsl::span<std::uint8_t const> const & s);
+  error_or<socket_descriptor &> network_sender (socket_descriptor & socket,
+                                                gsl::span<std::uint8_t const> const & s);
 
-    } // end namespace net
-  }   // end namespace http
-} // end namespace pstore
+} // end namespace pstore::http::net
 
 #endif // PSTORE_HTTP_NET_TXRX_HPP

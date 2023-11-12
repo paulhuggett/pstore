@@ -25,34 +25,32 @@
 #include "pstore/http/endian.hpp"
 #include "pstore/support/gsl.hpp"
 
-namespace pstore {
-  namespace http {
+namespace pstore::http {
 
-    static constexpr auto crlf = "\r\n";
-    static constexpr auto server_name = "pstore-http";
+  static constexpr auto crlf = "\r\n";
+  static constexpr auto server_name = "pstore-http";
 
-    template <typename Sender, typename IO>
-    error_or<IO> send (Sender sender, IO io, gsl::span<std::uint8_t const> const & s) {
-      return sender (io, s);
-    }
-    template <typename Sender, typename IO>
-    error_or<IO> send (Sender sender, IO io, std::string const & str) {
-      auto * const data = reinterpret_cast<std::uint8_t const *> (str.data ());
-      return send (sender, io, gsl::span<std::uint8_t const> (data, data + str.length ()));
-    }
-    template <typename Sender, typename IO>
-    error_or<IO> send (Sender sender, IO io, std::ostringstream const & os) {
-      return send (sender, io, os.str ());
-    }
+  template <typename Sender, typename IO>
+  error_or<IO> send (Sender sender, IO io, gsl::span<std::uint8_t const> const & s) {
+    return sender (io, s);
+  }
+  template <typename Sender, typename IO>
+  error_or<IO> send (Sender sender, IO io, std::string const & str) {
+    auto * const data = reinterpret_cast<std::uint8_t const *> (str.data ());
+    return send (sender, io, gsl::span<std::uint8_t const> (data, data + str.length ()));
+  }
+  template <typename Sender, typename IO>
+  error_or<IO> send (Sender sender, IO io, std::ostringstream const & os) {
+    return send (sender, io, os.str ());
+  }
 
-    template <typename Sender, typename IO, typename T,
-              typename = typename std::enable_if_t<std::is_integral_v<T>>>
-    error_or<IO> send (Sender sender, IO io, T v) {
-      T const nv = host_to_network (v);
-      return send (sender, io, as_bytes (gsl::make_span (&nv, 1)));
-    }
+  template <typename Sender, typename IO, typename T,
+            typename = typename std::enable_if_t<std::is_integral_v<T>>>
+  error_or<IO> send (Sender sender, IO io, T v) {
+    T const nv = host_to_network (v);
+    return send (sender, io, as_bytes (gsl::make_span (&nv, 1)));
+  }
 
-  } // end namespace http
-} // end namespace pstore
+} // end namespace pstore::http
 
 #endif // PSTORE_HTTP_SEND_HPP
