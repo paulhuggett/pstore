@@ -303,12 +303,13 @@ function (add_pstore_library)
   install (
     TARGETS ${arg_TARGET}
     EXPORT pstore
-    PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pstore/${arg_NAME}"
-                  COMPONENT pstore
-    LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}/pstore" COMPONENT pstore
-    ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}/pstore" COMPONENT pstore
+    PUBLIC_HEADER 
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/pstore/${arg_NAME}"
+      COMPONENT pstore
+    LIBRARY COMPONENT pstore
+    ARCHIVE COMPONENT pstore
     INCLUDES
-    DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+      DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
   )
   add_dependencies (install-pstore ${arg_TARGET})
 

@@ -25,51 +25,48 @@
 
 #include "pstore/support/error.hpp"
 
-namespace pstore {
-  namespace http {
+namespace pstore::http {
 
-    // **************
-    // * error code *
-    // **************
-    enum class error_code : int {
-      bad_request = 1,
-      bad_websocket_version,
-      not_implemented,
-      string_too_long,
-      refill_out_of_range,
-    };
+  // **************
+  // * error code *
+  // **************
+  enum class error_code : int {
+    bad_request = 1,
+    bad_websocket_version,
+    not_implemented,
+    string_too_long,
+    refill_out_of_range,
+  };
 
-    // ******************
-    // * error category *
-    // ******************
-    class error_category final : public std::error_category {
-    public:
-      char const * name () const noexcept override;
-      std::string message (int error) const override;
-    };
+  // ******************
+  // * error category *
+  // ******************
+  class error_category final : public std::error_category {
+  public:
+    char const * name () const noexcept override;
+    std::string message (int error) const override;
+  };
 
-    std::error_category const & get_error_category () noexcept;
+  std::error_category const & get_error_category () noexcept;
 
-    inline std::error_code make_error_code (error_code const e) {
-      static_assert (
-        std::is_same_v<std::underlying_type_t<decltype (e)>, int>,
-        "base type of pstore::httpd::error_code must be int to permit safe static cast");
-      return {static_cast<int> (e), get_error_category ()};
-    }
+  inline std::error_code make_error_code (error_code const e) {
+    static_assert (std::is_same_v<std::underlying_type_t<decltype (e)>, int>,
+                   "base type of pstore::httpd::error_code must be int to permit safe static cast");
+    return {static_cast<int> (e), get_error_category ()};
+  }
 
 
-    // get last error
-    // ~~~~~~~~~~~~~~
-    inline std::error_code get_last_error () noexcept {
+  // get last error
+  // ~~~~~~~~~~~~~~
+  inline std::error_code get_last_error () noexcept {
 #ifdef _WIN32
-      return make_error_code (win32_erc{static_cast<DWORD> (WSAGetLastError ())});
+    return make_error_code (win32_erc{static_cast<DWORD> (WSAGetLastError ())});
 #else
-      return make_error_code (errno_erc{errno});
+    return make_error_code (errno_erc{errno});
 #endif // !_WIN32
-    }
+  }
 
-  } // end namespace http
-} // end namespace pstore
+} // end namespace pstore::http
 
 
 namespace std {

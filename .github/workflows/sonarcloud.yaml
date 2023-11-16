@@ -70,12 +70,12 @@ jobs:
 
       - name: Create Build Environment
         env:
-          BUILD_PATH: ${{ runner.workspace }}/build
+          BUILD_PATH: ${{ github.workspace }}/build
         run: cmake -E make_directory "$BUILD_PATH"
 
       - name: Configure
         env:
-          BUILD_PATH: ${{ runner.workspace }}/build
+          BUILD_PATH: ${{ github.workspace }}/build
         run: |
           cmake -G "Unix Makefiles"    \
                 -S . \
@@ -86,22 +86,22 @@ jobs:
 
       - name: Build
         env:
-          BUILD_PATH: ${{ runner.workspace }}/build
-          TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
-          BW_PATH: ${{ runner.workspace }}/bw-output
+          BUILD_PATH: ${{ github.workspace }}/build
+          TOOLS_PATH: ${{ github.workspace }}/sonarcloud
+          BW_PATH: ${{ github.workspace }}/bw-output
         run: build-wrapper-linux-x86-64 --out-dir "$BW_PATH" make -j "$(nproc)" -C "$BUILD_PATH" clean all pstore-system-tests
 
       - name: Gather Coverage
         env:
-          BUILD_PATH: ${{ runner.workspace }}/build
-          TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
+          BUILD_PATH: ${{ github.workspace }}/build
+          TOOLS_PATH: ${{ github.workspace }}/sonarcloud
         run: find "$BUILD_PATH" -name \*.gcno -exec gcov {} \;
 
       - name: Run Sonar Scanner
         env:
-          BUILD_PATH: ${{ runner.workspace }}/build
-          TOOLS_PATH: ${{ runner.workspace }}/sonarcloud
-          BW_PATH: ${{ runner.workspace }}/bw-output
+          BUILD_PATH: ${{ github.workspace }}/build
+          TOOLS_PATH: ${{ github.workspace }}/sonarcloud
+          BW_PATH: ${{ github.workspace }}/bw-output
           THREADS: 2
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

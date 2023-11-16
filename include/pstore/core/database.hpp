@@ -158,6 +158,22 @@ namespace pstore {
     std::time_t latest_time () const { return this->file ()->latest_time (); }
     bool is_writable () const noexcept { return storage_.file ()->is_writable (); }
 
+    /// Returns a boolean indicating whether a request for the memory defined by \p addr and
+    /// \p size will produce a "spanning" pointer, that is, one which spans more than one region
+    /// and, if loaded, will be dynamically allocated.
+    ///
+    /// \param addr The address of the block to be tested.
+    /// \param size  The size of block to be tested.
+    /// \returns True if the block spans multiple regions, false otherwise.
+    bool is_spanning (address const addr, std::size_t const size) const {
+      this->check_get_params (addr, size, true);
+      return storage_.request_spans_regions (addr, size);
+    }
+    template <typename T>
+    bool is_spanning (extent<T> const & ex) const {
+      return is_spanning (ex.addr.to_address (), ex.size);
+    }
+
     ///@{
     /// Load a block of data starting at address \p addr and of \p size bytes.
     ///

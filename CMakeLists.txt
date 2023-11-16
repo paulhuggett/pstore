@@ -88,12 +88,10 @@ option (
 option (PSTORE_SIGNATURE_CHECKS_ENABLED
         "Perform internal structure signature checks. Disable for fuzzing." Yes
 )
-
 option (PSTORE_POSIX_SMALL_FILES
-        "On POSIX systems, keep pstore files as small as possible"
+        "On POSIX systems, keep pstore files as small as possible" Yes
 )
-option (
-  PSTORE_ALWAYS_SPANNING
+option (PSTORE_ALWAYS_SPANNING
   "A debugging aid which forces all requests to behave as 'spanning' pointers"
 )
 
@@ -385,9 +383,4 @@ include (GNUInstallDirs)
 install (EXPORT pstore DESTINATION "${CMAKE_INSTALL_LIBDIR}/pstore"
          NAMESPACE pstore::
 )
-
-# List of four values that specify what project to install. The four values are:
-# - Build directory - Project Name - Project Component - Directory.
-set (CPACK_INSTALL_CMAKE_PROJECTS
-     "${CMAKE_CURRENT_BINARY_DIR};${CMAKE_PROJECT_NAME};ALL;/"
-)
+include (CPack)
