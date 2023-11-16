@@ -48,7 +48,7 @@ namespace {
         {"Sec-WebSocket-Version", ws_version.c_str ()},
       }};
       std::string const h = pstore::http::build_headers (std::begin (headers), std::end (headers));
-      return sender (std::forward<IO> (io2), as_bytes (pstore::gsl::make_span (h)));
+      return sender (std::move (io2), as_bytes (pstore::gsl::make_span (h)));
     };
   }
 
