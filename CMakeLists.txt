@@ -22,6 +22,8 @@ include (CMakeDependentOption)
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set (pstore_cxx_version "17" CACHE STRING "The version of C++ used by pstore")
+set (PSTORE_VERSION_MAJOR 0)
+set (PSTORE_VERSION_MINOR 1)
 
 # Work out whether the pstore library is being built inside the larger LLVM
 # framework or if it's a standalone build.
@@ -170,16 +172,6 @@ add_custom_target (
                          "${CMAKE_BINARY_DIR}/cmake_install.cmake"
   USES_TERMINAL
 )
-
-
-set (PSTORE_VERSION_MAJOR 0)
-set (PSTORE_VERSION_MINOR 1)
-include(InstallRequiredSystemLibraries)
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
-set(CPACK_PACKAGE_VERSION_MAJOR "${PSTORE_VERSION_MAJOR}")
-set(CPACK_PACKAGE_VERSION_MINOR "${PSTORE_VERSION_MINOR}")
-set(CPACK_SOURCE_GENERATOR "TGZ")
-include(CPack)
 
 
 cmake_policy (SET CMP0077 NEW)
@@ -383,4 +375,8 @@ include (GNUInstallDirs)
 install (EXPORT pstore DESTINATION "${CMAKE_INSTALL_LIBDIR}/pstore"
          NAMESPACE pstore::
 )
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PSTORE_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PSTORE_VERSION_MINOR}")
 include (CPack)
