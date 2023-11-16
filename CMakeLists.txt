@@ -88,12 +88,10 @@ option (
 option (PSTORE_SIGNATURE_CHECKS_ENABLED
         "Perform internal structure signature checks. Disable for fuzzing." Yes
 )
-
 option (PSTORE_POSIX_SMALL_FILES
-        "On POSIX systems, keep pstore files as small as possible"
+        "On POSIX systems, keep pstore files as small as possible" Yes
 )
-option (
-  PSTORE_ALWAYS_SPANNING
+option (PSTORE_ALWAYS_SPANNING
   "A debugging aid which forces all requests to behave as 'spanning' pointers"
 )
 
