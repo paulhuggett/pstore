@@ -20,7 +20,7 @@ set (pstore_command_line_include_dir
 )
 set (
   pstore_command_line_src
-  category.cpp command_line.cpp csv.cpp help.cpp modifiers.cpp option.cpp
+  category.cpp command_line.cpp csv.cpp help.cpp option.cpp
   parser.cpp revision_opt.cpp str_to_revision.cpp string_distance.cpp tchar.cpp
   word_wrapper.cpp
 )

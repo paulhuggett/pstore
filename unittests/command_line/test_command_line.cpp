@@ -26,6 +26,7 @@
 #include <gmock/gmock.h>
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 
 namespace {
 
@@ -60,7 +61,7 @@ namespace {
 
 TEST_F (ClCommandLine, SingleLetterStringOption) {
   options_container all;
-  auto & option = all.add<string_opt> ("S");
+  auto & option = all.add<string_opt> ("S"sv);
   this->add ("progname", "-Svalue");
 
   string_stream output;
@@ -77,7 +78,7 @@ TEST_F (ClCommandLine, SingleLetterStringOption) {
 
 TEST_F (ClCommandLine, SingleLetterStringOptionSeparateValue) {
   options_container all;
-  auto & option = all.add<string_opt> ("S");
+  auto & option = all.add<string_opt> ("S"sv);
   this->add ("progname", "-S", "value");
 
   string_stream output;
@@ -94,7 +95,7 @@ TEST_F (ClCommandLine, SingleLetterStringOptionSeparateValue) {
 
 TEST_F (ClCommandLine, BooleanOption) {
   options_container all;
-  auto & option = all.add<bool_opt> ("arg");
+  auto & option = all.add<bool_opt> ("arg"sv);
   EXPECT_EQ (option.get (), false);
 
   this->add ("progname", "--arg");
@@ -113,9 +114,9 @@ TEST_F (ClCommandLine, BooleanOption) {
 
 TEST_F (ClCommandLine, SingleLetterBooleanOptions) {
   options_container all;
-  auto & opt_a = all.add<bool_opt> ("a");
-  auto & opt_b = all.add<bool_opt> ("b");
-  auto & opt_c = all.add<bool_opt> ("c");
+  auto & opt_a = all.add<bool_opt> ("a"sv);
+  auto & opt_b = all.add<bool_opt> ("b"sv);
+  auto & opt_c = all.add<bool_opt> ("c"sv);
   EXPECT_EQ (opt_a.get (), false);
   EXPECT_EQ (opt_b.get (), false);
   EXPECT_EQ (opt_c.get (), false);
@@ -141,7 +142,7 @@ TEST_F (ClCommandLine, SingleLetterBooleanOptions) {
 
 TEST_F (ClCommandLine, DoubleDashStringOption) {
   options_container all;
-  auto & option = all.add<string_opt> ("arg");
+  auto & option = all.add<string_opt> ("arg"sv);
   this->add ("progname", "--arg", "value");
 
   string_stream output;
@@ -157,7 +158,7 @@ TEST_F (ClCommandLine, DoubleDashStringOption) {
 
 TEST_F (ClCommandLine, DoubleDashStringOptionWithSingleDash) {
   options_container all;
-  all.add<bool_opt> ("arg");
+  all.add<bool_opt> ("arg"sv);
   this->add ("progname", "-arg");
 
   string_stream output;
@@ -172,7 +173,7 @@ TEST_F (ClCommandLine, DoubleDashStringOptionWithSingleDash) {
 
 TEST_F (ClCommandLine, StringOptionEquals) {
   options_container all;
-  auto & option = all.add<string_opt> ("arg");
+  auto & option = all.add<string_opt> ("arg"sv);
   this->add ("progname", "--arg=value");
 
   string_stream output;
@@ -200,9 +201,9 @@ TEST_F (ClCommandLine, UnknownArgument) {
 
 TEST_F (ClCommandLine, NearestName) {
   options_container all;
-  all.add<string_opt> ("aa");
-  all.add<string_opt> ("xx");
-  all.add<string_opt> ("yy");
+  all.add<string_opt> ("aa"sv);
+  all.add<string_opt> ("xx"sv);
+  all.add<string_opt> ("yy"sv);
   this->add ("progname", "--xxx=value");
 
   string_stream output;
@@ -227,7 +228,7 @@ TEST_F (ClCommandLine, MissingOptionName) {
 
 TEST_F (ClCommandLine, StringPositional) {
   options_container all;
-  auto & option = all.add<string_opt> ("arg", positional);
+  auto & option = all.add<string_opt> ("arg"sv, positional);
   EXPECT_EQ (option.get (), "") << "Expected inital string value to be empty";
 
   this->add ("progname", "hello");
@@ -245,7 +246,7 @@ TEST_F (ClCommandLine, StringPositional) {
 
 TEST_F (ClCommandLine, RequiredStringPositional) {
   options_container all;
-  auto & option = all.add<string_opt> ("arg", positional, required);
+  auto & option = all.add<string_opt> ("arg"sv, positional, required);
 
   this->add ("progname");
 
@@ -263,8 +264,8 @@ TEST_F (ClCommandLine, RequiredStringPositional) {
 
 TEST_F (ClCommandLine, TwoPositionals) {
   options_container all;
-  auto & opt1 = all.add<string_opt> ("opt1", positional);
-  auto & opt2 = all.add<string_opt> ("opt2", positional);
+  auto & opt1 = all.add<string_opt> ("opt1"sv, positional);
+  auto & opt2 = all.add<string_opt> ("opt2"sv, positional);
 
   this->add ("progname", "arg1", "arg2");
 
@@ -282,7 +283,7 @@ TEST_F (ClCommandLine, TwoPositionals) {
 
 TEST_F (ClCommandLine, List) {
   options_container all;
-  auto & opt = all.add<list<std::string>> ("opt");
+  auto & opt = all.add<list<std::string>> ("opt"sv);
 
   this->add ("progname", "--opt", "foo", "--opt", "bar");
 
@@ -316,9 +317,9 @@ namespace {
 TEST_F (ClCommandLine, ListOfEnums) {
   options_container all;
   auto & opt = all.add<list<enumeration>> (
-    "opt", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                   literal{"b", static_cast<int> (enumeration::b), "b description"},
-                   literal{"c", static_cast<int> (enumeration::c), "c description"}));
+    "opt"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
+                     literal{"b", static_cast<int> (enumeration::b), "b description"},
+                     literal{"c", static_cast<int> (enumeration::c), "c description"}));
   this->add ("progname", "--opt", "a", "--opt", "b");
 
   string_stream output;
@@ -334,7 +335,7 @@ TEST_F (ClCommandLine, ListOfEnums) {
 
 TEST_F (ClCommandLine, ListSingleDash) {
   options_container all;
-  auto & opt = all.add<list<std::string>> ("o");
+  auto & opt = all.add<list<std::string>> ("o"sv);
 
   this->add ("progname", "-oa", "-o", "b", "-oc");
 
@@ -351,7 +352,7 @@ TEST_F (ClCommandLine, ListSingleDash) {
 
 TEST_F (ClCommandLine, ListPositional) {
   options_container all;
-  auto & opt = all.add<list<std::string>> ("opt", positional);
+  auto & opt = all.add<list<std::string>> ("opt"sv, positional);
 
   this->add ("progname", "foo", "bar");
 
@@ -368,7 +369,7 @@ TEST_F (ClCommandLine, ListPositional) {
 
 TEST_F (ClCommandLine, ListCsvEnabled) {
   options_container all;
-  auto & opt = all.add<list<std::string>> ("opt", positional, comma_separated);
+  auto & opt = all.add<list<std::string>> ("opt"sv, positional, comma_separated);
 
   this->add ("progname", "a,b", "c,d");
 
@@ -385,7 +386,7 @@ TEST_F (ClCommandLine, ListCsvEnabled) {
 
 TEST_F (ClCommandLine, ListCsvDisabled) {
   options_container all;
-  auto & opt = all.add<list<std::string>> ("opt", positional);
+  auto & opt = all.add<list<std::string>> ("opt"sv, positional);
 
   this->add ("progname", "a,b");
 
@@ -403,7 +404,7 @@ TEST_F (ClCommandLine, ListCsvDisabled) {
 
 TEST_F (ClCommandLine, MissingRequired) {
   options_container all;
-  auto & opt1 = all.add<string_opt> ("opt", required);
+  auto & opt1 = all.add<string_opt> ("opt"sv, required);
 
   this->add ("progname");
 
@@ -422,7 +423,7 @@ TEST_F (ClCommandLine, MissingRequired) {
 
 TEST_F (ClCommandLine, MissingValue) {
   options_container all;
-  auto & opt1 = all.add<string_opt> ("opt", required);
+  auto & opt1 = all.add<string_opt> ("opt"sv, required);
 
   this->add ("progname", "--opt");
 
@@ -439,7 +440,7 @@ TEST_F (ClCommandLine, MissingValue) {
 
 TEST_F (ClCommandLine, UnwantedValue) {
   options_container all;
-  auto & opt1 = all.add<bool_opt> ("opt");
+  auto & opt1 = all.add<bool_opt> ("opt"sv);
 
   this->add ("progname", "--opt=true");
 
@@ -453,8 +454,8 @@ TEST_F (ClCommandLine, UnwantedValue) {
 
 TEST_F (ClCommandLine, DoubleDashSwitchToPositional) {
   options_container all;
-  auto & opt1 = all.add<string_opt> ("opt");
-  auto & p = all.add<list<std::string>> ("names", positional);
+  auto & opt1 = all.add<string_opt> ("opt"sv);
+  auto & p = all.add<list<std::string>> ("names"sv, positional);
 
   this->add ("progname", "--", "-opt", "foo");
 
@@ -473,8 +474,8 @@ TEST_F (ClCommandLine, DoubleDashSwitchToPositional) {
 
 TEST_F (ClCommandLine, AliasBool) {
   options_container all;
-  auto & opt1 = all.add<bool_opt> ("opt");
-  auto & opt2 = all.add<alias> ("o", aliasopt{opt1});
+  auto & opt1 = all.add<bool_opt> ("opt"sv);
+  auto & opt2 = all.add<alias> ("o"sv, aliasopt{opt1});
 
   this->add ("progname", "-o");
 
@@ -492,7 +493,7 @@ TEST_F (ClCommandLine, AliasBool) {
 
 TEST_F (ClCommandLine, TwoCallsToParser) {
   options_container all;
-  auto & option = all.add<string_opt> ("S");
+  auto & option = all.add<string_opt> ("S"sv);
   this->add ("progname", "-Svalue");
 
   string_stream output;

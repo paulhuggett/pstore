@@ -37,11 +37,7 @@
 extern pstore::romfs::romfs fs;
 
 using namespace pstore::command_line;
-
-namespace {
-
-
-} // end anonymous namespace
+using namespace std::string_view_literals;
 
 #ifdef _WIN32
 int _tmain (int argc, TCHAR * argv[]) {
@@ -63,9 +59,9 @@ int main (int argc, char * argv[]) {
   PSTORE_TRY {
     options_container all;
     auto & http_port = all.add<opt<in_port_t>> (
-      "port", desc ("The port number on which the server will listen"), init (in_port_t{8080}));
+      "port"sv, desc ("The port number on which the server will listen"), init (in_port_t{8080}));
 
-    all.add<alias> ("p", desc ("Alias for --port"), aliasopt (http_port));
+    all.add<alias> ("p"sv, desc ("Alias for --port"), aliasopt (http_port));
 
     parse_command_line_options (
       all, argc, argv,

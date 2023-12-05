@@ -24,6 +24,7 @@
 #include "to_value_pair.hpp"
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 
 namespace {
 
@@ -45,18 +46,18 @@ namespace {
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
   options_container all;
   auto & add = all.add<list<std::string>> (
-    "add", desc ("Add key with corresponding string value. Specified as 'key,value'."
-                 " May be repeated to add several keys."));
-  all.add<alias> ("a", desc ("Alias for --add"), aliasopt (add));
+    "add"sv, desc ("Add key with corresponding string value. Specified as 'key,value'."
+                   " May be repeated to add several keys."));
+  all.add<alias> ("a"sv, desc ("Alias for --add"), aliasopt (add));
 
   auto & add_string = all.add<list<std::string>> (
-    "add-string", desc ("Add key to string set. May be repeated to add several strings."));
-  all.add<alias> ("s", desc ("Alias for --add-string"), aliasopt (add_string));
+    "add-string"sv, desc ("Add key to string set. May be repeated to add several strings."));
+  all.add<alias> ("s"sv, desc ("Alias for --add-string"), aliasopt (add_string));
 
   auto & add_file = all.add<list<std::string>> (
-    "add-file", desc ("Add key with the named file's contents as the corresponding value."
-                      " Specified as 'key,filename'. May be repeated to add several files."));
-  all.add<alias> ("f", desc ("Alias for --add-file"), aliasopt (add_file));
+    "add-file"sv, desc ("Add key with the named file's contents as the corresponding value."
+                        " Specified as 'key,filename'. May be repeated to add several files."));
+  all.add<alias> ("f"sv, desc ("Alias for --add-file"), aliasopt (add_file));
 
 
   auto & db_path =
@@ -64,10 +65,10 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
                          desc ("Path of the pstore repository to be written"), required);
   auto & files = all.add<list<std::string>> (positional, usage ("[filename]..."));
 
-  auto & vacuum_mode = all.add<string_opt> ("compact", optional,
+  auto & vacuum_mode = all.add<string_opt> ("compact"sv, optional,
                                             desc ("Set the compaction mode. Argument must one of: "
                                                   "'disabled', 'immediate', 'background'."));
-  all.add<alias> ("c", desc ("Alias for --compact"), aliasopt (vacuum_mode));
+  all.add<alias> ("c"sv, desc ("Alias for --compact"), aliasopt (vacuum_mode));
 
   parse_command_line_options (all, argc, argv, "pstore write utility\n");
 

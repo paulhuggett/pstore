@@ -19,29 +19,30 @@
 #include "pstore/command_line/command_line.hpp"
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 
 namespace {} // end anonymous namespace
 
 user_options user_options::get (int argc, tchar * argv[]) {
   options_container all;
   auto & endian_opt = all.add<opt<endian>> (
-    "endian", desc ("The endian-ness of the output data"),
+    "endian"sv, desc ("The endian-ness of the output data"),
     values (
       literal{"big", static_cast<int> (endian::big), "Big-endian"},
       literal{"little", static_cast<int> (endian::little), "Little-endian"},
       literal{"native", static_cast<int> (endian::native), "The endian-ness of the host machine"}),
     init (endian::native));
-  all.add<alias> ("e", desc ("Alias for --endian"), aliasopt (endian_opt));
+  all.add<alias> ("e"sv, desc ("Alias for --endian"), aliasopt (endian_opt));
 
 
   auto & maximum_opt =
-    all.add<opt<unsigned>> ("maximum", desc ("The maximum prime value"), init (100U));
-  all.add<alias> ("m", desc ("Alias for --maximum"), aliasopt (maximum_opt));
+    all.add<opt<unsigned>> ("maximum"sv, desc ("The maximum prime value"), init (100U));
+  all.add<alias> ("m"sv, desc ("Alias for --maximum"), aliasopt (maximum_opt));
 
 
-  auto & output_opt =
-    all.add<string_opt> ("output", desc ("Output file name. (Default: standard-out)"), init ("-"));
-  all.add<alias> ("o", desc ("Alias for --output"), aliasopt (output_opt));
+  auto & output_opt = all.add<string_opt> (
+    "output"sv, desc ("Output file name. (Default: standard-out)"), init ("-"));
+  all.add<alias> ("o"sv, desc ("Alias for --output"), aliasopt (output_opt));
 
   parse_command_line_options (all, argc, argv, "pstore prime number generator\n");
 

@@ -21,6 +21,7 @@
 #include "pstore/command_line/command_line.hpp"
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 
 #ifdef _WIN32
 int _tmain (int argc, TCHAR const * argv[]) {
@@ -34,7 +35,7 @@ int main (int argc, char * argv[]) {
       all.add<string_opt> (positional, usage{"repository"},
                            desc{"Path of the pstore repository to be exported."}, required);
     auto & no_comments = all.add<bool_opt> (
-      "no-comments",
+      "no-comments"sv,
       desc{"Disable embedded comments. (Required for output to be ECMA-404 compliant.)"},
       init (false));
 

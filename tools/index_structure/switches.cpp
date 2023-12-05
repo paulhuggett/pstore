@@ -29,9 +29,9 @@
 #include "pstore/support/utf.hpp"
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 
 namespace {
-
 
   std::string usage_help (list<pstore::trailer::indices> const & index_names_opt) {
     std::ostringstream usage;
@@ -53,8 +53,8 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
   options_container all;
 
   auto & revision = all.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
-    "revision", desc ("The starting revision number (or 'HEAD')"));
-  all.add<alias> ("r", desc ("Alias for --revision"), aliasopt (revision));
+    "revision"sv, desc ("The starting revision number (or 'HEAD')"));
+  all.add<alias> ("r"sv, desc ("Alias for --revision"), aliasopt (revision));
   auto & db_path =
     all.add<string_opt> (positional, required, usage ("repository"), desc ("Database path"));
 

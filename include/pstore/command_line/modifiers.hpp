@@ -37,9 +37,10 @@ namespace pstore::command_line {
 
     class values {
     public:
-      explicit values (std::initializer_list<literal> options);
+      explicit values (std::initializer_list<literal> options)
+              : values_{std::move (options)} {}
 
-      template <class Opt>
+      template <typename Opt>
       void apply (Opt & o) const {
         if (parser_base * const p = o.get_parser ()) {
           for (auto const & v : values_) {
@@ -67,8 +68,8 @@ namespace pstore::command_line {
 
   class name {
   public:
-    explicit name (std::string name);
-
+    explicit name (std::string_view name)
+            : name_{name} {}
     template <typename Opt>
     void apply (Opt & o) const {
       o.set_name (name_);
@@ -78,20 +79,12 @@ namespace pstore::command_line {
     std::string const name_;
   };
 
-  inline name make_modifier (gsl::czstring const n) {
-    return name (n);
-  }
-  inline name make_modifier (std::string const & n) {
-    return name (n);
-  }
-
-
   /// A modifier to set the usage information shown in the -help output.
   /// Only applicable to positional arguments.
   class usage {
   public:
-    explicit usage (std::string str);
-
+    explicit usage (std::string str)
+            : desc_{std::move (str)} {}
     template <typename Opt>
     void apply (Opt & o) const {
       o.set_usage (desc_);
@@ -109,8 +102,8 @@ namespace pstore::command_line {
   /// A modifier to set the description shown in the -help output...
   class desc {
   public:
-    explicit desc (std::string str);
-
+    explicit desc (std::string str)
+            : desc_{std::move (str)} {}
     template <typename Opt>
     void apply (Opt & o) const {
       o.set_description (desc_);
@@ -127,8 +120,9 @@ namespace pstore::command_line {
   //*                       |_|        *
   class aliasopt {
   public:
-    explicit aliasopt (option & o);
-    void apply (alias & o) const;
+    explicit constexpr aliasopt (option & o) noexcept
+            : original_ (o) {}
+    void apply (alias & o) const { o.set_original (&original_); }
 
   private:
     option & original_;
@@ -144,9 +138,8 @@ namespace pstore::command_line {
     template <typename T>
     class initializer {
     public:
-      constexpr explicit initializer (T t)
+      constexpr explicit initializer (T const & t)
               : init_{t} {}
-
       template <typename Opt>
       void apply (Opt & o) const {
         o.set_initial_value (init_);
@@ -183,7 +176,7 @@ namespace pstore::command_line {
   /// enabled will consider command-lines such as "--opt a,b,c", "--opt a,b --opt c", and
   /// "--opt a --opt b --opt c" to be equivalent. Without the option "--opt a,b" is has a
   /// single value "a,b".
-  extern details::comma_separated const comma_separated;
+  constexpr details::comma_separated const comma_separated;
 
   //*                                              *
   //*  ___  __ __ _  _ _ _ _ _ ___ _ _  __ ___ ___ *
@@ -224,10 +217,10 @@ namespace pstore::command_line {
 
   } // end namespace details
 
-  extern details::one_or_more const one_or_more;
-  extern details::optional const optional;
-  extern details::positional const positional;
-  extern details::required const required;
+  constexpr details::one_or_more one_or_more;
+  constexpr details::optional const optional;
+  constexpr details::positional const positional;
+  constexpr details::required const required;
 
   namespace details {
 
@@ -235,7 +228,6 @@ namespace pstore::command_line {
     public:
       explicit constexpr category (option_category const & cat) noexcept
               : cat_{cat} {}
-
       template <typename Opt>
       void apply (Opt & o) const {
         o.set_category (&cat_);
@@ -249,6 +241,30 @@ namespace pstore::command_line {
 
   inline details::category cat (option_category const & c) {
     return details::category{c};
+  }
+
+  template <typename Modifier>
+  decltype (auto) make_modifier (Modifier && m) {
+    return std::forward<Modifier> (m);
+  }
+  inline name make_modifier (std::string_view n) {
+    return name{n};
+  }
+  inline name make_modifier (std::string const & n) {
+    return name{n};
+  }
+  inline name make_modifier (char const * n) {
+    return name{n};
+  }
+
+
+  template <typename Option>
+  void apply_to_option (Option &&) {}
+
+  template <typename Option, typename M0, typename... Mods>
+  void apply_to_option (Option && opt, M0 && m0, Mods &&... mods) {
+    make_modifier (std::forward<M0> (m0)).apply (opt);
+    apply_to_option (std::forward<Option> (opt), std::forward<Mods> (mods)...);
   }
 
 } // namespace pstore::command_line

@@ -129,10 +129,10 @@ int main (int argc, char * argv[]) {
 #endif
   using namespace pstore::command_line;
   options_container all;
-  auto & src_path = all.add<string_opt> (positional, ".", desc ("source-path"));
+  auto & src_path = all.add<string_opt> (positional, init ("."), desc ("source-path"));
 #define DEFAULT_VAR "fs"
   auto & root_var = all.add<string_opt> (
-    "var",
+    name{"var"},
     desc ("Variable name for the file system root "
           "(may contain '::' to place in a specifc namespace). (Default: '" DEFAULT_VAR "')"),
     init (DEFAULT_VAR));

@@ -56,20 +56,11 @@ namespace pstore::command_line {
     static gsl::czstring value;
   };
   template <typename T>
-  struct type_description<T, typename std::enable_if_t<std::is_enum_v<T>>> {
+  struct type_description<T, std::enable_if_t<std::is_enum_v<T>>> {
     static gsl::czstring value;
   };
   template <typename T>
-  gsl::czstring type_description<T, typename std::enable_if_t<std::is_enum_v<T>>>::value = "enum";
-
-  enum class num_occurrences_flag {
-    optional,     // Zero or One occurrence
-    zero_or_more, // Zero or more occurrences allowed
-    required,     // One occurrence required
-    one_or_more,  // One or more occurrences required
-  };
-  class option_category;
-  class alias;
+  gsl::czstring type_description<T, std::enable_if_t<std::is_enum_v<T>>>::value = "enum";
 
   class option;
   class options_container {
@@ -84,7 +75,6 @@ namespace pstore::command_line {
     options_container & operator= (options_container const &) = delete;
     options_container & operator= (options_container &&) noexcept = delete;
 
-
     template <typename OptionType, typename... Args>
     auto & add (Args &&... args) {
       auto p = std::make_unique<OptionType> (std::forward<Args> (args)...);
@@ -96,8 +86,19 @@ namespace pstore::command_line {
     auto begin () const { return std::begin (opts_); }
     auto end () const { return std::end (opts_); }
 
+  private:
     std::list<value_type> opts_;
   };
+
+  enum class num_occurrences_flag {
+    optional,     ///< Zero or One occurrence
+    zero_or_more, ///< Zero or more occurrences allowed
+    required,     ///< One occurrence required
+    one_or_more,  ///< One or more occurrences required
+  };
+
+  class option_category;
+  class alias;
 
   //*           _   _           *
   //*  ___ _ __| |_(_)___ _ _   *
@@ -118,7 +119,6 @@ namespace pstore::command_line {
     virtual unsigned get_num_occurrences () const;
     bool is_satisfied () const;
     bool can_accept_another_occurrence () const;
-
 
     virtual void set_description (std::string const & d);
     std::string const & description () const noexcept;
@@ -166,25 +166,6 @@ namespace pstore::command_line {
     option_category const * category_ = nullptr;
   };
 
-  template <typename Modifier>
-  Modifier && make_modifier (Modifier && m) {
-    return std::forward<Modifier> (m);
-  }
-
-  class name;
-  name make_modifier (gsl::czstring n);
-  name make_modifier (std::string const & n);
-
-  template <typename Option>
-  void apply_to_option (Option &&) {}
-
-  template <typename Option, typename M0, typename... Mods>
-  void apply_to_option (Option && opt, M0 && m0, Mods &&... mods) {
-    make_modifier (std::forward<M0> (m0)).apply (opt);
-    apply_to_option (std::forward<Option> (opt), std::forward<Mods> (mods)...);
-  }
-
-
   //*           _    *
   //*  ___ _ __| |_  *
   //* / _ \ '_ \  _| *
@@ -196,8 +177,8 @@ namespace pstore::command_line {
   class opt final : public option {
   public:
     template <class... Mods>
-    explicit opt (Mods const &... mods) {
-      apply_to_option (*this, mods...);
+    explicit opt (Mods &&... mods) {
+      apply_to_option (*this, std::forward<Mods> (mods)...);
     }
     opt (opt const &) = delete;
     opt (opt &&) = delete;
@@ -258,8 +239,8 @@ namespace pstore::command_line {
   class opt<bool> final : public option {
   public:
     template <class... Mods>
-    explicit opt (Mods const &... mods) {
-      apply_to_option (*this, mods...);
+    explicit opt (Mods &&... mods) {
+      apply_to_option (*this, std::forward<Mods> (mods)...);
     }
     opt (opt const &) = delete;
     opt (opt &&) = delete;
@@ -302,10 +283,10 @@ namespace pstore::command_line {
   public:
     using value_type = T;
 
-    template <class... Mods>
-    explicit list (Mods const &... mods)
+    template <typename... Mods>
+    explicit list (Mods &&... mods)
             : option (num_occurrences_flag::zero_or_more) {
-      apply_to_option (*this, mods...);
+      apply_to_option (*this, std::forward<Mods> (mods)...);
     }
 
     list (list const &) = delete;
@@ -380,8 +361,8 @@ namespace pstore::command_line {
   class alias final : public option {
   public:
     template <typename... Mods>
-    explicit alias (Mods const &... mods) {
-      apply_to_option (*this, mods...);
+    explicit alias (Mods &&... mods) {
+      apply_to_option (*this, std::forward<Mods> (mods)...);
     }
 
     alias (alias const &) = delete;

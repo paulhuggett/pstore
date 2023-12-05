@@ -97,13 +97,13 @@ namespace pstore::command_line {
   public:
     template <class... Mods>
     explicit help (options_container const * const owner, std::string program_name,
-                   std::string program_overview, OutputStream & outs, Mods const &... mods)
+                   std::string program_overview, OutputStream & outs, Mods &&... mods)
             : owner_{owner}
             , program_name_{std::move (program_name)}
             , overview_{std::move (program_overview)}
             , outs_{outs} {
 
-      apply_to_option (*this, mods...);
+      apply_to_option (*this, std::forward<Mods> (mods)...);
     }
 
     help (help const &) = delete;

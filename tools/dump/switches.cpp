@@ -23,6 +23,8 @@
 #include "pstore/command_line/str_to_revision.hpp"
 #include "pstore/dump/digest_opt.hpp"
 
+using namespace std::string_view_literals;
+
 namespace pstore::command_line {
 
   // parser<digest_opt>
@@ -58,75 +60,73 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
   options_container options;
   option_category what_cat{"Options controlling what is dumped"};
 
-  auto & fragment = options.add<digest_opt> (
-    "fragment", desc{"Dump the contents of a specific fragment"}, comma_separated, cat (what_cat));
-  options.add<alias> ("F", aliasopt{fragment});
+  auto & fragment =
+    options.add<digest_opt> ("fragment"sv, desc{"Dump the contents of a specific fragment"},
+                             comma_separated, cat (what_cat));
+  options.add<alias> ("F"sv, aliasopt{fragment});
   auto & all_fragments = options.add<bool_opt> (
-    "all-fragments", desc{"Dump the contents of the fragments index"}, cat (what_cat));
+    "all-fragments"sv, desc{"Dump the contents of the fragments index"}, cat (what_cat));
 
   auto & compilation =
-    options.add<digest_opt> ("compilation", desc{"Dump the contents of a specific compilation"},
+    options.add<digest_opt> ("compilation"sv, desc{"Dump the contents of a specific compilation"},
                              comma_separated, cat (what_cat));
-  options.add<alias> ("C", aliasopt{compilation});
+  options.add<alias> ("C"sv, aliasopt{compilation});
 
   auto & all_compilations = options.add<bool_opt> (
-    "all-compilations", desc{"Dump the contents of the compilations index"}, cat (what_cat));
+    "all-compilations"sv, desc{"Dump the contents of the compilations index"}, cat (what_cat));
 
   auto & debug_line_header = options.add<digest_opt> (
-    "debug-line-header", desc{"Dump the contents of a specific debug line header"}, comma_separated,
-    cat (what_cat));
+    "debug-line-header"sv, desc{"Dump the contents of a specific debug line header"},
+    comma_separated, cat (what_cat));
   auto & all_debug_line_headers = options.add<bool_opt> (
-    "all-debug-line-headers", desc{"Dump the contents of the debug line headers index"},
+    "all-debug-line-headers"sv, desc{"Dump the contents of the debug line headers index"},
     cat (what_cat));
 
+  auto & header = options.add<bool_opt> ("header"sv, desc{"Dump the file header"}, cat (what_cat));
+  options.add<alias> ("h"sv, desc{"Alias for --header"}, aliasopt{header});
 
-  auto & header = options.add<bool_opt> ("header", desc{"Dump the file header"}, cat (what_cat));
-  options.add<alias> ("h", desc{"Alias for --header"}, aliasopt{header});
+  bool_opt indices{"indices"sv, desc{"Dump the indices"}, cat (what_cat)};
+  alias indices2{"i"sv, desc{"Alias for --indices"}, aliasopt{indices}};
 
-  bool_opt indices{"indices", desc{"Dump the indices"}, cat (what_cat)};
-  alias indices2{"i", desc{"Alias for --indices"}, aliasopt{indices}};
+  bool_opt log_opt{"log"sv, desc{"List the transactions"}, cat (what_cat)};
+  alias log2{"l"sv, desc{"Alias for --log"}, aliasopt{log_opt}};
 
-  bool_opt log_opt{"log", desc{"List the transactions"}, cat (what_cat)};
-  alias log2{"l", desc{"Alias for --log"}, aliasopt{log_opt}};
-
-
-  bool_opt names_opt{"names", desc{"Dump the name index"}, cat (what_cat)};
-  alias names2{"n", desc{"Alias for --names"}, aliasopt{names_opt}};
-  bool_opt paths_opt{"paths", desc{"Dump the path index"}, cat (what_cat)};
-  alias paths2{"p", desc{"Alias for --paths"}, aliasopt{paths_opt}};
-
-
+  bool_opt names_opt{"names"sv, desc{"Dump the name index"}, cat (what_cat)};
+  alias names2{"n"sv, desc{"Alias for --names"}, aliasopt{names_opt}};
+  bool_opt paths_opt{"paths"sv, desc{"Dump the path index"}, cat (what_cat)};
+  alias paths2{"p"sv, desc{"Alias for --paths"}, aliasopt{paths_opt}};
 
   auto & all = options.add<bool_opt> (
-    "all",
+    "all"sv,
     desc{"Show store-related output. Equivalent to: --all-compilations "
          "--all-debug-line-headers --all-fragments --header --indices --log --names --paths"},
     cat (what_cat));
-  options.add<alias> ("a", desc{"Alias for --all"}, aliasopt{all});
+  options.add<alias> ("a"sv, desc{"Alias for --all"}, aliasopt{all});
 
   auto & revision = options.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
-    "revision", desc{"The starting revision number (or 'HEAD')"});
-  options.add<alias> ("r", desc{"Alias for --revision"}, aliasopt{revision});
+    "revision"sv, desc{"The starting revision number (or 'HEAD')"});
+  options.add<alias> ("r"sv, desc{"Alias for --revision"}, aliasopt{revision});
 
 
   option_category how_cat{"Options controlling how fields are emitted"};
 
   auto & no_times = options.add<bool_opt> (
-    "no-times", desc{"Times are displayed as a fixed value (for testing)"}, cat (how_cat));
-  auto & hex = options.add<bool_opt> ("hex", desc{"Emit number values in hexadecimal notation"},
+    "no-times"sv, desc{"Times are displayed as a fixed value (for testing)"}, cat (how_cat));
+  auto & hex = options.add<bool_opt> ("hex"sv, desc{"Emit number values in hexadecimal notation"},
                                       cat (how_cat));
-  options.add<alias> ("x", desc{"Alias for --hex"}, aliasopt{hex});
+  options.add<alias> ("x"sv, desc{"Alias for --hex"}, aliasopt{hex});
 
   auto & expanded_addresses = options.add<bool_opt> (
-    "expanded-addresses", desc{"Emit address values as an explicit segment/offset object"},
+    "expanded-addresses"sv, desc{"Emit address values as an explicit segment/offset object"},
     cat (how_cat));
 
 #ifdef PSTORE_IS_INSIDE_LLVM
-  string_opt triple{"triple", desc{"The target triple to use for disassembly if one is not known"},
-                    init ("x86_64-pc-linux-gnu-repo"), cat (how_cat)};
-  bool_opt no_disassembly{"no-disassembly",
-                          desc{"Emit executable sections as binary rather than disassembly"},
-                          cat (how_cat)};
+  auto & triple = options.add<string_opt> (
+    "triple"sv, desc{"The target triple to use for disassembly if one is not known"},
+    init ("x86_64-pc-linux-gnu-repo"), cat (how_cat));
+  auto & no_disassembly = options.add<bool_opt> (
+    "no-disassembly"sv, desc{"Emit executable sections as binary rather than disassembly"},
+    cat (how_cat));
 #endif // PSTORE_IS_INSIDE_LLVM
 
   auto & paths = options.add<list<std::string>> (positional, usage{"filename..."});

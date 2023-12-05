@@ -25,6 +25,7 @@
 #include "pstore/command_line/option.hpp"
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 using testing::HasSubstr;
 using testing::Not;
 
@@ -74,9 +75,9 @@ namespace {
 TEST_F (EnumerationParse, SetA) {
   options_container all;
   auto & enum_opt = all.add<opt<enumeration>> (
-    "enumeration", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                           literal{"b", static_cast<int> (enumeration::b), "b description"},
-                           literal{"c", static_cast<int> (enumeration::c), "c description"}));
+    "enumeration"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
+                             literal{"b", static_cast<int> (enumeration::b), "b description"},
+                             literal{"c", static_cast<int> (enumeration::c), "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=a"};
   string_stream output;
@@ -90,9 +91,9 @@ TEST_F (EnumerationParse, SetA) {
 TEST_F (EnumerationParse, SetC) {
   options_container all;
   auto & enum_opt = all.add<opt<enumeration>> (
-    "enumeration", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                           literal{"b", static_cast<int> (enumeration::b), "b description"},
-                           literal{"c", static_cast<int> (enumeration::c), "c description"}));
+    "enumeration"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
+                             literal{"b", static_cast<int> (enumeration::b), "b description"},
+                             literal{"c", static_cast<int> (enumeration::c), "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=c"};
   string_stream output;
@@ -106,9 +107,9 @@ TEST_F (EnumerationParse, SetC) {
 TEST_F (EnumerationParse, ErrorBadValue) {
   options_container all;
   all.add<opt<enumeration>> (
-    "enumeration", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                           literal{"b", static_cast<int> (enumeration::b), "b description"},
-                           literal{"c", static_cast<int> (enumeration::c), "c description"}));
+    "enumeration"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
+                             literal{"b", static_cast<int> (enumeration::b), "b description"},
+                             literal{"c", static_cast<int> (enumeration::c), "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=bad"};
   string_stream output;
@@ -122,9 +123,9 @@ TEST_F (EnumerationParse, ErrorBadValue) {
 TEST_F (EnumerationParse, GoodValueAfterError) {
   options_container all;
   all.add<opt<enumeration>> (
-    "enumeration", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                           literal{"b", static_cast<int> (enumeration::b), "b description"},
-                           literal{"c", static_cast<int> (enumeration::c), "c description"}));
+    "enumeration"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
+                             literal{"b", static_cast<int> (enumeration::b), "b description"},
+                             literal{"c", static_cast<int> (enumeration::c), "c description"}));
 
   std::vector<std::string> argv{"progname", "--unknown", "--enumeration=a"};
   string_stream output;

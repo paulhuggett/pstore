@@ -21,6 +21,7 @@
 #include "pstore/command_line/revision_opt.hpp"
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
   options_container all;
@@ -34,8 +35,8 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
 
   option_category how_cat ("Options controlling how fields are emitted");
   auto & hex =
-    all.add<bool_opt> ("hex", desc ("Emit numbers in hexadecimal notation"), cat (how_cat));
-  all.add<alias> ("x", desc ("Alias for --hex"), aliasopt (hex));
+    all.add<bool_opt> ("hex"sv, desc ("Emit numbers in hexadecimal notation"), cat (how_cat));
+  all.add<alias> ("x"sv, desc ("Alias for --hex"), aliasopt (hex));
 
   parse_command_line_options (all, argc, argv, "pstore diff utility\n");
 

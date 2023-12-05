@@ -26,6 +26,7 @@ using string_stream = std::ostringstream;
 
 using namespace pstore::command_line;
 using namespace std::literals::string_literals;
+using namespace std::literals::string_view_literals;
 
 namespace {
 
@@ -54,21 +55,21 @@ TEST_F (Help, Empty) {
 TEST_F (Help, HasSwitches) {
   {
     options_container all;
-    auto & option1 = all.add<string_opt> ("arg1", positional);
-    all.add<alias> ("alias1", aliasopt{option1});
+    auto & option1 = all.add<string_opt> ("arg1"sv, positional);
+    all.add<alias> ("alias1"sv, aliasopt{option1});
     EXPECT_FALSE (details::has_switches (nullptr, all));
   }
   {
     options_container all;
-    all.add<string_opt> ("arg2");
+    all.add<string_opt> ("arg2"sv);
     EXPECT_TRUE (details::has_switches (nullptr, all));
   }
 }
 
 TEST_F (Help, BuildDefaultCategoryOnly) {
   options_container all;
-  all.add<string_opt> ("arg1", positional);
-  auto & option2 = all.add<string_opt> ("arg2");
+  all.add<string_opt> ("arg1"sv, positional);
+  auto & option2 = all.add<string_opt> ("arg2"sv);
   details::categories_collection const actual = details::build_categories (nullptr, all);
 
   ASSERT_EQ (actual.size (), 1U);
@@ -79,10 +80,10 @@ TEST_F (Help, BuildDefaultCategoryOnly) {
 
 TEST_F (Help, BuildTwoCategories) {
   options_container all;
-  all.add<string_opt> ("arg1", positional);
-  auto & option2 = all.add<string_opt> ("arg2");
+  all.add<string_opt> ("arg1"sv, positional);
+  auto & option2 = all.add<string_opt> ("arg2"sv);
   option_category category{"category"};
-  auto & option3 = all.add<string_opt> ("arg3", cat (category));
+  auto & option3 = all.add<string_opt> ("arg3"sv, cat (category));
 
   details::categories_collection const actual = details::build_categories (nullptr, all);
 
@@ -96,15 +97,13 @@ TEST_F (Help, BuildTwoCategories) {
 }
 
 TEST_F (Help, SwitchStrings) {
-  // auto get_switch_strings (options_set const & ops) -> switch_strings {
-
   // This option has a name in Katakana to verify that we are counting unicode code-points and not
   // UTF-8 code-units.
-  pstore::gsl::czstring const name = "\xE3\x82\xAA"  // KATAKANA LETTER O
-                                     "\xE3\x83\x97"  // KATAKANA LETTER PU
-                                     "\xE3\x82\xB7"  // KATAKANA LETTER SI
-                                     "\xE3\x83\xA7"  // KATAKANA LETTER SMALL YO
-                                     "\xE3\x83\xB3"; // KATAKANA LETTER N
+  auto const name = "\xE3\x82\xAA"   // KATAKANA LETTER O
+                    "\xE3\x83\x97"   // KATAKANA LETTER PU
+                    "\xE3\x82\xB7"   // KATAKANA LETTER SI
+                    "\xE3\x83\xA7"   // KATAKANA LETTER SMALL YO
+                    "\xE3\x83\xB3"s; // KATAKANA LETTER N
   string_opt option1{name};
   details::options_set options{&option1};
   details::switch_strings const actual = details::get_switch_strings (options);

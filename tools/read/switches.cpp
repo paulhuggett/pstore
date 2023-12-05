@@ -21,20 +21,21 @@
 #include "pstore/support/error.hpp"
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
   options_container all;
   auto & revision = all.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
-    "revision", desc ("The starting revision number (or 'HEAD')"));
-  all.add<alias> ("r", desc ("Alias for --revision"), aliasopt (revision));
+    "revision"sv, desc ("The starting revision number (or 'HEAD')"));
+  all.add<alias> ("r"sv, desc ("Alias for --revision"), aliasopt (revision));
 
   auto & db_path = all.add<string_opt> (
     positional, usage ("repository"), desc ("Path of the pstore repository to be read"), required);
   auto & key = all.add<string_opt> (positional, usage ("key"), required);
   auto & string_mode =
-    all.add<bool_opt> ("strings", init (false),
+    all.add<bool_opt> ("strings"sv, init (false),
                        desc ("Reads from the 'strings' index rather than the 'names' index."));
-  all.add<alias> ("s", desc ("Alias for --strings"), aliasopt (string_mode));
+  all.add<alias> ("s"sv, desc ("Alias for --strings"), aliasopt (string_mode));
 
   parse_command_line_options (all, argc, argv, "pstore read utility\n");
 

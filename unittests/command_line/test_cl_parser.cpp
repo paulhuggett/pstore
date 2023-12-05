@@ -18,6 +18,8 @@
 // 3rd party includes
 #include <gtest/gtest.h>
 
+using namespace std::string_view_literals;
+
 TEST (ClParser, SimpleString) {
   using pstore::command_line::parser;
 
@@ -116,7 +118,8 @@ TEST (ClParser, Modifiers) {
              num_occurrences_flag::zero_or_more);
 
   EXPECT_EQ (opt<int> ().name (), "");
-  EXPECT_EQ (opt<int>{"name"}.name (), "name");
+  EXPECT_EQ (opt<int>{"name"sv}.name (), "name");
+  EXPECT_EQ (opt<int>{name ("name"sv)}.name (), "name");
 
   EXPECT_EQ (opt<int>{}.description (), "");
   EXPECT_EQ (opt<int>{desc ("description")}.description (), "description");

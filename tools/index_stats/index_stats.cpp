@@ -13,7 +13,7 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-/// \file main.cpp
+/// \file index_stats.cpp
 
 #include "pstore/command_line/command_line.hpp"
 #include "pstore/command_line/modifiers.hpp"
@@ -27,6 +27,7 @@
 #include "pstore/core/index_types.hpp"
 
 using namespace pstore;
+using namespace std::string_view_literals;
 
 namespace {
 
@@ -155,14 +156,13 @@ int main (int argc, char * argv[]) {
     command_line::options_container all;
     auto & revision =
       all.add<command_line::opt<command_line::revision_opt, command_line::parser<std::string>>> (
-        "revision", command_line::desc ("The starting revision number (or 'HEAD')"));
-    all.add<command_line::alias> ("r", command_line::desc ("Alias for --revision"),
+        "revision"sv, command_line::desc ("The starting revision number (or 'HEAD')"));
+    all.add<command_line::alias> ("r"sv, command_line::desc ("Alias for --revision"),
                                   command_line::aliasopt (revision));
 
     auto & db_path = all.add<command_line::string_opt> (
       command_line::positional, command_line::required, command_line::usage ("repository"),
       command_line::desc ("Database path"));
-
 
     command_line::parse_command_line_options (
       all, argc, argv, "Dumps statistics for the indexes in a pstore database");
