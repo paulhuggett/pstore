@@ -26,16 +26,17 @@ namespace pstore::command_line {
   namespace details {
 
     std::optional<option *> lookup_nearest_option (std::string const & arg,
-                                                   option::options_container const & all_options);
+                                                   options_container const & all_options);
 
     bool starts_with (std::string const & s, gsl::czstring prefix);
-    std::optional<option *> find_handler (std::string const & name);
+    std::optional<option *> find_handler (options_container const & all, std::string const & name);
 
     // check for missing
     // ~~~~~~~~~~~~~~~~~
     /// Makes sure that all of the required args have been specified.
     template <typename ErrorStream>
-    bool check_for_missing (std::string const & program_name, ErrorStream & errs) {
+    bool check_for_missing (options_container const & all, std::string const & program_name,
+                            ErrorStream & errs) {
       using str = stream_trait<typename ErrorStream::char_type>;
       using pstore::command_line::num_occurrences_flag;
       using pstore::command_line::option;
@@ -43,7 +44,7 @@ namespace pstore::command_line {
       bool ok = true;
       auto positional_missing = 0U;
 
-      for (option const * const opt : option::all ()) {
+      for (options_container::value_type const & opt : all) {
         switch (opt->get_num_occurrences_flag ()) {
         case num_occurrences_flag::required:
         case num_occurrences_flag::one_or_more:
@@ -77,14 +78,14 @@ namespace pstore::command_line {
     // report unknown option
     // ~~~~~~~~~~~~~~~~~~~~~
     template <typename ErrorStream>
-    void report_unknown_option (std::string const & program_name, std::string const & arg_name,
-                                std::string const & value, ErrorStream & errs) {
+    void report_unknown_option (options_container const & all, std::string const & program_name,
+                                std::string const & arg_name, std::string const & value,
+                                ErrorStream & errs) {
       using str = stream_trait<typename ErrorStream::char_type>;
       errs << str::out_string (program_name) << str::out_text (": Unknown command line argument '")
            << str::out_string (arg_name) << str::out_text ("'\n");
 
-      if (std::optional<option *> const best_option =
-            lookup_nearest_option (arg_name, option::all ())) {
+      if (std::optional<option *> const best_option = lookup_nearest_option (arg_name, all)) {
         std::string nearest_string = (*best_option)->name ();
         gsl::czstring const dashes = utf::length (nearest_string) < 2U ? "-" : "--";
         if (!value.empty ()) {
@@ -97,9 +98,10 @@ namespace pstore::command_line {
     }
 
     template <typename ErrorStream>
-    void report_unknown_option (std::string const & program_name, std::string const & arg_name,
+    void report_unknown_option (options_container const & all, std::string const & program_name,
+                                std::string const & arg_name,
                                 std::optional<std::string> const & value, ErrorStream & errs) {
-      report_unknown_option (program_name, arg_name, value.value_or (""), errs);
+      report_unknown_option (all, program_name, arg_name, value.value_or (""), errs);
     }
 
 
@@ -185,9 +187,9 @@ namespace pstore::command_line {
     // process single dash
     // ~~~~~~~~~~~~~~~~~~~
     template <typename ErrorStream>
-    std::tuple<std::optional<option *>, bool> process_single_dash (std::string arg_name,
-                                                                   std::string const & program_name,
-                                                                   ErrorStream & errs) {
+    std::tuple<std::optional<option *>, bool>
+    process_single_dash (options_container const & all, std::string arg_name,
+                         std::string const & program_name, ErrorStream & errs) {
       PSTORE_ASSERT (starts_with (arg_name, "-"));
       arg_name.erase (0, 1U); // Remove the leading dash.
 
@@ -195,9 +197,9 @@ namespace pstore::command_line {
       sticky_bool<false> ok{true};
       while (ok && !arg_name.empty ()) {
         char const name[2]{arg_name[0], '\0'};
-        handler = find_handler (name);
+        handler = find_handler (all, name);
         if (!handler || (*handler)->is_positional ()) {
-          report_unknown_option (program_name, name, std::optional<std::string> (), errs);
+          report_unknown_option (all, program_name, name, std::optional<std::string> (), errs);
           ok = false;
           break;
         }
@@ -224,8 +226,9 @@ namespace pstore::command_line {
     // ~~~~~~~~~~~~~~~~~~~~~~
     template <typename InputIterator, typename ErrorStream>
     std::tuple<InputIterator, bool>
-    parse_option_arguments (InputIterator first_arg, InputIterator last_arg,
-                            std::string const & program_name, ErrorStream & errs) {
+    parse_option_arguments (options_container const & all, InputIterator first_arg,
+                            InputIterator last_arg, std::string const & program_name,
+                            ErrorStream & errs) {
       using str = stream_trait<typename ErrorStream::char_type>;
       std::optional<std::string> value;
       std::optional<option *> handler;
@@ -255,16 +258,16 @@ namespace pstore::command_line {
         if (starts_with (arg_name, "--")) {
           std::tie (arg_name, value) = get_option_and_value (arg_name);
 
-          handler = find_handler (arg_name);
+          handler = find_handler (all, arg_name);
           if (!handler || (*handler)->is_positional ()) {
-            report_unknown_option (program_name, arg_name, value, errs);
+            report_unknown_option (all, program_name, arg_name, value, errs);
             ok = false;
             continue;
           }
 
           std::tie (handler, ok) = record_value_if_available (handler, value, program_name, errs);
         } else {
-          std::tie (handler, ok) = process_single_dash (arg_name, program_name, errs);
+          std::tie (handler, ok) = process_single_dash (all, arg_name, program_name, errs);
         }
       }
 
@@ -277,16 +280,18 @@ namespace pstore::command_line {
     }
 
     template <typename InputIterator>
-    bool parse_positional_arguments (InputIterator first_arg, InputIterator last_arg) {
+    bool parse_positional_arguments (options_container const & all, InputIterator first_arg,
+                                     InputIterator last_arg) {
       bool ok = true;
 
-      auto const & all_options = option::all ();
-      auto const is_positional = [] (option const * const opt) { return opt->is_positional (); };
+      auto const is_positional = [] (options_container::value_type const & opt) {
+        return opt->is_positional ();
+      };
 
-      auto end = std::end (all_options);
-      auto it = std::find_if (std::begin (all_options), end, is_positional);
+      auto end = std::end (all);
+      auto it = std::find_if (std::begin (all), end, is_positional);
       for (; first_arg != last_arg && it != end; ++first_arg) {
-        option * const handler = *it;
+        options_container::value_type const & handler = *it;
         PSTORE_ASSERT (handler->is_positional ());
         ok = handler->add_occurrence ();
         if (!handler->value (*first_arg)) {
@@ -300,21 +305,22 @@ namespace pstore::command_line {
     }
 
     template <typename InputIterator, typename OutputStream, typename ErrorStream>
-    bool parse_command_line_options (InputIterator first_arg, InputIterator last_arg,
-                                     std::string const & overview, OutputStream & outs,
-                                     ErrorStream & errs) {
+    bool parse_command_line_options (options_container & all, InputIterator first_arg,
+                                     InputIterator last_arg, std::string const & overview,
+                                     OutputStream & outs, ErrorStream & errs) {
       std::string const program_name = pstore::path::base_name (*(first_arg++));
-      help<OutputStream> const help (program_name, overview, outs, name ("help"));
+      all.add<help<OutputStream>> (&all, program_name, overview, outs, name ("help"));
 
       bool ok = true;
-      std::tie (first_arg, ok) = parse_option_arguments (first_arg, last_arg, program_name, errs);
+      std::tie (first_arg, ok) =
+        parse_option_arguments (all, first_arg, last_arg, program_name, errs);
       if (!ok) {
         return false;
       }
-      if (!parse_positional_arguments (first_arg, last_arg)) {
+      if (!parse_positional_arguments (all, first_arg, last_arg)) {
         return false;
       }
-      return check_for_missing (program_name, errs);
+      return check_for_missing (all, program_name, errs);
     }
 
   } // end namespace details
@@ -324,21 +330,21 @@ namespace pstore::command_line {
   /// arguments as either UTF-16 or MBCS strings and converts them to UTF-8 as expected
   /// by the rest of the code.
   template <typename CharType>
-  void parse_command_line_options (int const argc, CharType * const argv[],
+  void parse_command_line_options (options_container & all, int const argc, CharType * const argv[],
                                    std::string const & overview) {
     std::vector<std::string> args;
     args.reserve (argc);
     std::transform (argv, argv + argc, std::back_inserter (args),
                     [] (CharType const * str) { return pstore::utf::from_native_string (str); });
-    if (!details::parse_command_line_options (std::begin (args), std::end (args), overview,
+    if (!details::parse_command_line_options (all, std::begin (args), std::end (args), overview,
                                               out_stream, error_stream)) {
       std::exit (EXIT_FAILURE);
     }
   }
 #else
-  inline void parse_command_line_options (int const argc, gsl::zstring const argv[],
-                                          std::string const & overview) {
-    if (!details::parse_command_line_options (argv, argv + argc, overview, out_stream,
+  inline void parse_command_line_options (options_container & all, int const argc,
+                                          gsl::zstring const argv[], std::string const & overview) {
+    if (!details::parse_command_line_options (all, argv, argv + argc, overview, out_stream,
                                               error_stream)) {
       std::exit (EXIT_FAILURE);
     }

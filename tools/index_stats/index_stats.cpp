@@ -30,19 +30,6 @@ using namespace pstore;
 
 namespace {
 
-  command_line::opt<command_line::revision_opt, command_line::parser<std::string>> revision{
-    "revision", command_line::desc ("The starting revision number (or 'HEAD')")};
-  command_line::alias revision2{"r", command_line::desc ("Alias for --revision"),
-                                command_line::aliasopt (revision)};
-
-  command_line::opt<std::string> db_path{command_line::positional, command_line::required,
-                                         command_line::usage ("repository"),
-                                         command_line::desc ("Database path")};
-
-} // end anonymous namespace
-
-namespace {
-
   using index_pointer = index::details::index_pointer;
   using branch = index::details::branch;
   using linear_node = index::details::linear_node;
@@ -165,8 +152,20 @@ int main (int argc, char * argv[]) {
   int exit_code = EXIT_SUCCESS;
 
   PSTORE_TRY {
+    command_line::options_container all;
+    auto & revision =
+      all.add<command_line::opt<command_line::revision_opt, command_line::parser<std::string>>> (
+        "revision", command_line::desc ("The starting revision number (or 'HEAD')"));
+    all.add<command_line::alias> ("r", command_line::desc ("Alias for --revision"),
+                                  command_line::aliasopt (revision));
+
+    auto & db_path = all.add<command_line::string_opt> (
+      command_line::positional, command_line::required, command_line::usage ("repository"),
+      command_line::desc ("Database path"));
+
+
     command_line::parse_command_line_options (
-      argc, argv, "Dumps statistics for the indexes in a pstore database");
+      all, argc, argv, "Dumps statistics for the indexes in a pstore database");
 
     database db{db_path.get (), database::access_mode::read_only};
     db.sync (static_cast<unsigned> (revision.get ()));

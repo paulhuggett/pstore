@@ -70,12 +70,6 @@ namespace {
       [&database, &index] (pstore::index::digest key) { index.find (database, key); });
   }
 
-  using namespace pstore::command_line;
-
-  opt<std::string> data_file{positional, usage ("repository"),
-                             desc ("Path of the pstore repository to use for index exercise."),
-                             required};
-
 } // end anonymous namespace
 
 
@@ -87,9 +81,14 @@ int main (int argc, char * argv[]) {
   int exit_code = EXIT_SUCCESS;
 
   using pstore::utf::to_native_string;
+  using namespace pstore::command_line;
 
   PSTORE_TRY {
-    parse_command_line_options (argc, argv, "Exercises the pstore index code");
+    options_container all;
+    auto & data_file = all.add<string_opt> (
+      positional, usage ("repository"),
+      desc ("Path of the pstore repository to use for index exercise."), required);
+    parse_command_line_options (all, argc, argv, "Exercises the pstore index code");
 
     pstore::database database{data_file.get (), pstore::database::access_mode::writable};
 

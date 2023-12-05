@@ -114,11 +114,11 @@ namespace pstore::command_line::details {
   // build categories
   // ~~~~~~~~~~~~~~~~
   categories_collection build_categories (option const * const self,
-                                          option::options_container const & all) {
+                                          options_container const & all) {
     categories_collection categories;
-    for (option const * const op : all) {
-      if (op != self && !op->is_positional ()) {
-        categories[op->category ()].insert (op);
+    for (auto const & op : all) {
+      if (op.get () != self && !op->is_positional ()) {
+        categories[op->category ()].insert (op.get ());
       }
     }
     return categories;
@@ -176,10 +176,11 @@ namespace pstore::command_line::details {
 
   // has switches
   // ~~~~~~~~~~~~
-  bool has_switches (option const * const self, option::options_container const & all) {
-    return std::any_of (std::begin (all), std::end (all), [self] (option const * const op) {
-      return op != self && !op->is_alias () && !op->is_positional ();
-    });
+  bool has_switches (option const * const self, options_container const & all) {
+    return std::any_of (std::begin (all), std::end (all),
+                        [self] (options_container::value_type const & op) {
+                          return op.get () != self && !op->is_alias () && !op->is_positional ();
+                        });
   }
 
 } // end namespace pstore::command_line::details

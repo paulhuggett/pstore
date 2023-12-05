@@ -33,11 +33,11 @@ namespace {
   public:
     bool parse_command_line_options (string_stream & output, string_stream & errors) {
       std::array<std::string, 2> argv{{"program", "--help"}};
-      return details::parse_command_line_options (std::begin (argv), std::end (argv), "overview",
-                                                  output, errors);
+      return details::parse_command_line_options (all, std::begin (argv), std::end (argv),
+                                                  "overview", output, errors);
     }
 
-    ~Help () override { option::reset_container (); }
+    options_container all;
   };
 
 } // end anonymous namespace
@@ -53,40 +53,38 @@ TEST_F (Help, Empty) {
 
 TEST_F (Help, HasSwitches) {
   {
-    opt<std::string> option1{"arg1", positional};
-    alias option2 ("alias1", aliasopt{option1});
-    option::options_container container{&option1, &option2};
-    EXPECT_FALSE (details::has_switches (nullptr, container));
+    options_container all;
+    auto & option1 = all.add<string_opt> ("arg1", positional);
+    all.add<alias> ("alias1", aliasopt{option1});
+    EXPECT_FALSE (details::has_switches (nullptr, all));
   }
   {
-    opt<std::string> option3{"arg2"};
-    option::options_container container{&option3};
-    EXPECT_TRUE (details::has_switches (nullptr, container));
+    options_container all;
+    all.add<string_opt> ("arg2");
+    EXPECT_TRUE (details::has_switches (nullptr, all));
   }
 }
 
 TEST_F (Help, BuildDefaultCategoryOnly) {
-  {
-    opt<std::string> option1{"arg1", positional};
-    opt<std::string> option2{"arg2"};
-    option::options_container container{&option1, &option2};
-    details::categories_collection const actual = details::build_categories (nullptr, container);
+  options_container all;
+  all.add<string_opt> ("arg1", positional);
+  auto & option2 = all.add<string_opt> ("arg2");
+  details::categories_collection const actual = details::build_categories (nullptr, all);
 
-    ASSERT_EQ (actual.size (), 1U);
-    auto const & first = *actual.begin ();
-    EXPECT_EQ (first.first, nullptr);
-    EXPECT_THAT (first.second, testing::ElementsAre (&option2));
-  }
+  ASSERT_EQ (actual.size (), 1U);
+  auto const & first = *actual.begin ();
+  EXPECT_EQ (first.first, nullptr);
+  EXPECT_THAT (first.second, testing::ElementsAre (&option2));
 }
 
 TEST_F (Help, BuildTwoCategories) {
-  opt<std::string> option1{"arg1", positional};
-  opt<std::string> option2{"arg2"};
+  options_container all;
+  all.add<string_opt> ("arg1", positional);
+  auto & option2 = all.add<string_opt> ("arg2");
   option_category category{"category"};
-  opt<std::string> option3{"arg3", cat (category)};
+  auto & option3 = all.add<string_opt> ("arg3", cat (category));
 
-  option::options_container container{&option1, &option2, &option3};
-  details::categories_collection const actual = details::build_categories (nullptr, container);
+  details::categories_collection const actual = details::build_categories (nullptr, all);
 
   ASSERT_EQ (actual.size (), 2U);
   auto it = std::begin (actual);
@@ -107,7 +105,7 @@ TEST_F (Help, SwitchStrings) {
                                      "\xE3\x82\xB7"  // KATAKANA LETTER SI
                                      "\xE3\x83\xA7"  // KATAKANA LETTER SMALL YO
                                      "\xE3\x83\xB3"; // KATAKANA LETTER N
-  opt<std::string> option1{name};
+  string_opt option1{name};
   details::options_set options{&option1};
   details::switch_strings const actual = details::get_switch_strings (options);
 

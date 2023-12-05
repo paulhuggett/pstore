@@ -25,32 +25,7 @@ using namespace pstore::command_line;
 
 namespace {
 
-  opt<std::string> record_path{"record", desc{"Record received messages in the named output file"}};
-  alias record_path2{"r", desc{"Alias for --record"}, aliasopt{record_path}};
-
-  opt<std::string> playback_path{"playback", desc{"Play back messages from the named file"}};
-  alias playback_path2{"p", desc{"Alias for --playback"}, aliasopt{playback_path}};
-
-  opt<std::string> pipe_path{
-    "pipe-path", desc{"Overrides the path of the FIFO from which commands will be read"}};
-
-  opt<unsigned> num_read_threads{"read-threads", desc{"The number of pipe reading threads"},
-                                 init (2U)};
-
-  opt<std::uint16_t> http_port{
-    "http-port", desc{"The port on which to listen for HTTP connections"}, init (in_port_t{8080})};
-  opt<bool> disable_http{"disable-http", desc{"Disable the HTTP server"}, init (false)};
-
-  opt<bool> announce_http_port{"announce-http-port",
-                               desc{"Display a message when the HTTP server is available"},
-                               init (false)};
-
-  opt<unsigned> scavenge_time{"scavenge-time",
-                              desc{"The time in seconds that a message will spend in the command "
-                                   "queue before being removed by the scavenger"},
-                              init (4U * 60U * 60U)};
-
-  std::optional<std::string> path_option (opt<std::string> const & path) {
+  std::optional<std::string> path_option (string_opt const & path) {
     if (path.get_num_occurrences () == 0U) {
       return std::nullopt;
     }
@@ -61,7 +36,37 @@ namespace {
 
 
 std::pair<switches, int> get_switches (int const argc, tchar * argv[]) {
-  parse_command_line_options (argc, argv, "pstore broker agent");
+  options_container all;
+  auto & record_path =
+    all.add<string_opt> ("record", desc{"Record received messages in the named output file"});
+  all.add<alias> ("r", desc{"Alias for --record"}, aliasopt{record_path});
+
+  auto & playback_path =
+    all.add<string_opt> ("playback", desc{"Play back messages from the named file"});
+  all.add<alias> ("p", desc{"Alias for --playback"}, aliasopt{playback_path});
+
+  auto & pipe_path = all.add<string_opt> (
+    "pipe-path", desc{"Overrides the path of the FIFO from which commands will be read"});
+
+  auto & num_read_threads =
+    all.add<opt<unsigned>> ("read-threads", desc{"The number of pipe reading threads"}, init (2U));
+
+  auto & http_port = all.add<opt<std::uint16_t>> (
+    "http-port", desc{"The port on which to listen for HTTP connections"}, init (in_port_t{8080}));
+  auto & disable_http =
+    all.add<bool_opt> ("disable-http", desc{"Disable the HTTP server"}, init (false));
+
+  auto & announce_http_port =
+    all.add<bool_opt> ("announce-http-port",
+                       desc{"Display a message when the HTTP server is available"}, init (false));
+
+  auto & scavenge_time =
+    all.add<opt<unsigned>> ("scavenge-time",
+                            desc{"The time in seconds that a message will spend in the command "
+                                 "queue before being removed by the scavenger"},
+                            init (4U * 60U * 60U));
+
+  parse_command_line_options (all, argc, argv, "pstore broker agent");
 
   switches result;
   result.playback_path = path_option (playback_path);

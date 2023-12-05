@@ -25,24 +25,6 @@ using namespace pstore::command_line;
 
 namespace {
 
-  opt<std::string> pipe_path ("pipe-path",
-                              desc ("Overrides the FIFO path to which messages are written."),
-                              init (""));
-
-  opt<unsigned> flood ("flood", desc ("Flood the broker with a number of ECHO messages."),
-                       init (0U));
-  alias flood2 ("m", desc ("Alias for --flood"), aliasopt (flood));
-
-  opt<std::chrono::milliseconds::rep>
-    retry_timeout ("retry-timeout", desc ("The timeout for connection retries to the broker (ms)."),
-                   init (switches{}.retry_timeout.count ()));
-
-  opt<bool> kill ("kill", desc ("Ask the broker to quit after commands have been processed."));
-  alias kill2 ("k", desc ("Alias for --kill"), aliasopt (kill));
-
-  opt<std::string> verb (positional, optional, usage ("[verb]"));
-  opt<std::string> path (positional, optional, usage ("[path]"));
-
   pstore::maybe<std::string> path_option (std::string const & p) {
     if (p.length () > 0) {
       return pstore::just (p);
@@ -53,7 +35,28 @@ namespace {
 } // end anonymous namespace
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-  parse_command_line_options (argc, argv, "pstore broker poker\n");
+  options_container all;
+  auto & pipe_path = all.add<string_opt> (
+    "pipe-path", desc ("Overrides the FIFO path to which messages are written."), init (""));
+
+  auto & flood = all.add<opt<unsigned>> (
+    "flood", desc ("Flood the broker with a number of ECHO messages."), init (0U));
+  all.add<alias> ("m", desc ("Alias for --flood"), aliasopt (flood));
+
+  auto & retry_timeout = all.add<opt<std::chrono::milliseconds::rep>> (
+    "retry-timeout", desc ("The timeout for connection retries to the broker (ms)."),
+    init (switches{}.retry_timeout.count ()));
+
+  auto & kill =
+    all.add<bool_opt> ("kill", desc ("Ask the broker to quit after commands have been processed."));
+  all.add<alias> ("k", desc ("Alias for --kill"), aliasopt (kill));
+
+  auto & verb = all.add<string_opt> (positional, optional, usage ("[verb]"));
+  auto & path = all.add<string_opt> (positional, optional, usage ("[path]"));
+
+
+
+  parse_command_line_options (all, argc, argv, "pstore broker poker\n");
 
   switches result;
   result.verb = verb.get ();

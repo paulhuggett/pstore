@@ -80,24 +80,6 @@ namespace std {
 
 } // end namespace std
 
-#define DEFAULT_VAR "fs"
-
-namespace {
-
-  using namespace pstore::command_line;
-  opt<std::string> src_path (positional, ".", desc ("source-path"));
-
-  opt<std::string> root_var (
-    "var",
-    desc ("Variable name for the file system root "
-          "(may contain '::' to place in a specifc namespace). (Default: '" DEFAULT_VAR "')"),
-    init (DEFAULT_VAR));
-
-} // end anonymous namespace
-
-#undef DEFAULT_VAR
-
-
 namespace {
 
   template <typename Function>
@@ -145,7 +127,18 @@ int _tmain (int argc, TCHAR * argv[]) {
 #else
 int main (int argc, char * argv[]) {
 #endif
-  parse_command_line_options (argc, argv, "pstore romfs generation utility\n");
+  using namespace pstore::command_line;
+  options_container all;
+  auto & src_path = all.add<string_opt> (positional, ".", desc ("source-path"));
+#define DEFAULT_VAR "fs"
+  auto & root_var = all.add<string_opt> (
+    "var",
+    desc ("Variable name for the file system root "
+          "(may contain '::' to place in a specifc namespace). (Default: '" DEFAULT_VAR "')"),
+    init (DEFAULT_VAR));
+#undef DEFAULT_VAR
+
+  parse_command_line_options (all, argc, argv, "pstore romfs generation utility\n");
   int exit_code = EXIT_SUCCESS;
 
   PSTORE_TRY {

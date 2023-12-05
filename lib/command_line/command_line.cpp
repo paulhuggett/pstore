@@ -22,7 +22,7 @@ namespace pstore::command_line::details {
   // lookup nearest option
   // ~~~~~~~~~~~~~~~~~~~~~
   std::optional<option *> lookup_nearest_option (std::string const & arg,
-                                                 option::options_container const & all_options) {
+                                                 options_container const & all_options) {
     std::optional<option *> best_option;
     if (arg.empty ()) {
       return best_option;
@@ -32,7 +32,7 @@ namespace pstore::command_line::details {
     for (auto const & opt : all_options) {
       auto const distance = string_distance (opt->name (), arg, best_distance);
       if (distance < best_distance) {
-        best_option = opt;
+        best_option = opt.get ();
         best_distance = distance;
       }
     }
@@ -53,13 +53,14 @@ namespace pstore::command_line::details {
 
   // find handler
   // ~~~~~~~~~~~~
-  std::optional<option *> find_handler (std::string const & name) {
-    auto const & all_options = option::all ();
-    auto const end = std::end (all_options);
-    auto const it =
-      std::find_if (std::begin (all_options), end,
-                    [&name] (option const * const opt) { return opt->name () == name; });
-    return it != end ? std::optional<option *> (*it) : std::optional<option *> ();
+  std::optional<option *> find_handler (options_container const & all, std::string const & name) {
+    using result_type = std::optional<option *>;
+    auto const end = std::end (all);
+    auto const pos =
+      std::find_if (std::begin (all), end, [&name] (options_container::value_type const & opt) {
+        return opt->name () == name;
+      });
+    return pos != end ? result_type{pos->get ()} : result_type{};
   }
 
   // argument is positional

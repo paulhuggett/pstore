@@ -42,10 +42,6 @@ using pstore::command_line::out_stream;
 
 namespace {
 
-  pstore::command_line::opt<std::string> path (pstore::command_line::positional,
-                                               pstore::command_line::required,
-                                               pstore::command_line::usage ("<repository>"));
-
   //*  _    _         _          _            _   _  __ _          *
   //* | |__| |___  __| |_____ __| |  _ _  ___| |_(_)/ _(_)___ _ _  *
   //* | '_ \ / _ \/ _| / / -_) _` | | ' \/ _ \  _| |  _| / -_) '_| *
@@ -122,8 +118,13 @@ int main (int argc, char * argv[]) {
 #endif
   int exit_code = EXIT_SUCCESS;
   PSTORE_TRY {
+    pstore::command_line::options_container all;
+    auto & path = all.add<pstore::command_line::string_opt> (
+      pstore::command_line::positional, pstore::command_line::required,
+      pstore::command_line::usage ("<repository>"));
+
     pstore::command_line::parse_command_line_options (
-      argc, argv, "pstore lock test: A simple test for the transaction lock.\n");
+      all, argc, argv, "pstore lock test: A simple test for the transaction lock.\n");
 
     say (out_stream, PSTORE_NATIVE_TEXT ("start"));
 

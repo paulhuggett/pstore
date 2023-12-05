@@ -22,36 +22,29 @@
 
 using namespace pstore::command_line;
 
-namespace {
-
-  opt<std::string> db_path (positional, usage ("repository"),
-                            desc ("Path of the pstore repository to be read."), required);
-
-  opt<pstore::command_line::revision_opt, parser<std::string>>
-    first_revision (positional, usage ("[1st-revision]"),
-                    desc ("The first revision number (or 'HEAD')"), optional);
-
-  opt<pstore::command_line::revision_opt, parser<std::string>>
-    second_revision (positional, usage ("[2nd-revision]"),
-                     desc ("The second revision number (or 'HEAD')"), optional);
+std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
+  options_container all;
+  auto & db_path = all.add<string_opt> (
+    positional, usage ("repository"), desc ("Path of the pstore repository to be read."), required);
+  auto & first_revision = all.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
+    positional, usage ("[1st-revision]"), desc ("The first revision number (or 'HEAD')"), optional);
+  auto & second_revision = all.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
+    positional, usage ("[2nd-revision]"), desc ("The second revision number (or 'HEAD')"),
+    optional);
 
   option_category how_cat ("Options controlling how fields are emitted");
+  auto & hex =
+    all.add<bool_opt> ("hex", desc ("Emit numbers in hexadecimal notation"), cat (how_cat));
+  all.add<alias> ("x", desc ("Alias for --hex"), aliasopt (hex));
 
-  opt<bool> hex ("hex", desc ("Emit number values in hexadecimal notation"), cat (how_cat));
-  alias hex2 ("x", desc ("Alias for --hex"), aliasopt (hex));
-
-} // end anonymous namespace
-
-std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-  using namespace pstore;
-  parse_command_line_options (argc, argv, "pstore diff utility\n");
+  parse_command_line_options (all, argc, argv, "pstore diff utility\n");
 
   switches result;
   result.db_path = db_path.get ();
   result.first_revision = static_cast<unsigned> (first_revision.get ());
   result.second_revision = second_revision.get_num_occurrences () > 0
-                             ? just (static_cast<unsigned> (second_revision.get ()))
-                             : nothing<revision_number> ();
+                             ? pstore::just (static_cast<unsigned> (second_revision.get ()))
+                             : pstore::nothing<pstore::revision_number> ();
   result.hex = hex.get ();
   return {result, EXIT_SUCCESS};
 }

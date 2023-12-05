@@ -66,7 +66,7 @@ namespace pstore::command_line {
     /// \param self  Should be the help option so that it is excluded from the test.
     /// \param all  The collection of all switches.
     /// \return True if the program has any non-positional arguments, false otherwise.
-    bool has_switches (option const * self, option::options_container const & all);
+    bool has_switches (option const * self, options_container const & all);
 
     /// Builds a container which maps from an option to one or more fully decorated
     /// strings. Each string has leading dashes and trailing meta-description added.
@@ -82,8 +82,7 @@ namespace pstore::command_line {
     /// \param all  The collection of all switches.
     /// \returns  A container which maps from each option-category to the set of its
     ///   member options (including their aliases).
-    categories_collection build_categories (option const * self,
-                                            option::options_container const & all);
+    categories_collection build_categories (option const * self, options_container const & all);
 
     /// Scans the collection of option names and returns the longest that will be
     /// presented the user. The maximum return value is overlong_opt_max.
@@ -97,9 +96,10 @@ namespace pstore::command_line {
   class help final : public option {
   public:
     template <class... Mods>
-    explicit help (std::string program_name, std::string program_overview, OutputStream & outs,
-                   Mods const &... mods)
-            : program_name_{std::move (program_name)}
+    explicit help (options_container const * const owner, std::string program_name,
+                   std::string program_overview, OutputStream & outs, Mods const &... mods)
+            : owner_{owner}
+            , program_name_{std::move (program_name)}
             , overview_{std::move (program_overview)}
             , outs_{outs} {
 
@@ -116,6 +116,7 @@ namespace pstore::command_line {
     bool takes_argument () const override { return false; }
     bool add_occurrence () override;
     parser_base * get_parser () override { return nullptr; }
+    parser_base const * get_parser () const override { return nullptr; }
     bool value (std::string const &) override { return false; }
 
     void show ();
@@ -128,6 +129,7 @@ namespace pstore::command_line {
     /// Writes the program's usage string to the output stream given to the ctor.
     void usage () const;
 
+    options_container const * const owner_ = nullptr;
     std::string const program_name_;
     std::string const overview_;
     OutputStream & outs_;
@@ -145,7 +147,7 @@ namespace pstore::command_line {
   // ~~~~~~~~~~~~
   template <typename OutputStream>
   bool help<OutputStream>::has_switches () const {
-    return details::has_switches (this, option::all ());
+    return details::has_switches (this, *owner_);
   }
 
   // usage
@@ -156,8 +158,8 @@ namespace pstore::command_line {
     if (this->has_switches ()) {
       outs_ << ostream_traits::out_text (" [options]");
     }
-    for (option const * const op : option::all ()) {
-      if (op != this && op->is_positional ()) {
+    for (auto const & op : *owner_) {
+      if (op.get () != this && op->is_positional ()) {
         outs_ << ostream_traits::out_text (" ") << ostream_traits::out_string (op->usage ());
       }
     }
@@ -178,7 +180,7 @@ namespace pstore::command_line {
           << new_line;
     usage ();
 
-    auto const categories = details::build_categories (this, option::all ());
+    auto const categories = details::build_categories (this, *owner_);
     std::size_t const max_name_len = widest_option (categories);
 
     auto const indent = max_name_len + separator_len;

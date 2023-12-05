@@ -33,28 +33,12 @@ namespace pstore::command_line {
   //*     |_|                   *
   // (ctor)
   // ~~~~~~
-  option::option ()
-          : container_pos_{option::add_to_global_list (this)} {}
   option::option (num_occurrences_flag const occurrences)
-          : option () {
-    occurrences_ = occurrences;
-  }
+          : occurrences_{occurrences} {}
 
   // (dtor)
   // ~~~~~~
-  option::~option () {
-    // Remove this option from the global container.
-    options_container & all = option::all ();
-    all.erase (container_pos_);
-  }
-
-  // add to global list
-  // ~~~~~~~~~~~~~~~~~~
-  auto option::add_to_global_list (option * const opt) -> options_container::const_iterator {
-    options_container & all = option::all ();
-    all.push_back (opt);
-    return std::prev (all.end ());
-  }
+  option::~option () {}
 
   void option::set_num_occurrences_flag (num_occurrences_flag const n) {
     occurrences_ = n;
@@ -134,18 +118,6 @@ namespace pstore::command_line {
     return nullptr;
   }
 
-  option::options_container & option::all () {
-    static options_container all_options;
-    return all_options;
-  }
-
-  option::options_container & option::reset_container () {
-    auto & a = option::all ();
-    a.clear ();
-    return a;
-  }
-
-
   //*           _     _              _  *
   //*  ___ _ __| |_  | |__  ___  ___| | *
   //* / _ \ '_ \  _| | '_ \/ _ \/ _ \ | *
@@ -162,6 +134,9 @@ namespace pstore::command_line {
     return true;
   }
   parser_base * opt<bool>::get_parser () {
+    return nullptr;
+  }
+  parser_base const * opt<bool>::get_parser () const {
     return nullptr;
   }
 
@@ -196,6 +171,9 @@ namespace pstore::command_line {
     return original_->get_num_occurrences ();
   }
   parser_base * alias::get_parser () {
+    return original_->get_parser ();
+  }
+  parser_base const * alias::get_parser () const {
     return original_->get_parser ();
   }
   bool alias::takes_argument () const {

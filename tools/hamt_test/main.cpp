@@ -37,14 +37,6 @@ using namespace pstore::command_line;
 
 namespace {
 
-  opt<std::string> data_file (positional, usage ("repository"),
-                              desc ("Path of the pstore repository to use for index test."),
-                              required);
-
-} // end anonymous namespace
-
-namespace {
-
   // A simple linear congruential random number generator from Numerical Recipes
   // Note that we're using a custom random number generator rather than the standard library
   // in order to guarantee that the numbers it produces are stable across different runs
@@ -190,7 +182,11 @@ int main (int argc, char * argv[]) {
   int exit_code = EXIT_SUCCESS;
 
   PSTORE_TRY {
-    parse_command_line_options (argc, argv, "Tests the pstore index code");
+    options_container all;
+    auto & data_file =
+      all.add<string_opt> (positional, usage ("repository"),
+                           desc ("Path of the pstore repository to use for index test."), required);
+    parse_command_line_options (all, argc, argv, "Tests the pstore index code");
 
     pstore::database database (data_file.get (), pstore::database::access_mode::writable);
     database.set_vacuum_mode (pstore::database::vacuum_mode::disabled);

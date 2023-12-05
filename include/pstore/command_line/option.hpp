@@ -71,6 +71,34 @@ namespace pstore::command_line {
   class option_category;
   class alias;
 
+  class option;
+  class options_container {
+  public:
+    using value_type = std::unique_ptr<option>;
+
+    options_container () noexcept = default;
+    options_container (options_container const &) = delete;
+    options_container (options_container &&) noexcept = delete;
+    ~options_container () noexcept = default;
+
+    options_container & operator= (options_container const &) = delete;
+    options_container & operator= (options_container &&) noexcept = delete;
+
+
+    template <typename OptionType, typename... Args>
+    auto & add (Args &&... args) {
+      auto p = std::make_unique<OptionType> (std::forward<Args> (args)...);
+      auto & result = *p;
+      opts_.emplace_back (std::move (p));
+      return result;
+    }
+
+    auto begin () const { return std::begin (opts_); }
+    auto end () const { return std::end (opts_); }
+
+    std::list<value_type> opts_;
+  };
+
   //*           _   _           *
   //*  ___ _ __| |_(_)___ _ _   *
   //* / _ \ '_ \  _| / _ \ ' \  *
@@ -79,9 +107,9 @@ namespace pstore::command_line {
   class option {
   public:
     option (option const &) = delete;
-    option (option &&) = delete;
+    option (option &&) noexcept = delete;
     option & operator= (option const &) = delete;
-    option & operator= (option &&) = delete;
+    option & operator= (option &&) noexcept = delete;
     virtual ~option ();
 
     virtual void set_num_occurrences_flag (num_occurrences_flag n);
@@ -112,6 +140,7 @@ namespace pstore::command_line {
     virtual alias const * as_alias () const;
 
     virtual parser_base * get_parser () = 0;
+    virtual parser_base const * get_parser () const = 0;
 
     std::string const & name () const;
     void set_name (std::string const & name);
@@ -120,31 +149,13 @@ namespace pstore::command_line {
     virtual bool value (std::string const & v) = 0;
     virtual bool add_occurrence ();
 
-    using options_container = std::list<option *>;
-    static options_container & all ();
-    /// For unit testing.
-    static options_container & reset_container ();
-
     virtual gsl::czstring arg_description () const noexcept;
 
   protected:
-    option ();
+    option () = default;
     explicit option (num_occurrences_flag occurrences);
 
   private:
-    /// The location of this entry in the (global) options list. This iterator is a
-    /// reference into the list returned by the option::all() function. It's used simply to
-    /// remove the option from that container when the former is destroyed.
-    options_container::const_iterator container_pos_;
-
-    /// Adds the supplied option instance to the global container and returns a iterator
-    /// which references it.
-    ///
-    /// \param opt  The option to be added to the global container.
-    /// \returns  An iterator referencing the global option list which will yield opt when
-    ///   dereferenced.
-    static options_container::const_iterator add_to_global_list (option * const opt);
-
     std::string name_;
     std::string usage_;
     std::string description_;
@@ -185,8 +196,7 @@ namespace pstore::command_line {
   class opt final : public option {
   public:
     template <class... Mods>
-    explicit opt (Mods const &... mods)
-            : option () {
+    explicit opt (Mods const &... mods) {
       apply_to_option (*this, mods...);
     }
     opt (opt const &) = delete;
@@ -208,6 +218,7 @@ namespace pstore::command_line {
     bool value (std::string const & v) override;
     bool takes_argument () const override;
     parser_base * get_parser () override;
+    parser_base const * get_parser () const override;
 
     gsl::czstring arg_description () const noexcept override { return type_description<T>::value; }
 
@@ -230,6 +241,10 @@ namespace pstore::command_line {
   }
   template <typename T, typename Parser>
   parser_base * opt<T, Parser>::get_parser () {
+    return &parser_;
+  }
+  template <typename T, typename Parser>
+  parser_base const * opt<T, Parser>::get_parser () const {
     return &parser_;
   }
 
@@ -260,6 +275,7 @@ namespace pstore::command_line {
     bool value (std::string const & v) override;
     bool add_occurrence () override;
     parser_base * get_parser () override;
+    parser_base const * get_parser () const override;
 
     template <typename U>
     void set_initial_value (U const & u) {
@@ -269,6 +285,10 @@ namespace pstore::command_line {
   private:
     bool value_ = false;
   };
+
+
+  using string_opt = opt<std::string>;
+  using bool_opt = opt<bool>;
 
   //*  _ _    _    *
   //* | (_)__| |_  *
@@ -297,7 +317,8 @@ namespace pstore::command_line {
 
     bool takes_argument () const override { return true; }
     bool value (std::string const & v) override;
-    parser_base * get_parser () override;
+    parser_base * get_parser () override { return &parser_; }
+    parser_base const * get_parser () const override { return &parser_; }
 
     using iterator = typename container::const_iterator;
     using const_iterator = iterator;
@@ -351,11 +372,6 @@ namespace pstore::command_line {
     return false;
   }
 
-  template <typename T, typename Parser>
-  parser_base * list<T, Parser>::get_parser () {
-    return &parser_;
-  }
-
   //*       _ _          *
   //*  __ _| (_)__ _ ___ *
   //* / _` | | / _` (_-< *
@@ -388,6 +404,7 @@ namespace pstore::command_line {
     bool is_alias () const override;
     unsigned get_num_occurrences () const override;
     parser_base * get_parser () override;
+    parser_base const * get_parser () const override;
     bool takes_argument () const override;
     bool value (std::string const & v) override;
 
