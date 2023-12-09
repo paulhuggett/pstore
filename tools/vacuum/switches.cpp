@@ -20,11 +20,11 @@
 using namespace pstore::command_line;
 
 std::pair<vacuum::user_options, int> get_switches (int argc, tchar * argv[]) {
-  options_container all;
-  auto & path = all.add<string_opt> (positional, usage ("repository"),
-                                     desc ("Path of the pstore repository to be vacuumed."));
+  argument_parser args;
+  auto & path = args.add<string_opt> (positional, usage ("repository"),
+                                      desc ("Path of the pstore repository to be vacuumed."));
 
-  parse_command_line_options (all, argc, argv, "pstore vacuum utility\n");
+  args.parse_args (argc, argv, "pstore vacuum utility\n");
 
   vacuum::user_options opt;
   opt.src_path = path.get ();

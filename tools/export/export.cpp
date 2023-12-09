@@ -30,16 +30,16 @@ int main (int argc, char * argv[]) {
 #endif
   int exit_code = EXIT_SUCCESS;
   PSTORE_TRY {
-    options_container all;
+    argument_parser args;
     auto & db_path =
-      all.add<string_opt> (positional, usage{"repository"},
-                           desc{"Path of the pstore repository to be exported."}, required);
-    auto & no_comments = all.add<bool_opt> (
+      args.add<string_opt> (positional, usage{"repository"},
+                            desc{"Path of the pstore repository to be exported."}, required);
+    auto & no_comments = args.add<bool_opt> (
       "no-comments"sv,
       desc{"Disable embedded comments. (Required for output to be ECMA-404 compliant.)"},
       init (false));
 
-    parse_command_line_options (all, argc, argv, "pstore export utility\n");
+    args.parse_args (argc, argv, "pstore export utility\n");
 
     pstore::exchange::export_ns::ostream os{stdout};
     pstore::database db{db_path.get (), pstore::database::access_mode::read_only};

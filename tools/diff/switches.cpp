@@ -24,21 +24,21 @@ using namespace pstore::command_line;
 using namespace std::string_view_literals;
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-  options_container all;
-  auto & db_path = all.add<string_opt> (
+  argument_parser args;
+  auto & db_path = args.add<string_opt> (
     positional, usage ("repository"), desc ("Path of the pstore repository to be read."), required);
-  auto & first_revision = all.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
+  auto & first_revision = args.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
     positional, usage ("[1st-revision]"), desc ("The first revision number (or 'HEAD')"), optional);
-  auto & second_revision = all.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
+  auto & second_revision = args.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
     positional, usage ("[2nd-revision]"), desc ("The second revision number (or 'HEAD')"),
     optional);
 
   option_category how_cat ("Options controlling how fields are emitted");
   auto & hex =
-    all.add<bool_opt> ("hex"sv, desc ("Emit numbers in hexadecimal notation"), cat (how_cat));
-  all.add<alias> ("x"sv, desc ("Alias for --hex"), aliasopt (hex));
+    args.add<bool_opt> ("hex"sv, desc ("Emit numbers in hexadecimal notation"), cat (how_cat));
+  args.add<alias> ("x"sv, desc ("Alias for --hex"), aliasopt (hex));
 
-  parse_command_line_options (all, argc, argv, "pstore diff utility\n");
+  args.parse_args (argc, argv, "pstore diff utility\n");
 
   switches result;
   result.db_path = db_path.get ();

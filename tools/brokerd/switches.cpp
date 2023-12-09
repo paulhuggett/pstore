@@ -37,38 +37,39 @@ namespace {
 
 
 std::pair<switches, int> get_switches (int const argc, tchar * argv[]) {
-  options_container all;
+  argument_parser args;
   auto & record_path =
-    all.add<string_opt> ("record"sv, desc{"Record received messages in the named output file"});
-  all.add<alias> ("r"sv, desc{"Alias for --record"}, aliasopt{record_path});
+    args.add<string_opt> ("record"sv, desc{"Record received messages in the named output file"});
+  args.add<alias> ("r"sv, desc{"Alias for --record"}, aliasopt{record_path});
 
   auto & playback_path =
-    all.add<string_opt> ("playback"sv, desc{"Play back messages from the named file"});
-  all.add<alias> ("p"sv, desc{"Alias for --playback"}, aliasopt{playback_path});
+    args.add<string_opt> ("playback"sv, desc{"Play back messages from the named file"});
+  args.add<alias> ("p"sv, aliasopt{playback_path});
 
-  auto & pipe_path = all.add<string_opt> (
-    "pipe-path"sv, desc{"Overrides the path of the FIFO from which commands will be read"});
+  auto & pipe_path = args.add<string_opt> (
+    "pipe-path"sv, desc{"Overrides the path of the FIFO from which commands will be read"},
+    meta{"path"});
 
-  auto & num_read_threads = all.add<opt<unsigned>> (
-    "read-threads"sv, desc{"The number of pipe reading threads"}, init (2U));
+  auto & num_read_threads =
+    args.add<unsigned_opt> ("read-threads"sv, desc{"The number of pipe reading threads"}, init{2U});
 
-  auto & http_port = all.add<opt<std::uint16_t>> (
-    "http-port"sv, desc{"The port on which to listen for HTTP connections"},
-    init (in_port_t{8080}));
+  auto & http_port = args.add<opt<std::uint16_t>> (
+    "http-port"sv, desc{"The port on which to listen for HTTP connections"}, init{in_port_t{8080}},
+    meta{"port"});
   auto & disable_http =
-    all.add<bool_opt> ("disable-http"sv, desc{"Disable the HTTP server"}, init (false));
+    args.add<bool_opt> ("disable-http"sv, desc{"Disable the HTTP server"}, init{false});
 
   auto & announce_http_port =
-    all.add<bool_opt> (name ("announce-http-port"sv),
-                       desc{"Display a message when the HTTP server is available"}, init (false));
+    args.add<bool_opt> (name{"announce-http-port"sv},
+                        desc{"Display a message when the HTTP server is available"}, init{false});
 
   auto & scavenge_time =
-    all.add<opt<unsigned>> (name ("scavenge-time"sv),
+    args.add<unsigned_opt> (name ("scavenge-time"sv),
                             desc{"The time in seconds that a message will spend in the command "
                                  "queue before being removed by the scavenger"},
-                            init (4U * 60U * 60U));
+                            init{4U * 60U * 60U});
 
-  parse_command_line_options (all, argc, argv, "pstore broker agent");
+  args.parse_args (argc, argv, "pstore broker agent");
 
   switches result;
   result.playback_path = path_option (playback_path);

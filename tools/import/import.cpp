@@ -47,14 +47,14 @@ int main (int argc, char * argv[]) {
 #endif
   int exit_code = EXIT_SUCCESS;
   PSTORE_TRY {
-    options_container all;
+    argument_parser args;
     auto & db_path =
-      all.add<string_opt> (positional, usage ("repository"),
-                           desc ("Path of the pstore repository to be created."), required);
-    auto & json_source = all.add<string_opt> (
+      args.add<string_opt> (positional, usage ("repository"),
+                            desc ("Path of the pstore repository to be created."), required);
+    auto & json_source = args.add<string_opt> (
       positional, usage ("[input]"), desc ("The export file to be read (stdin if not specified)."));
 
-    parse_command_line_options (all, argc, argv, "pstore import utility\n");
+    args.parse_args (argc, argv, "pstore import utility\n");
 
     if (pstore::file::exists (db_path.get ())) {
       error_stream << PSTORE_NATIVE_TEXT (

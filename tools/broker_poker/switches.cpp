@@ -35,26 +35,27 @@ namespace {
 } // end anonymous namespace
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-  options_container all;
-  auto & pipe_path = all.add<string_opt> (
-    name{"pipe-path"}, desc{"Overrides the FIFO path to which messages are written."}, init (""));
+  argument_parser args;
+  auto & pipe_path = args.add<string_opt> (
+    name{"pipe-path"}, desc{"Overrides the FIFO path to which messages are written."},
+    init{std::string_view{""}});
 
-  auto & flood = all.add<opt<unsigned>> (
+  auto & flood = args.add<unsigned_opt> (
     name ("flood"), desc ("Flood the broker with a number of ECHO messages."), init (0U));
-  all.add<alias> (name ("m"), desc ("Alias for --flood"), aliasopt (flood));
+  args.add<alias> (name ("m"), desc ("Alias for --flood"), aliasopt (flood));
 
-  auto & retry_timeout = all.add<opt<std::chrono::milliseconds::rep>> (
+  auto & retry_timeout = args.add<opt<std::chrono::milliseconds::rep>> (
     name ("retry-timeout"), desc ("The timeout for connection retries to the broker (ms)."),
     init (switches{}.retry_timeout.count ()));
 
-  auto & kill = all.add<bool_opt> (
+  auto & kill = args.add<bool_opt> (
     name ("kill"), desc ("Ask the broker to quit after commands have been processed."));
-  all.add<alias> (name ("k"), desc ("Alias for --kill"), aliasopt (kill));
+  args.add<alias> (name ("k"), desc ("Alias for --kill"), aliasopt (kill));
 
-  auto & verb = all.add<string_opt> (positional, optional, usage ("[verb]"));
-  auto & path = all.add<string_opt> (positional, optional, usage ("[path]"));
+  auto & verb = args.add<string_opt> (positional, optional, usage ("[verb]"));
+  auto & path = args.add<string_opt> (positional, optional, usage ("[path]"));
 
-  parse_command_line_options (all, argc, argv, "pstore broker poker\n");
+  args.parse_args (argc, argv, "pstore broker poker\n");
 
   switches result;
   result.verb = verb.get ();

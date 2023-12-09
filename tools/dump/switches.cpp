@@ -33,9 +33,11 @@ namespace pstore::command_line {
   class parser<dump::digest_opt> : public parser_base {
   public:
     ~parser () noexcept override = default;
-    std::optional<dump::digest_opt> operator() (std::string const & v) const {
-      std::optional<index::digest> const d = uint128::from_hex_string (v);
-      return d ? std::optional<dump::digest_opt> (*d) : std::optional<dump::digest_opt> ();
+    std::optional<dump::digest_opt> operator() (std::string_view v) const {
+      if (std::optional<index::digest> const d = uint128::from_hex_string (v)) {
+        return std::optional<dump::digest_opt>{*d};
+      }
+      return std::nullopt;
     }
   };
 
@@ -43,10 +45,8 @@ namespace pstore::command_line {
   // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   template <>
   struct type_description<dump::digest_opt> {
-    static gsl::czstring value;
+    static constexpr gsl::czstring value = "digest";
   };
-
-  gsl::czstring type_description<dump::digest_opt>::value = "digest";
 
 } // end namespace pstore::command_line
 
@@ -57,7 +57,7 @@ namespace {} // end anonymous namespace
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
   using digest_opt = list<pstore::dump::digest_opt>;
 
-  options_container options;
+  argument_parser options;
   option_category what_cat{"Options controlling what is dumped"};
 
   auto & fragment =
@@ -133,7 +133,7 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
 
 
 
-  parse_command_line_options (options, argc, argv, "pstore dump utility\n");
+  options.parse_args (argc, argv, "pstore dump utility\n");
 
   switches result;
 

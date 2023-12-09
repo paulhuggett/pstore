@@ -26,7 +26,7 @@ namespace pstore::command_line {
 
   void parser_base::add_literal_option (std::string const & name, int const value,
                                         std::string const & description) {
-    literals_.emplace_back (literal{name, value, description});
+    literals_.emplace_back (name, value, description);
   }
 
 
@@ -35,9 +35,7 @@ namespace pstore::command_line {
   //* | '_ \/ _` | '_(_-</ -_) '_| (_-<  _| '_| | ' \/ _` | *
   //* | .__/\__,_|_| /__/\___|_|   /__/\__|_| |_|_||_\__, | *
   //* |_|                                            |___/  *
-  parser<std::string>::~parser () noexcept = default;
-
-  std::optional<std::string> parser<std::string>::operator() (std::string const & v) const {
+  std::optional<std::string> parser<std::string>::operator() (std::string_view v) const {
     // If this one of the literal strings?
     auto const begin = this->begin ();
     auto const end = this->end ();
@@ -46,7 +44,7 @@ namespace pstore::command_line {
       return {};
     }
 
-    return {v};
+    return std::optional<std::string>{v};
   }
 
 } // end namespace pstore::command_line

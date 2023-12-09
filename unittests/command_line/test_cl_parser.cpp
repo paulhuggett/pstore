@@ -55,22 +55,41 @@ TEST (ClParser, Int) {
   using pstore::command_line::parser;
   {
     std::optional<int> r1 = parser<int> () ("43");
-    EXPECT_TRUE (r1.has_value ());
-    EXPECT_EQ (r1.value (), 43);
+    EXPECT_EQ (r1.value_or (0), 43);
   }
+}
+
+TEST (ClParser, IntEmpty) {
+  using pstore::command_line::parser;
   {
     parser<int> p;
     std::optional<int> r2 = p ("");
     EXPECT_FALSE (r2.has_value ());
   }
-  {
-    std::optional<int> r3 = parser<int> () ("bad");
-    EXPECT_FALSE (r3.has_value ());
-  }
-  {
-    std::optional<int> r4 = parser<int> () ("42bad");
-    EXPECT_FALSE (r4.has_value ());
-  }
+}
+
+TEST (ClParser, IntBad) {
+  using pstore::command_line::parser;
+  std::optional<int> const r3 = parser<int> () ("bad");
+  EXPECT_FALSE (r3.has_value ());
+}
+
+TEST (ClParser, IntWithBadTail) {
+  using pstore::command_line::parser;
+  std::optional<int> const r4 = parser<int> () ("42bad");
+  EXPECT_FALSE (r4.has_value ());
+}
+
+TEST (ClParser, IntNegative) {
+  using pstore::command_line::parser;
+  std::optional<int> const r = parser<int> () ("-42");
+  EXPECT_EQ (r.value_or (0), -42);
+}
+
+TEST (ClParser, IntTooLarge) {
+  using pstore::command_line::parser;
+  std::optional<std::int8_t> const r = parser<std::int8_t> () ("256");
+  EXPECT_FALSE (r.has_value ());
 }
 
 TEST (ClParser, Enum) {
@@ -108,14 +127,14 @@ TEST (ClParser, Enum) {
 
 TEST (ClParser, Modifiers) {
   using namespace pstore::command_line;
-  EXPECT_EQ (opt<int> ().get_num_occurrences_flag (), num_occurrences_flag::optional);
-  EXPECT_EQ (opt<int>{optional}.get_num_occurrences_flag (), num_occurrences_flag::optional);
-  EXPECT_EQ (opt<int>{required}.get_num_occurrences_flag (), num_occurrences_flag::required);
-  EXPECT_EQ (opt<int>{one_or_more}.get_num_occurrences_flag (), num_occurrences_flag::zero_or_more);
-  EXPECT_EQ (opt<int> (required, one_or_more).get_num_occurrences_flag (),
-             num_occurrences_flag::one_or_more);
-  EXPECT_EQ (opt<int> (optional, one_or_more).get_num_occurrences_flag (),
-             num_occurrences_flag::zero_or_more);
+  EXPECT_EQ (opt<int> ().get_occurrences_flag (), occurrences_flag::optional);
+  EXPECT_EQ (opt<int>{optional}.get_occurrences_flag (), occurrences_flag::optional);
+  EXPECT_EQ (opt<int>{required}.get_occurrences_flag (), occurrences_flag::required);
+  EXPECT_EQ (opt<int>{one_or_more}.get_occurrences_flag (), occurrences_flag::zero_or_more);
+  EXPECT_EQ (opt<int> (required, one_or_more).get_occurrences_flag (),
+             occurrences_flag::one_or_more);
+  EXPECT_EQ (opt<int> (optional, one_or_more).get_occurrences_flag (),
+             occurrences_flag::zero_or_more);
 
   EXPECT_EQ (opt<int> ().name (), "");
   EXPECT_EQ (opt<int>{"name"sv}.name (), "name");

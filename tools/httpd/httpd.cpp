@@ -57,15 +57,13 @@ int main (int argc, char * argv[]) {
 #endif // _WIN32
 
   PSTORE_TRY {
-    options_container all;
-    auto & http_port = all.add<opt<in_port_t>> (
+    argument_parser args;
+    auto & http_port = args.add<opt<in_port_t>> (
       "port"sv, desc ("The port number on which the server will listen"), init (in_port_t{8080}));
+    args.add<alias> ("p"sv, aliasopt (http_port));
 
-    all.add<alias> ("p"sv, desc ("Alias for --port"), aliasopt (http_port));
-
-    parse_command_line_options (
-      all, argc, argv,
-      "pstore httpd: A basic HTTP/WS server for testing the pstore-http library.\n");
+    args.parse_args (argc, argv,
+                     "pstore httpd: A basic HTTP/WS server for testing the pstore-http library.\n");
 
     static constexpr auto ident = "main";
     pstore::threads::set_name (ident);

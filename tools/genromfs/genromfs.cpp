@@ -33,6 +33,7 @@
 // pstore includes
 #include "pstore/command_line/command_line.hpp"
 #include "pstore/command_line/tchar.hpp"
+#include "pstore/command_line/word_wrapper.hpp"
 #include "pstore/support/array_elements.hpp"
 #include "pstore/support/error.hpp"
 #include "pstore/support/portab.hpp"
@@ -128,17 +129,18 @@ int _tmain (int argc, TCHAR * argv[]) {
 int main (int argc, char * argv[]) {
 #endif
   using namespace pstore::command_line;
-  options_container all;
-  auto & src_path = all.add<string_opt> (positional, init ("."), desc ("source-path"));
+  argument_parser args;
+  auto & src_path =
+    args.add<string_opt> (positional, init (std::string_view{"."}), desc ("source-path"));
 #define DEFAULT_VAR "fs"
-  auto & root_var = all.add<string_opt> (
+  auto & root_var = args.add<string_opt> (
     name{"var"},
     desc ("Variable name for the file system root "
           "(may contain '::' to place in a specifc namespace). (Default: '" DEFAULT_VAR "')"),
-    init (DEFAULT_VAR));
+    init (std::string_view{DEFAULT_VAR}));
 #undef DEFAULT_VAR
 
-  parse_command_line_options (all, argc, argv, "pstore romfs generation utility\n");
+  args.parse_args (argc, argv, "pstore romfs generation utility\n");
   int exit_code = EXIT_SUCCESS;
 
   PSTORE_TRY {

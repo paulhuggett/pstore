@@ -49,21 +49,19 @@ namespace {
 } // end anonymous namespace
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-
-  options_container all;
-
-  auto & revision = all.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
+  argument_parser args;
+  auto & revision = args.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
     "revision"sv, desc ("The starting revision number (or 'HEAD')"));
-  all.add<alias> ("r"sv, desc ("Alias for --revision"), aliasopt (revision));
+  args.add<alias> ("r"sv, desc ("Alias for --revision"), aliasopt (revision));
   auto & db_path =
-    all.add<string_opt> (positional, required, usage ("repository"), desc ("Database path"));
+    args.add<string_opt> (positional, required, usage ("repository"), desc ("Database path"));
 
 #define X(a) literal (#a, static_cast<int> (pstore::trailer::indices::a), #a),
-  auto & index_names_opt = all.add<list<pstore::trailer::indices>> (
+  auto & index_names_opt = args.add<list<pstore::trailer::indices>> (
     positional, optional, one_or_more, usage ("[index-name...]"), values ({PSTORE_INDICES}));
 #undef X
 
-  parse_command_line_options (all, argc, argv, usage_help (index_names_opt));
+  args.parse_args (argc, argv, usage_help (index_names_opt));
 
   switches sw;
   sw.revision = static_cast<unsigned> (revision.get ());

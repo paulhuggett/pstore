@@ -84,11 +84,11 @@ int main (int argc, char * argv[]) {
   using namespace pstore::command_line;
 
   PSTORE_TRY {
-    options_container all;
-    auto & data_file = all.add<string_opt> (
+    argument_parser args;
+    auto & data_file = args.add<string_opt> (
       positional, usage ("repository"),
       desc ("Path of the pstore repository to use for index exercise."), required);
-    parse_command_line_options (all, argc, argv, "Exercises the pstore index code");
+    args.parse_args (argc, argv, "Exercises the pstore index code");
 
     pstore::database database{data_file.get (), pstore::database::access_mode::writable};
 

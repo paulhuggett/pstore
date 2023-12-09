@@ -17,127 +17,19 @@
 
 namespace pstore::command_line {
 
-  gsl::czstring type_description<std::string>::value = "str";
-  gsl::czstring type_description<int>::value = "int";
-  gsl::czstring type_description<long>::value = "int";
-  gsl::czstring type_description<long long>::value = "int";
-  gsl::czstring type_description<unsigned short>::value = "uint";
-  gsl::czstring type_description<unsigned int>::value = "uint";
-  gsl::czstring type_description<unsigned long>::value = "uint";
-  gsl::czstring type_description<unsigned long long>::value = "uint";
-
-  //*           _   _           *
-  //*  ___ _ __| |_(_)___ _ _   *
-  //* / _ \ '_ \  _| / _ \ ' \  *
-  //* \___/ .__/\__|_\___/_||_| *
-  //*     |_|                   *
-  // (ctor)
-  // ~~~~~~
-  option::option (num_occurrences_flag const occurrences)
-          : occurrences_{occurrences} {}
-
-  // (dtor)
-  // ~~~~~~
-  option::~option () {}
-
-  void option::set_num_occurrences_flag (num_occurrences_flag const n) {
-    occurrences_ = n;
-  }
-  num_occurrences_flag option::get_num_occurrences_flag () const {
-    return occurrences_;
-  }
-  unsigned option::get_num_occurrences () const {
-    return num_occurrences_;
-  }
-
-  void option::set_description (std::string const & d) {
-    description_ = d;
-  }
-  void option::set_positional () {
-    positional_ = true;
-  }
-  void option::set_usage (std::string const & d) {
-    usage_ = d;
-  }
-  bool option::is_positional () const {
-    return positional_;
-  }
-  bool option::is_alias () const {
-    return false;
-  }
-
-  alias * option::as_alias () {
-    return nullptr;
-  }
-  alias const * option::as_alias () const {
-    return nullptr;
-  }
-
-  std::string const & option::name () const {
-    return name_;
-  }
-  void option::set_name (std::string const & name) {
-    PSTORE_ASSERT ((name.empty () || name[0] != '-') && "Option can't start with '-");
-    name_ = name;
-  }
-  std::string const & option::usage () const noexcept {
-    return usage_;
-  }
-  std::string const & option::description () const noexcept {
-    return description_;
-  }
-
-  bool option::add_occurrence () {
-    ++num_occurrences_;
-    return true;
-  }
-
-  bool option::is_satisfied () const {
-    bool result = true;
-    switch (this->get_num_occurrences_flag ()) {
-    case num_occurrences_flag::required: result = num_occurrences_ >= 1U; break;
-    case num_occurrences_flag::one_or_more: result = num_occurrences_ > 1U; break;
-    case num_occurrences_flag::optional:
-    case num_occurrences_flag::zero_or_more: break;
-    }
-    return result;
-  }
-
-  bool option::can_accept_another_occurrence () const {
-    bool result = true;
-    switch (this->get_num_occurrences_flag ()) {
-    case num_occurrences_flag::optional:
-    case num_occurrences_flag::required: result = num_occurrences_ == 0U; break;
-    case num_occurrences_flag::zero_or_more:
-    case num_occurrences_flag::one_or_more: break;
-    }
-    return result;
-  }
-
-  gsl::czstring option::arg_description () const noexcept {
-    return nullptr;
-  }
-
   //*           _     _              _  *
   //*  ___ _ __| |_  | |__  ___  ___| | *
   //* / _ \ '_ \  _| | '_ \/ _ \/ _ \ | *
   //* \___/ .__/\__| |_.__/\___/\___/_| *
   //*     |_|                           *
-  bool opt<bool>::value (std::string const &) {
-    return false;
-  }
+  opt<bool>::~opt () noexcept = default;
+
   bool opt<bool>::add_occurrence () {
     option::add_occurrence ();
     if (this->get_num_occurrences () == 1U) {
       value_ = !value_;
     }
     return true;
-  }
-  parser_base * opt<bool>::get_parser () {
-    return nullptr;
-  }
-  parser_base const * opt<bool>::get_parser () const {
-    return nullptr;
   }
 
   //*       _ _          *
@@ -152,11 +44,11 @@ namespace pstore::command_line {
   bool alias::add_occurrence () {
     return original_->add_occurrence ();
   }
-  void alias::set_num_occurrences_flag (num_occurrences_flag const n) {
-    original_->set_num_occurrences_flag (n);
+  void alias::set_occurrences_flag (occurrences_flag const n) {
+    original_->set_occurrences_flag (n);
   }
-  num_occurrences_flag alias::get_num_occurrences_flag () const {
-    return original_->get_num_occurrences_flag ();
+  occurrences_flag alias::get_occurrences_flag () const {
+    return original_->get_occurrences_flag ();
   }
   void alias::set_positional () {
     original_->set_positional ();
@@ -164,22 +56,13 @@ namespace pstore::command_line {
   bool alias::is_positional () const {
     return original_->is_positional ();
   }
-  bool alias::is_alias () const {
-    return true;
-  }
   unsigned alias::get_num_occurrences () const {
     return original_->get_num_occurrences ();
-  }
-  parser_base * alias::get_parser () {
-    return original_->get_parser ();
-  }
-  parser_base const * alias::get_parser () const {
-    return original_->get_parser ();
   }
   bool alias::takes_argument () const {
     return original_->takes_argument ();
   }
-  bool alias::value (std::string const & v) {
+  bool alias::value (std::string_view v) {
     return original_->value (v);
   }
 
