@@ -19,7 +19,6 @@
 #include "pstore/adt/small_vector.hpp"
 #include "pstore/command_line/category.hpp"
 #include "pstore/command_line/option.hpp"
-#include "pstore/command_line/literal.hpp"
 #include "pstore/command_line/parser.hpp"
 
 namespace pstore::command_line {
@@ -35,63 +34,134 @@ namespace pstore::command_line {
 
   // values - For custom data types, allow specifying a group of values together
   // as the values that go into the mapping that the option handler uses.
+  // This represents a single enum value.
+
+  /// Represents the connection between a user-visible name and an internal value.
+  template <typename T>
+  struct literal {
+    /// \param name  The user-visible name of the option value.
+    /// \param value  The internal value associated with the name \p name.
+    /// \param description  A description for the help output.
+    literal (std::string_view const name, T const value, std::string_view const description)
+            : name_{name}
+            , value_{value}
+            , description_{description} {}
+    /// \param name  The user-visible name of the option value.
+    /// \param value  The internal value associated with the name \p name.
+    literal (std::string_view const name, T const value)
+            : literal (name, value, name) {}
+    std::string const & name () const noexcept { return name_; }
+    T const & value () const noexcept { return value_; }
+    std::string const & description () const noexcept { return description_; }
+
+  private:
+    std::string name_;
+    T value_{};
+    std::string description_;
+  };
+
+  template <typename T>
+  literal (std::string_view n, T v, std::string_view d) -> literal<T>;
+  template <typename T>
+  literal (std::string_view n, T v) -> literal<T>;
+
   namespace details {
 
+    /// The type of an option's parser() member function. Intended to be used in a SFINAE context.
+    template <typename Option>
+    using parser_t = decltype (std::declval<Option> ().parser ());
+    template <typename Option, typename = std::void_t<>>
+    struct has_parser : std::false_type {};
+    template <typename Option>
+    struct has_parser<Option, std::void_t<parser_t<Option>>> : std::true_type {};
+    /// A boolean which indicates whether the option has a parser() member function.
+    template <typename Option>
+    inline constexpr bool has_parser_v = has_parser<Option>::value;
+
+    /// A modifier type that accepts a sequence of literals and passes them to the parser associated
+    /// with an option instance.
+    template <typename T>
     class values {
     public:
-      explicit values (std::initializer_list<literal> options)
-              : values_{std::move (options)} {}
+      explicit values (std::initializer_list<literal<T>> literals)
+              : literals_{literals} {}
 
-      template <typename Opt>
-      Opt & apply (Opt & opt) const {
-        if (parser_base * const p = opt.get_parser ()) {
-          for (auto const & v : values_) {
-            p->add_literal_option (v.name, v.value, v.description);
-          }
+      /// \tparam Option A subclass of option which implements the parser()
+      ///   member function.
+      /// \param option  An option instance.
+      /// \returns  A reference to \p opt.
+      template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option> &&
+                                                             has_parser_v<Option>>>
+      Option & apply (Option & option) const {
+        auto & p = option.parser ();
+        for (auto const & v : literals_) {
+          p.add_literal (v.name (), v.value (), v.description ());
         }
-        return opt;
+        return option;
       }
 
     private:
-      small_vector<literal, 3> values_;
+      small_vector<literal<T>, 3> literals_;
     };
+
+    template <typename T>
+    values (std::initializer_list<literal<T>>) -> values<T>;
 
   } // end namespace details
 
   /// Helper to build a values collection by forwarding a variable number of arguments
   /// as an initializer list to the details::values constructor.
-  template <typename... OptsTy>
-  details::values values (OptsTy &&... options) {
-    return details::values{std::forward<OptsTy> (options)...};
-  }
-  inline details::values values (std::initializer_list<literal> options) {
-    return details::values (options);
+  template <typename... Literals>
+  auto values (Literals &&... literals) {
+    return details::values{std::forward<Literals> (literals)...};
   }
 
+  template <typename T>
+  inline auto values (std::initializer_list<literal<T>> literals) {
+    return details::values (literals);
+  }
+
+  //*                       *
+  //*  _ _  __ _ _ __  ___  *
+  //* | ' \/ _` | '  \/ -_) *
+  //* |_||_\__,_|_|_|_\___| *
+  //*                       *
+  /// A modifier which sets the name of an option.
   class name {
   public:
     explicit name (std::string_view name)
             : name_{name} {}
-    template <typename Opt>
-    Opt & apply (Opt & opt) const {
-      opt.set_name (name_);
-      return opt;
+    /// \tparam Option A subclass of option.
+    /// \param option  An option instance.
+    /// \returns  A reference to \p option.
+    template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
+    Option & apply (Option & option) const {
+      option.set_name (name_);
+      return option;
     }
 
   private:
     std::string name_;
   };
 
+  //*                          *
+  //*  _  _ ___ __ _ __ _ ___  *
+  //* | || (_-</ _` / _` / -_) *
+  //*  \_,_/__/\__,_\__, \___| *
+  //*               |___/      *
   /// A modifier to set the usage information shown in the -help output.
   /// Only applicable to positional arguments.
   class usage {
   public:
     explicit usage (std::string str)
             : usage_{std::move (str)} {}
-    template <typename Opt>
-    Opt & apply (Opt & opt) const {
-      opt.set_usage (usage_);
-      return opt;
+    /// \tparam Option A subclass of option.
+    /// \param option  An option instance.
+    /// \returns  A reference to \p option.
+    template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
+    Option & apply (Option & option) const {
+      option.set_usage (usage_);
+      return option;
     }
 
   private:
@@ -103,15 +173,18 @@ namespace pstore::command_line {
   //* / _` / -_|_-</ _| *
   //* \__,_\___/__/\__| *
   //*                   *
-  /// A modifier to set the description shown in the -help output...
+  /// A modifier to set the description shown in the -help output.
   class desc {
   public:
     explicit desc (std::string str)
             : desc_{std::move (str)} {}
-    template <typename Opt>
-    Opt & apply (Opt & opt) const {
-      opt.set_description (desc_);
-      return opt;
+    /// \tparam Option A subclass of option.
+    /// \param option  An option instance.
+    /// \returns  A reference to \p option.
+    template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
+    Option & apply (Option & option) const {
+      option.set_description (desc_);
+      return option;
     }
 
   private:
@@ -123,15 +196,19 @@ namespace pstore::command_line {
   //* | | ' \| |  _| *
   //* |_|_||_|_|\__| *
   //*                *
+  /// A modifier to set the initial (default) value of an option.
   template <typename T>
   class init {
   public:
     constexpr explicit init (T const & t)
             : init_{t} {}
-    template <typename Opt>
-    Opt & apply (Opt & opt) const {
-      opt.set_initial_value (init_);
-      return opt;
+    /// \tparam Option A subclass of option.
+    /// \param option  An option instance.
+    /// \returns  A reference to \p option.
+    template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
+    Option & apply (Option & option) const {
+      option.set_initial_value (init_);
+      return option;
     }
 
   private:
@@ -145,10 +222,13 @@ namespace pstore::command_line {
   namespace details {
 
     struct comma_separated {
-      template <typename Opt>
-      Opt & apply (Opt & opt) const {
-        opt.set_comma_separated ();
-        return opt;
+      /// \tparam Option A subclass of option.
+      /// \param option  An option instance.
+      /// \returns  A reference to \p option.
+      template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
+      Option & apply (Option & option) const {
+        option.set_comma_separated ();
+        return option;
       }
     };
 
@@ -166,27 +246,24 @@ namespace pstore::command_line {
   constexpr details::comma_separated const comma_separated;
 
 
-  namespace details {
-
     class category {
     public:
       explicit constexpr category (option_category const & cat) noexcept
               : cat_{cat} {}
-      template <typename Opt>
-      Opt & apply (Opt & opt) const {
-        opt.set_category (&cat_);
-        return opt;
+      /// \tparam Option A subclass of option.
+      /// \param option  An option instance.
+      /// \returns  A reference to \p option.
+      template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
+      Option & apply (Option & option) const {
+        option.set_category (&cat_);
+        return option;
       }
 
     private:
       option_category const & cat_;
     };
 
-  } // end namespace details
 
-  inline details::category cat (option_category const & c) {
-    return details::category{c};
-  }
 
   template <typename Modifier>
   decltype (auto) make_modifier (Modifier && m) {

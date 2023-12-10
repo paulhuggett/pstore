@@ -69,9 +69,6 @@ namespace pstore::command_line {
 
     virtual std::optional<std::reference_wrapper<alias const>> as_alias () const { return {}; }
 
-    virtual parser_base * get_parser () noexcept { return nullptr; }
-    virtual parser_base const * get_parser () const noexcept { return nullptr; }
-
     void set_name (std::string const & name) {
       PSTORE_ASSERT ((name.empty () || name[0] != '-') && "Option can't start with '-");
       name_ = name;
@@ -161,8 +158,8 @@ namespace pstore::command_line {
     bool value (std::string_view v) override;
     bool takes_argument () const override { return true; }
 
-    parser_base * get_parser () noexcept override { return &parser_; }
-    parser_base const * get_parser () const noexcept override { return &parser_; }
+    Parser & parser () noexcept { return parser_; }
+    Parser const & parser () const noexcept { return parser_; }
 
     std::optional<std::string_view> arg_description () const noexcept override { return meta_; }
 
@@ -170,7 +167,7 @@ namespace pstore::command_line {
 
   private:
     T value_{};
-    Parser parser_;
+    Parser parser_{};
     std::string meta_ = type_description<T>::value;
   };
 
@@ -248,8 +245,6 @@ namespace pstore::command_line {
   //*              *
   template <typename T, typename Parser = parser<T>>
   class list final : public option {
-    using container = std::list<T>;
-
   public:
     using value_type = T;
 
@@ -269,29 +264,25 @@ namespace pstore::command_line {
     bool takes_argument () const override { return true; }
     bool value (std::string_view v) override;
 
-    parser_base * get_parser () noexcept override { return &parser_; }
-    parser_base const * get_parser () const noexcept override { return &parser_; }
-
-    using iterator = typename container::const_iterator;
-    using const_iterator = iterator;
-
-    std::list<T> const & get () const noexcept { return values_; }
-
-    const_iterator begin () const { return std::begin (values_); }
-    const_iterator end () const { return std::end (values_); }
-    std::size_t size () const { return values_.size (); }
-    bool empty () const { return values_.empty (); }
+    Parser & parser () noexcept { return parser_; }
+    Parser const & parser () const noexcept { return parser_; }
 
     std::optional<std::string_view> arg_description () const noexcept override {
       return type_description<T>::value;
     }
 
+    /// Results access
+    auto begin () const { return std::begin (values_); }
+    auto end () const { return std::end (values_); }
+    std::size_t size () const noexcept { return values_.size (); }
+    bool empty () const noexcept { return values_.empty (); }
+
   private:
     bool comma_separated (std::string_view v);
     bool simple_value (std::string_view v);
 
-    Parser parser_;
-    std::list<T> values_;
+    Parser parser_{};
+    small_vector<T, 4> values_;
   };
 
   // value
@@ -365,9 +356,6 @@ namespace pstore::command_line {
 
     void set_original (option * o);
     option const * original () const noexcept { return original_; }
-
-    parser_base * get_parser () noexcept override { return original_->get_parser (); }
-    parser_base const * get_parser () const noexcept override { return original_->get_parser (); }
 
   private:
     option * original_ = nullptr;

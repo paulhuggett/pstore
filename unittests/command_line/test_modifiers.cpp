@@ -75,9 +75,9 @@ namespace {
 TEST_F (EnumerationParse, SetA) {
   argument_parser args;
   auto & enum_opt = args.add<opt<enumeration>> (
-    "enumeration"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                             literal{"b", static_cast<int> (enumeration::b), "b description"},
-                             literal{"c", static_cast<int> (enumeration::c), "c description"}));
+    "enumeration"sv, values (literal{"a", enumeration::a, "a description"},
+                             literal{"b", enumeration::b, "b description"},
+                             literal{"c", enumeration::c, "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=a"};
   string_stream output;
@@ -90,9 +90,9 @@ TEST_F (EnumerationParse, SetA) {
 TEST_F (EnumerationParse, SetC) {
   argument_parser args;
   auto & enum_opt = args.add<opt<enumeration>> (
-    "enumeration"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                             literal{"b", static_cast<int> (enumeration::b), "b description"},
-                             literal{"c", static_cast<int> (enumeration::c), "c description"}));
+    "enumeration"sv, values (literal{"a", enumeration::a, "a description"},
+                             literal{"b", enumeration::b, "b description"},
+                             literal{"c", enumeration::c, "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=c"};
   string_stream output;
@@ -104,10 +104,10 @@ TEST_F (EnumerationParse, SetC) {
 
 TEST_F (EnumerationParse, ErrorBadValue) {
   argument_parser args;
-  args.add<opt<enumeration>> (
-    "enumeration"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                             literal{"b", static_cast<int> (enumeration::b), "b description"},
-                             literal{"c", static_cast<int> (enumeration::c), "c description"}));
+  args.add<opt<enumeration>> ("enumeration"sv,
+                              values (literal{"a", enumeration::a, "a description"},
+                                      literal{"b", enumeration::b, "b description"},
+                                      literal{"c", enumeration::c, "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=bad"};
   string_stream output;
@@ -119,10 +119,10 @@ TEST_F (EnumerationParse, ErrorBadValue) {
 
 TEST_F (EnumerationParse, GoodValueAfterError) {
   argument_parser args;
-  args.add<opt<enumeration>> (
-    "enumeration"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                             literal{"b", static_cast<int> (enumeration::b), "b description"},
-                             literal{"c", static_cast<int> (enumeration::c), "c description"}));
+  args.add<opt<enumeration>> ("enumeration"sv,
+                              values (literal{"a", enumeration::a, "a description"},
+                                      literal{"b", enumeration::b, "b description"},
+                                      literal{"c", enumeration::c, "c description"}));
 
   std::vector<std::string> argv{"progname", "--unknown", "--enumeration=a"};
   string_stream output;

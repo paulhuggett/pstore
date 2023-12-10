@@ -31,98 +31,56 @@ TEST (ClParser, SimpleString) {
 TEST (ClParser, StringFromSet) {
   using pstore::command_line::parser;
 
-  parser<std::string> p;
-  p.add_literal_option ("a", 31, "description a");
-  p.add_literal_option ("b", 37, "description b");
+  enum class values { a = 31, b = 37 };
+  parser<values> p;
+  p.add_literal ("a", values::a, "description a");
+  p.add_literal ("b", values::b, "description b");
 
   {
-    std::optional<std::string> r1 = p ("hello");
+    std::optional<values> r1 = p ("hello");
     EXPECT_FALSE (r1.has_value ());
   }
   {
-    std::optional<std::string> r2 = p ("a");
-    EXPECT_TRUE (r2.has_value ());
-    EXPECT_EQ (r2.value (), "a");
+    std::optional<values> r2 = p ("a");
+    ASSERT_TRUE (r2.has_value ());
+    EXPECT_EQ (r2.value (), values::a);
   }
   {
-    std::optional<std::string> r3 = p ("b");
-    EXPECT_TRUE (r3.has_value ());
-    EXPECT_EQ (r3.value (), "b");
+    std::optional<values> r3 = p ("b");
+    ASSERT_TRUE (r3.has_value ());
+    EXPECT_EQ (r3.value (), values::b);
   }
 }
 
 TEST (ClParser, Int) {
-  using pstore::command_line::parser;
-  {
-    std::optional<int> r1 = parser<int> () ("43");
-    EXPECT_EQ (r1.value_or (0), 43);
-  }
+  std::optional<int> r1 = pstore::command_line::parser<int>{}("43");
+  EXPECT_EQ (r1.value_or (0), 43);
 }
 
 TEST (ClParser, IntEmpty) {
-  using pstore::command_line::parser;
-  {
-    parser<int> p;
-    std::optional<int> r2 = p ("");
-    EXPECT_FALSE (r2.has_value ());
-  }
+  pstore::command_line::parser<int> p;
+  std::optional<int> const r = p ("");
+  EXPECT_FALSE (r.has_value ());
 }
 
 TEST (ClParser, IntBad) {
-  using pstore::command_line::parser;
-  std::optional<int> const r3 = parser<int> () ("bad");
-  EXPECT_FALSE (r3.has_value ());
+  std::optional<int> const r = pstore::command_line::parser<int>{}("bad");
+  EXPECT_FALSE (r.has_value ());
 }
 
 TEST (ClParser, IntWithBadTail) {
-  using pstore::command_line::parser;
-  std::optional<int> const r4 = parser<int> () ("42bad");
-  EXPECT_FALSE (r4.has_value ());
+  std::optional<int> const r = pstore::command_line::parser<int>{}("42bad");
+  EXPECT_FALSE (r.has_value ());
 }
 
 TEST (ClParser, IntNegative) {
-  using pstore::command_line::parser;
-  std::optional<int> const r = parser<int> () ("-42");
+  std::optional<int> const r = pstore::command_line::parser<int>{}("-42");
   EXPECT_EQ (r.value_or (0), -42);
 }
 
 TEST (ClParser, IntTooLarge) {
-  using pstore::command_line::parser;
-  std::optional<std::int8_t> const r = parser<std::int8_t> () ("256");
+  std::optional<std::int8_t> const r = pstore::command_line::parser<std::int8_t>{}("256");
   EXPECT_FALSE (r.has_value ());
-}
-
-TEST (ClParser, Enum) {
-  using pstore::command_line::parser;
-
-  enum color { red, blue, green };
-  parser<color> p;
-  p.add_literal_option ("red", red, "description red");
-  p.add_literal_option ("blue", blue, "description blue");
-  p.add_literal_option ("green", green, "description green");
-  {
-    std::optional<color> const r1 = p ("red");
-    EXPECT_TRUE (r1.has_value ());
-    EXPECT_EQ (r1.value (), red);
-  }
-  {
-    std::optional<color> const r2 = p ("blue");
-    EXPECT_TRUE (r2.has_value ());
-    EXPECT_EQ (r2.value (), blue);
-  }
-  {
-    std::optional<color> const r3 = p ("green");
-    EXPECT_TRUE (r3.has_value ());
-    EXPECT_EQ (r3.value (), green);
-  }
-  {
-    std::optional<color> const r4 = p ("bad");
-    EXPECT_FALSE (r4.has_value ());
-  }
-  {
-    std::optional<color> const r5 = p ("");
-    EXPECT_FALSE (r5.has_value ());
-  }
 }
 
 TEST (ClParser, Modifiers) {
@@ -142,4 +100,45 @@ TEST (ClParser, Modifiers) {
 
   EXPECT_EQ (opt<int>{}.description (), "");
   EXPECT_EQ (opt<int>{desc ("description")}.description (), "description");
+}
+
+namespace {
+
+  class ClParserEnum : public testing::Test {
+  public:
+    ClParserEnum () {
+      parser_.add_literal ("red", color::red, "description red");
+      parser_.add_literal ("green", color::green, "description green");
+      parser_.add_literal ("blue", color::blue, "description blue");
+    }
+
+  protected:
+    enum class color { red, green, blue };
+    pstore::command_line::parser<color> parser_;
+  };
+
+} // namespace
+
+TEST_F (ClParserEnum, Red) {
+  std::optional<color> const r1 = parser_ ("red");
+  ASSERT_TRUE (r1.has_value ());
+  EXPECT_EQ (r1.value (), color::red);
+}
+TEST_F (ClParserEnum, Green) {
+  std::optional<color> const r1 = parser_ ("green");
+  ASSERT_TRUE (r1.has_value ());
+  EXPECT_EQ (r1.value (), color::green);
+}
+TEST_F (ClParserEnum, Blue) {
+  std::optional<color> const r1 = parser_ ("blue");
+  ASSERT_TRUE (r1.has_value ());
+  EXPECT_EQ (r1.value (), color::blue);
+}
+TEST_F (ClParserEnum, Bad) {
+  std::optional<color> const r4 = parser_ ("bad");
+  EXPECT_FALSE (r4.has_value ());
+}
+TEST_F (ClParserEnum, Empty) {
+  std::optional<color> const r4 = parser_ ("");
+  EXPECT_FALSE (r4.has_value ());
 }

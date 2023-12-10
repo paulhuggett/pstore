@@ -39,7 +39,7 @@ namespace {
              "Dumps the internal structure of one of more pstore indexes. index-name may be "
              "any of: ";
     pstore::gsl::czstring separator = "";
-    for (literal const & lit : *index_names_opt.get_parser ()) {
+    for (auto const & lit : index_names_opt.parser ()) {
       usage << separator << '\'' << lit.name << '\'';
       separator = ", ";
     }
@@ -56,7 +56,7 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
   auto & db_path =
     args.add<string_opt> (positional, required, usage ("repository"), desc ("Database path"));
 
-#define X(a) literal (#a, static_cast<int> (pstore::trailer::indices::a), #a),
+#define X(a) literal (#a, pstore::trailer::indices::a, #a),
   auto & index_names_opt = args.add<list<pstore::trailer::indices>> (
     positional, optional, one_or_more, usage ("[index-name...]"), values ({PSTORE_INDICES}));
 #undef X

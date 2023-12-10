@@ -21,14 +21,14 @@ set (pstore_command_line_include_dir
 set (
   pstore_command_line_src
   category.cpp command_line.cpp csv.cpp help.cpp option.cpp
-  parser.cpp revision_opt.cpp str_to_revision.cpp string_distance.cpp tchar.cpp
+  revision_opt.cpp str_to_revision.cpp string_distance.cpp tchar.cpp
   word_wrapper.cpp
 )
 set (
   pstore_command_line_includes
   category.hpp command_line.hpp csv.hpp help.hpp modifiers.hpp option.hpp
-  parser.hpp revision_opt.hpp str_to_revision.hpp stream_traits.hpp
-  string_distance.hpp tchar.hpp word_wrapper.hpp
+  parser.hpp revision_opt.hpp str_to_revision.hpp stream_traits.hpp string_distance.hpp
+  tchar.hpp type_description.hpp word_wrapper.hpp
 )
 
 add_pstore_library (

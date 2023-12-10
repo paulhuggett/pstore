@@ -35,7 +35,7 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
 
   option_category how_cat ("Options controlling how fields are emitted");
   auto & hex =
-    args.add<bool_opt> ("hex"sv, desc ("Emit numbers in hexadecimal notation"), cat (how_cat));
+    args.add<bool_opt> ("hex"sv, desc ("Emit numbers in hexadecimal notation"), category (how_cat));
   args.add<alias> ("x"sv, desc ("Alias for --hex"), aliasopt (hex));
 
   args.parse_args (argc, argv, "pstore diff utility\n");

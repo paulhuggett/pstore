@@ -315,10 +315,10 @@ namespace {
 
 TEST_F (ClCommandLine, ListOfEnums) {
   argument_parser args;
-  auto & opt = args.add<list<enumeration>> (
-    "opt"sv, values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                     literal{"b", static_cast<int> (enumeration::b), "b description"},
-                     literal{"c", static_cast<int> (enumeration::c), "c description"}));
+  auto & opt =
+    args.add<list<enumeration>> ("opt"sv, values (literal{"a", enumeration::a, "a description"},
+                                                  literal{"b", enumeration::b, "b description"},
+                                                  literal{"c", enumeration::c, "c description"}));
   this->add ("progname", "--opt", "a", "--opt", "b");
 
   string_stream output;

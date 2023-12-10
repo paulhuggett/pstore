@@ -27,10 +27,9 @@ user_options user_options::get (int argc, tchar * argv[]) {
   argument_parser args;
   auto & endian_opt = args.add<opt<endian>> (
     "endian"sv, desc ("The endian-ness of the output data"),
-    values (
-      literal{"big", static_cast<int> (endian::big), "Big-endian"},
-      literal{"little", static_cast<int> (endian::little), "Little-endian"},
-      literal{"native", static_cast<int> (endian::native), "The endian-ness of the host machine"}),
+    values (literal{"big", endian::big, "Big-endian"},
+            literal{"little", endian::little, "Little-endian"},
+            literal{"native", endian::native, "The endian-ness of the host machine"}),
     init (endian::native));
   args.add<alias> ("e"sv, desc ("Alias for --endian"), aliasopt (endian_opt));
 

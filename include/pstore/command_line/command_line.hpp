@@ -108,8 +108,8 @@ namespace pstore::command_line {
     /// the optional value to yield the option name and value.
     ///
     /// \param arg A command-line argument string.
-    /// \returns A tuple containing the argument name (shorn or leading dashes) and a
-    ///          value string if one was present.
+    /// \returns A tuple containing the argument name (shorn of leading dashes) and a
+    ///   value string if one was present.
     std::tuple<std::string, std::optional<std::string>> get_option_and_value (std::string arg);
 
     /// A simple wrapper for a bool where as soon as StickTo is assigned, subsequent

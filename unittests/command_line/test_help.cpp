@@ -79,8 +79,8 @@ TEST_F (Help, BuildTwoCategories) {
   argument_parser args;
   args.add<string_opt> ("arg1"sv, positional);
   auto & option2 = args.add<string_opt> ("arg2"sv);
-  option_category category{"category"};
-  auto & option3 = args.add<string_opt> ("arg3"sv, cat (category));
+  option_category cat{"category"};
+  auto & option3 = args.add<string_opt> ("arg3"sv, category (cat));
 
   categories_collection const actual = build_categories (nullptr, args);
 
@@ -89,7 +89,7 @@ TEST_F (Help, BuildTwoCategories) {
   EXPECT_EQ (it->first, nullptr);
   EXPECT_THAT (it->second, testing::ElementsAre (&option2));
   ++it;
-  EXPECT_EQ (it->first, &category);
+  EXPECT_EQ (it->first, &cat);
   EXPECT_THAT (it->second, testing::ElementsAre (&option3));
 }
 

@@ -83,7 +83,8 @@ std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
 
   std::transform (std::begin (add), std::end (add), std::back_inserter (result.add),
                   make_value_pair);
-  result.strings = add_string.get ();
+  std::copy (std::begin (add_string), std::end (add_string), std::back_inserter (result.strings));
+
   std::transform (std::begin (add_file), std::end (add_file), std::back_inserter (result.files),
                   make_value_pair);
   std::transform (std::begin (files), std::end (files), std::back_inserter (result.files),
