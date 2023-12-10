@@ -21,24 +21,23 @@
 #include "pstore/support/error.hpp"
 
 using namespace pstore::command_line;
-
-namespace {
-
-  opt<pstore::command_line::revision_opt, parser<std::string>>
-    revision ("revision", desc ("The starting revision number (or 'HEAD')"));
-  alias revision2 ("r", desc ("Alias for --revision"), aliasopt (revision));
-
-  opt<std::string> db_path (positional, usage ("repository"),
-                            desc ("Path of the pstore repository to be read"), required);
-  opt<std::string> key (positional, usage ("key"), required);
-  opt<bool> string_mode ("strings", init (false),
-                         desc ("Reads from the 'strings' index rather than the 'names' index."));
-  alias string_mode2 ("s", desc ("Alias for --strings"), aliasopt (string_mode));
-
-} // end anonymous namespace
+using namespace std::string_view_literals;
 
 std::pair<switches, int> get_switches (int argc, tchar * argv[]) {
-  parse_command_line_options (argc, argv, "pstore read utility\n");
+  argument_parser args;
+  auto & revision = args.add<opt<pstore::command_line::revision_opt, parser<std::string>>> (
+    "revision"sv, desc ("The starting revision number (or 'HEAD')"));
+  args.add<alias> ("r"sv, desc ("Alias for --revision"), aliasopt (revision));
+
+  auto & db_path = args.add<string_opt> (
+    positional, usage ("repository"), desc ("Path of the pstore repository to be read"), required);
+  auto & key = args.add<string_opt> (positional, usage ("key"), required);
+  auto & string_mode =
+    args.add<bool_opt> ("strings"sv, init (false),
+                        desc ("Reads from the 'strings' index rather than the 'names' index."));
+  args.add<alias> ("s"sv, desc ("Alias for --strings"), aliasopt (string_mode));
+
+  args.parse_args (argc, argv, "pstore read utility\n");
 
   switches result;
   result.revision = static_cast<unsigned> (revision.get ());

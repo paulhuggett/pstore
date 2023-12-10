@@ -47,7 +47,7 @@ namespace pstore {
       std::string to8 (wchar_t const * const wstr);
 
       /// Converts a UTF-16 encoded wstring to UTF-8.
-      inline std::string to8 (std::wstring const & wstr) {
+      inline std::string to8 (std::wstring_view wstr) {
         return to8 (wstr.data (), wstr.length ());
       }
 
@@ -61,7 +61,7 @@ namespace pstore {
       /// Converts a null-terminated string of UTF-8 encoded chars to UTF-16.
       std::wstring to16 (char const * str);
 
-      inline std::wstring to16 (std::string const & str) {
+      inline std::wstring to16 (std::string_view str) {
         return to16 (str.data (), str.length ());
       }
 
@@ -177,21 +177,15 @@ namespace pstore {
 
 #if defined(_WIN32)
 #  if defined(_UNICODE)
-    inline auto to_native_string (std::string const & str) -> std::wstring {
+    inline auto to_native_string (std::string_view str) -> std::wstring {
       return utf::win32::to16 (str);
     }
-    inline auto to_native_string (gsl::czstring const str) -> std::wstring {
-      return utf::win32::to16 (str);
-    }
-    inline auto from_native_string (std::wstring const & str) -> std::string {
-      return utf::win32::to8 (str);
-    }
-    inline auto from_native_string (gsl::cwzstring const str) -> std::string {
+    inline auto from_native_string (std::wstring_view str) -> std::string {
       return utf::win32::to8 (str);
     }
 #  else
     // This is Windows in "Multibyte character set" mode.
-    inline auto to_native_string (std::string const & str) -> std::string {
+    inline auto to_native_string (std::string_view str) -> std::string {
       return win32::to_mbcs (str);
     }
     inline auto to_native_string (gsl::czstring const str) -> std::string {
@@ -205,10 +199,10 @@ namespace pstore {
       return win32::mbcs_to8 (str);
     }
 #else //_WIN32
-    constexpr auto to_native_string (std::string const & str) noexcept -> std::string const & {
+    constexpr auto to_native_string (std::string_view str) noexcept -> std::string_view {
       return str;
     }
-    constexpr auto from_native_string (std::string const & str) noexcept -> std::string const & {
+    constexpr auto from_native_string (std::string_view str) noexcept -> std::string_view {
       return str;
     }
 #endif

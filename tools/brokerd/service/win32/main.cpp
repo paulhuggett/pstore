@@ -28,6 +28,8 @@
 #include "./service_installer.hpp"
 #include "./broker_service.hpp"
 
+using namespace std::string_view_literals;
+
 namespace {
 
   constexpr auto service_name = TEXT ("pstore_broker");
@@ -38,19 +40,18 @@ namespace {
   constexpr auto account = TEXT ("NT AUTHORITY\\LocalService");
   constexpr auto account_password = nullptr;
 
-
-  using namespace pstore::command_line;
-
-  opt<bool> install_opt ("install", desc ("Install the service"));
-  opt<bool> remove_opt ("remove", desc ("Remove the service"));
-
 } // end anonymous namespace
-
 
 int _tmain (int argc, TCHAR * argv[]) {
   int exit_code = EXIT_SUCCESS;
   try {
-    parse_command_line_options (argc, argv, "pstore broker server");
+    pstore::command_line::argument_parser args;
+    using pstore::command_line::bool_opt;
+    using pstore::command_line::desc;
+    auto & install_opt = args.add<bool_opt> ("install"sv, desc{"Install the service"});
+    auto & remove_opt = args.add<bool_opt> ("remove"sv, desc{"Remove the service"});
+
+    args.parse_args (argc, argv, "pstore broker server");
 
     if (install_opt && remove_opt) {
       std::wcerr << L"--install and --remove cannot be specified together!\n";

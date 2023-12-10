@@ -15,6 +15,9 @@
 //===----------------------------------------------------------------------===//
 #include "pstore/command_line/help.hpp"
 
+#include "pstore/command_line/command_line.hpp"
+#include "pstore/support/array_elements.hpp"
+
 #include <iostream>
 #include <iterator>
 #include <string>
@@ -56,6 +59,11 @@ namespace {
 
 #endif //_WIN32
 
+  /// Computes and returns the string of an option for the user-visible help output.
+  ///
+  /// \param op  The option whose string is to be returned.
+  /// \returns A pair consisting a string with the user presentation of an option name and the
+  ///   number of code-points contained by that string.
   auto option_string (pstore::command_line::option const & op)
     -> std::pair<std::string, std::size_t> {
 
@@ -63,6 +71,7 @@ namespace {
     std::size_t code_points = pstore::utf::length (name);
 
     std::string str;
+    str.reserve (name.length () + 2U);
     if (code_points < 2U) {
       str = "-" + name;
       code_points += 1U;
@@ -71,17 +80,18 @@ namespace {
       code_points += 2U;
     }
 
-    // Add the argument value's meta-name.
-    pstore::gsl::czstring const desc = op.takes_argument () ? op.arg_description () : nullptr;
-    if (desc != nullptr) {
-      if (code_points > 2U) {
-        str += "=";
-        ++code_points;
+    if (op.takes_argument () && !op.as_alias ()) {
+      // Add the argument value's meta-name if it has one..
+      if (auto const desc = op.arg_description ()) {
+        if (code_points > 2U) {
+          str += " ";
+          ++code_points;
+        }
+        str += '<';
+        str += *desc;
+        str += '>';
+        code_points += pstore::utf::length (*desc) + 2;
       }
-      str += '<';
-      str += desc;
-      str += '>';
-      code_points += pstore::utf::length (desc) + 2;
     }
     PSTORE_ASSERT (pstore::utf::length (str) == code_points);
     return {str, code_points};
@@ -90,10 +100,10 @@ namespace {
 } // end anonymous namespace
 
 
-namespace pstore::command_line::details {
+namespace pstore::command_line {
 
-  bool less_name::operator() (gsl::not_null<option const *> const x,
-                              gsl::not_null<option const *> const y) const {
+  bool less_name::operator() (gsl::not_null<option const *> x,
+                              gsl::not_null<option const *> y) const {
     return x->name () < y->name ();
   }
 
@@ -105,20 +115,19 @@ namespace pstore::command_line::details {
       // We couldn't figure out the terminal width, so just guess at 80.
       max_width = 80U;
     }
-    if (max_width < overlong_opt_max) {
-      max_width = overlong_opt_max * 2U;
+    if (max_width < help_overlong_opt_max) {
+      max_width = help_overlong_opt_max * 2U;
     }
     return max_width;
   }
 
   // build categories
   // ~~~~~~~~~~~~~~~~
-  categories_collection build_categories (option const * const self,
-                                          option::options_container const & all) {
+  categories_collection build_categories (option const * const self, argument_parser const & all) {
     categories_collection categories;
-    for (option const * const op : all) {
-      if (op != self && !op->is_positional ()) {
-        categories[op->category ()].insert (op);
+    for (auto const & op : all) {
+      if (op.get () != self && !op->is_positional ()) {
+        categories[op->category ()].insert (op.get ());
       }
     }
     return categories;
@@ -133,11 +142,9 @@ namespace pstore::command_line::details {
     switch_strings names;
     for (option const * op : ops) {
       std::pair<std::string, std::size_t> name = option_string (*op);
-      PSTORE_ASSERT (pstore::utf::length (std::get<std::string> (name)) ==
-                     std::get<std::size_t> (name));
-
-      if (alias const * const alias = op->as_alias ()) {
-        op = alias->original ();
+      if (auto const opt_alias = op->as_alias ()) {
+        alias const & a = opt_alias.value ();
+        op = a.original ();
       }
 
       auto & v = names[op];
@@ -146,7 +153,8 @@ namespace pstore::command_line::details {
         auto & prev_string = std::get<std::string> (prev);
         auto & prev_code_points = std::get<std::size_t> (prev);
 
-        if (prev_code_points + separator_len + std::get<std::size_t> (name) <= overlong_opt_max) {
+        if (prev_code_points + separator_len + std::get<std::size_t> (name) <=
+            help_overlong_opt_max) {
           // Fold this string onto the same output line as its predecessor.
           prev_string += separator + std::get<std::string> (name);
           prev_code_points += separator_len + std::get<std::size_t> (name);
@@ -155,7 +163,7 @@ namespace pstore::command_line::details {
           continue;
         }
       }
-      v.push_back (name);
+      v.emplace_back (std::move (name));
     }
     return names;
   }
@@ -171,15 +179,7 @@ namespace pstore::command_line::details {
         }
       }
     }
-    return std::min (max_name_len, overlong_opt_max);
+    return std::min (max_name_len, help_overlong_opt_max);
   }
 
-  // has switches
-  // ~~~~~~~~~~~~
-  bool has_switches (option const * const self, option::options_container const & all) {
-    return std::any_of (std::begin (all), std::end (all), [self] (option const * const op) {
-      return op != self && !op->is_alias () && !op->is_positional ();
-    });
-  }
-
-} // end namespace pstore::command_line::details
+} // end namespace pstore::command_line

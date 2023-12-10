@@ -17,7 +17,7 @@
 
 #include "pstore/support/assert.hpp"
 
-std::list<std::string> pstore::command_line::csv (std::string const & s) {
+std::list<std::string> pstore::command_line::csv (std::string_view s) {
   std::list<std::string> result;
   auto spos = std::string::size_type{0};
   while (spos != std::string::npos) {

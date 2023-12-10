@@ -26,21 +26,16 @@ using namespace std::string_literals;
 
 namespace {
 
-  opt<std::string> db_path (positional, usage ("repository"),
-                            desc ("Path of the pstore repository to be created."), required);
-  opt<std::string> json_source (positional, usage ("[input]"),
-                                desc ("The export file to be read (stdin if not specified)."));
-
-  bool is_file_input () {
+  bool is_file_input (string_opt const & json_source) {
     return json_source.get_num_occurrences () > 0;
   }
 
-  FILE * open_input () {
-    return is_file_input () ? std::fopen (json_source.get ().c_str (), "r") : stdin;
+  FILE * open_input (string_opt const & json_source) {
+    return is_file_input (json_source) ? std::fopen (json_source.get ().c_str (), "r") : stdin;
   }
 
-  std::string input_name () {
-    return is_file_input () ? json_source.get () : "stdin"s;
+  std::string input_name (string_opt const & json_source) {
+    return is_file_input (json_source) ? json_source.get () : "stdin"s;
   }
 
 } // end anonymous namespace
@@ -52,7 +47,14 @@ int main (int argc, char * argv[]) {
 #endif
   int exit_code = EXIT_SUCCESS;
   PSTORE_TRY {
-    parse_command_line_options (argc, argv, "pstore import utility\n");
+    argument_parser args;
+    auto & db_path =
+      args.add<string_opt> (positional, usage ("repository"),
+                            desc ("Path of the pstore repository to be created."), required);
+    auto & json_source = args.add<string_opt> (
+      positional, usage ("[input]"), desc ("The export file to be read (stdin if not specified)."));
+
+    args.parse_args (argc, argv, "pstore import utility\n");
 
     if (pstore::file::exists (db_path.get ())) {
       error_stream << PSTORE_NATIVE_TEXT (
@@ -68,11 +70,11 @@ int main (int argc, char * argv[]) {
         std::fclose (file);
       }
     };
-    std::unique_ptr<FILE, decltype (close)> infile{open_input (), close};
+    std::unique_ptr<FILE, decltype (close)> infile{open_input (json_source), close};
     if (infile.get () == nullptr) {
       auto const err = errno;
       error_stream << PSTORE_NATIVE_TEXT (R"(error: could not open ")")
-                   << pstore::utf::to_native_string (input_name ()) << R"(": )"
+                   << pstore::utf::to_native_string (input_name (json_source)) << R"(": )"
                    << std::strerror (err) << std::endl;
       return EXIT_FAILURE;
     }
@@ -98,9 +100,9 @@ int main (int argc, char * argv[]) {
       parser.input (ptr, ptr + nread);
       if (parser.has_error ()) {
         auto const coord = parser.pos ();
-        error_stream << pstore::utf::to_native_string (input_name ()) << PSTORE_NATIVE_TEXT (":")
-                     << static_cast<unsigned> (peejay::line{coord}) << PSTORE_NATIVE_TEXT (":")
-                     << static_cast<unsigned> (peejay::column{coord})
+        error_stream << pstore::utf::to_native_string (input_name (json_source))
+                     << PSTORE_NATIVE_TEXT (":") << static_cast<unsigned> (peejay::line{coord})
+                     << PSTORE_NATIVE_TEXT (":") << static_cast<unsigned> (peejay::column{coord})
                      << PSTORE_NATIVE_TEXT (": error: ")
                      << pstore::utf::to_native_string (parser.last_error ().message ())
                      << std::endl;

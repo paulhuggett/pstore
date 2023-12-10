@@ -33,6 +33,7 @@
 // pstore includes
 #include "pstore/command_line/command_line.hpp"
 #include "pstore/command_line/tchar.hpp"
+#include "pstore/command_line/word_wrapper.hpp"
 #include "pstore/support/array_elements.hpp"
 #include "pstore/support/error.hpp"
 #include "pstore/support/portab.hpp"
@@ -79,24 +80,6 @@ namespace std {
   struct is_error_code_enum<genromfs_erc> : std::true_type {};
 
 } // end namespace std
-
-#define DEFAULT_VAR "fs"
-
-namespace {
-
-  using namespace pstore::command_line;
-  opt<std::string> src_path (positional, ".", desc ("source-path"));
-
-  opt<std::string> root_var (
-    "var",
-    desc ("Variable name for the file system root "
-          "(may contain '::' to place in a specifc namespace). (Default: '" DEFAULT_VAR "')"),
-    init (DEFAULT_VAR));
-
-} // end anonymous namespace
-
-#undef DEFAULT_VAR
-
 
 namespace {
 
@@ -145,7 +128,19 @@ int _tmain (int argc, TCHAR * argv[]) {
 #else
 int main (int argc, char * argv[]) {
 #endif
-  parse_command_line_options (argc, argv, "pstore romfs generation utility\n");
+  using namespace pstore::command_line;
+  argument_parser args;
+  auto & src_path =
+    args.add<string_opt> (positional, init (std::string_view{"."}), desc ("source-path"));
+#define DEFAULT_VAR "fs"
+  auto & root_var = args.add<string_opt> (
+    name{"var"},
+    desc ("Variable name for the file system root "
+          "(may contain '::' to place in a specifc namespace). (Default: '" DEFAULT_VAR "')"),
+    init (std::string_view{DEFAULT_VAR}));
+#undef DEFAULT_VAR
+
+  args.parse_args (argc, argv, "pstore romfs generation utility\n");
   int exit_code = EXIT_SUCCESS;
 
   PSTORE_TRY {

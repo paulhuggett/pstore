@@ -17,94 +17,109 @@
 
 #include "pstore/command_line/string_distance.hpp"
 
-namespace pstore::command_line::details {
+namespace pstore::command_line {
+
+  // has_switches
+  // ~~~~~~~~~~~~
+  bool argument_parser::has_switches (option const * const exclude) const {
+    return std::any_of (
+      std::begin (opts_), std::end (opts_), [exclude] (argument_parser::value_type const & op) {
+        return op.get () != exclude && !op->as_alias ().has_value () && !op->is_positional ();
+      });
+  }
+
+  // find handler
+  // ~~~~~~~~~~~~
+  std::optional<option *> argument_parser::find_handler (std::string const & name) const {
+    using result_type = std::optional<option *>;
+    auto const end = std::end (opts_);
+    auto const pos =
+      std::find_if (std::begin (opts_), end, [&name] (argument_parser::value_type const & opt) {
+        return opt->name () == name;
+      });
+    return pos != end ? result_type{pos->get ()} : result_type{};
+  }
 
   // lookup nearest option
   // ~~~~~~~~~~~~~~~~~~~~~
-  std::optional<option *> lookup_nearest_option (std::string const & arg,
-                                                 option::options_container const & all_options) {
+  std::optional<option *> argument_parser::lookup_nearest_option (std::string const & arg) const {
     std::optional<option *> best_option;
     if (arg.empty ()) {
       return best_option;
     }
     // Find the closest match.
     auto best_distance = std::numeric_limits<std::string::size_type>::max ();
-    for (auto const & opt : all_options) {
+    for (auto const & opt : opts_) {
       auto const distance = string_distance (opt->name (), arg, best_distance);
       if (distance < best_distance) {
-        best_option = opt;
+        best_option = opt.get ();
         best_distance = distance;
       }
     }
     return best_option;
   }
 
-  // starts with
-  // ~~~~~~~~~~~
-  bool starts_with (std::string const & s, gsl::czstring prefix) {
-    auto const end = std::end (s);
-    for (auto it = std::begin (s); *prefix != '\0' && it != end; ++it, ++prefix) {
-      if (*it != *prefix) {
+
+
+  namespace details {
+
+
+    // starts with
+    // ~~~~~~~~~~~
+    bool starts_with (std::string const & s, gsl::czstring prefix) {
+      auto const end = std::end (s);
+      for (auto it = std::begin (s); *prefix != '\0' && it != end; ++it, ++prefix) {
+        if (*it != *prefix) {
+          return false;
+        }
+      }
+      return *prefix == '\0';
+    }
+
+    // argument is positional
+    // ~~~~~~~~~~~~~~~~~~~~~~
+    bool argument_is_positional (std::string const & arg_name) {
+      return arg_name.empty () || arg_name.front () != '-';
+    }
+
+    // handler takes argument
+    // ~~~~~~~~~~~~~~~~~~~~~~
+    bool handler_takes_argument (std::optional<option *> handler) {
+      return handler && (*handler)->takes_argument ();
+    }
+
+    // handler set value
+    // ~~~~~~~~~~~~~~~~~
+    bool handler_set_value (std::optional<option *> handler, std::string const & value) {
+      PSTORE_ASSERT (handler_takes_argument (handler));
+      if (!(*handler)->add_occurrence ()) {
         return false;
       }
+      return (*handler)->value (value);
     }
-    return *prefix == '\0';
-  }
 
-  // find handler
-  // ~~~~~~~~~~~~
-  std::optional<option *> find_handler (std::string const & name) {
-    auto const & all_options = option::all ();
-    auto const end = std::end (all_options);
-    auto const it =
-      std::find_if (std::begin (all_options), end,
-                    [&name] (option const * const opt) { return opt->name () == name; });
-    return it != end ? std::optional<option *> (*it) : std::optional<option *> ();
-  }
+    // get option and value
+    // ~~~~~~~~~~~~~~~~~~~~
+    std::tuple<std::string, std::optional<std::string>> get_option_and_value (std::string arg) {
+      static constexpr char double_dash[] = "--";
+      static constexpr auto double_dash_len = std::string::size_type{2};
 
-  // argument is positional
-  // ~~~~~~~~~~~~~~~~~~~~~~
-  bool argument_is_positional (std::string const & arg_name) {
-    return arg_name.empty () || arg_name.front () != '-';
-  }
-
-  // handler takes argument
-  // ~~~~~~~~~~~~~~~~~~~~~~
-  bool handler_takes_argument (std::optional<option *> handler) {
-    return handler && (*handler)->takes_argument ();
-  }
-
-  // handler set value
-  // ~~~~~~~~~~~~~~~~~
-  bool handler_set_value (std::optional<option *> handler, std::string const & value) {
-    PSTORE_ASSERT (handler_takes_argument (handler));
-    if (!(*handler)->add_occurrence ()) {
-      return false;
-    }
-    return (*handler)->value (value);
-  }
-
-  // get option and value
-  // ~~~~~~~~~~~~~~~~~~~~
-  std::tuple<std::string, std::optional<std::string>> get_option_and_value (std::string arg) {
-    static constexpr char double_dash[] = "--";
-    static constexpr auto double_dash_len = std::string::size_type{2};
-
-    std::optional<std::string> value;
-    if (starts_with (arg, double_dash)) {
-      std::size_t const equal_pos = arg.find ('=', double_dash_len);
-      if (equal_pos == std::string::npos) {
-        arg.erase (0U, double_dash_len);
+      std::optional<std::string> value;
+      if (starts_with (arg, double_dash)) {
+        std::size_t const equal_pos = arg.find ('=', double_dash_len);
+        if (equal_pos == std::string::npos) {
+          arg.erase (0U, double_dash_len);
+        } else {
+          value = arg.substr (equal_pos + 1, std::string::npos);
+          PSTORE_ASSERT (equal_pos >= double_dash_len);
+          arg = arg.substr (double_dash_len, equal_pos - double_dash_len);
+        }
       } else {
-        value = arg.substr (equal_pos + 1, std::string::npos);
-        PSTORE_ASSERT (equal_pos >= double_dash_len);
-        arg = arg.substr (double_dash_len, equal_pos - double_dash_len);
+        PSTORE_ASSERT (starts_with (arg, "-"));
+        arg.erase (0U, 1U);
       }
-    } else {
-      PSTORE_ASSERT (starts_with (arg, "-"));
-      arg.erase (0U, 1U);
+      return std::make_tuple (arg, value);
     }
-    return std::make_tuple (arg, value);
-  }
 
-} // end namespace pstore::command_line::details
+  } // end namespace details
+} // end namespace pstore::command_line
