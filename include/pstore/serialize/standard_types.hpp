@@ -52,14 +52,14 @@ namespace pstore::serialize {
       auto const length = str.length ();
 
       // Encode the string length as a variable-length integer.
-      std::array<std::uint8_t, varint::max_output_length> encoded_length;
+      std::array<std::byte, varint::max_output_length> encoded_length;
       auto first = std::begin (encoded_length);
       auto last = varint::encode (length, first);
       auto length_bytes = std::distance (first, last);
       PSTORE_ASSERT (length_bytes > 0 &&
                      static_cast<std::size_t> (length_bytes) <= encoded_length.size ());
       if (length_bytes == 1) {
-        *(last++) = 0;
+        *(last++) = std::byte{0};
       }
       // Emit the string length.
       auto const resl = serialize::write (
@@ -72,7 +72,7 @@ namespace pstore::serialize {
 
     template <typename Archive>
     static std::size_t read_length (Archive && archive) {
-      std::array<std::uint8_t, varint::max_output_length> encoded_length{{0}};
+      std::array<std::byte, varint::max_output_length> encoded_length{{std::byte{0}}};
       // First read the two initial bytes. These contain the variable length value
       // but might not be enough for the entire value.
       static_assert (varint::max_output_length >= 2, "maximum encoded varint length must be >= 2");

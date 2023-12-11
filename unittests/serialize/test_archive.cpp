@@ -32,11 +32,11 @@
 #include "check_for_error.hpp"
 
 TEST (SerializeArchiveVectorWriter, Write1Byte) {
-  std::vector<std::uint8_t> bytes;
+  std::vector<std::byte> bytes;
   bytes.reserve (1);
 
   pstore::serialize::archive::vector_writer writer (bytes);
-  std::uint8_t v{251};
+  auto const v = std::byte{251};
   writer.put (v);
 
   auto begin = std::begin (writer);
@@ -48,7 +48,7 @@ TEST (SerializeArchiveVectorWriter, Write1Byte) {
 }
 
 TEST (SerializeArchiveVectorWriter, WriteAnInt) {
-  std::vector<std::uint8_t> bytes;
+  std::vector<std::byte> bytes;
   bytes.reserve (sizeof (int));
   pstore::serialize::archive::vector_writer writer (bytes);
   writer.put (42);
@@ -63,7 +63,7 @@ TEST (SerializeArchiveVectorWriter, WriteAnInt) {
   EXPECT_EQ (bytes.size (), writer.bytes_produced ());
 
   // Now coax the value back out of the byte array that the vector_writer has accumulated.
-  std::uint8_t content[sizeof (int)];
+  std::byte content[sizeof (int)];
   std::copy (begin, end, content);
   int value;
   std::memcpy (&value, content, sizeof (value));

@@ -34,9 +34,9 @@ namespace {
       return UINT64_C (1) << exponent;
     }
 
-    static void check (std::uint64_t test_value, std::initializer_list<std::uint8_t> const & il) {
+    static void check (std::uint64_t test_value, std::initializer_list<std::byte> const & il) {
       EXPECT_EQ (il.size (), pstore::varint::encoded_size (test_value));
-      std::vector<std::uint8_t> buffer;
+      std::vector<std::byte> buffer;
       pstore::varint::encode (test_value, std::back_inserter (buffer));
       EXPECT_THAT (buffer, ::testing::ElementsAreArray (il));
       EXPECT_EQ (buffer.size (), pstore::varint::decode_size (buffer.data ()));
@@ -55,7 +55,7 @@ namespace {
 //         +---------------------------+-----+
 // (*) "1 byte"
 TEST_F (VarInt, Zero) {
-  check (UINT64_C (0), {0b00000001});
+  check (UINT64_C (0), {std::byte{0b00000001}});
 }
 
 //         +---------------------------+-----+
@@ -67,7 +67,7 @@ TEST_F (VarInt, Zero) {
 //         +---------------------------+-----+
 // (*) "1 byte"
 TEST_F (VarInt, One) {
-  check (UINT64_C (1), {0b00000011});
+  check (UINT64_C (1), {std::byte{0b00000011}});
 }
 
 //         +---------------------------+-----+
@@ -79,7 +79,7 @@ TEST_F (VarInt, One) {
 //         +---------------------------+-----+
 // (*) "1 byte"
 TEST_F (VarInt, 7Bits) {
-  check (all_ones (7), {0xFF});
+  check (all_ones (7), {std::byte{0xFF}});
 }
 
 //                      byte 0                            byte 1
@@ -92,7 +92,7 @@ TEST_F (VarInt, 7Bits) {
 // value   | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
 //         +-----------------------+-------+ +-------------------------------+
 TEST_F (VarInt, 2pow8) {
-  check (power (8), {0b00000010, 0b00000100});
+  check (power (8), {std::byte{0b00000010}, std::byte{0b00000100}});
 }
 
 //                      byte 0                            byte 1
@@ -105,7 +105,7 @@ TEST_F (VarInt, 2pow8) {
 // value   | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 0 | | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
 //         +-----------------------+-------+ +-------------------------------+
 TEST_F (VarInt, 14Bits) {
-  check (all_ones (14), {0b11111110, 0b11111111});
+  check (all_ones (14), {std::byte{0b11111110}, std::byte{0b11111111}});
 }
 
 //                      byte 0                byte1             byte 2
@@ -118,7 +118,7 @@ TEST_F (VarInt, 14Bits) {
 // value   | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |         | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 0 |
 //         +-------------------+-----------+         +-------------------------------+
 TEST_F (VarInt, 2pow14) {
-  check (power (14), {0b00000100, 0, 0b00000010});
+  check (power (14), {std::byte{0b00000100}, std::byte{0}, std::byte{0b00000010}});
 }
 
 //                      byte 0                byte1             byte 2
@@ -131,43 +131,55 @@ TEST_F (VarInt, 2pow14) {
 // value   | 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 |         | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
 //         +-------------------+-----------+         +-------------------------------+
 TEST_F (VarInt, 21Bits) {
-  check (all_ones (21), {0xFC, 0xFF, 0xFF});
+  check (all_ones (21), {std::byte{0xFC}, std::byte{0xFF}, std::byte{0xFF}});
 }
 TEST_F (VarInt, 2pow21) {
-  check (power (21), {0b00001000, 0, 0, 0b00000010});
+  check (power (21), {std::byte{0b00001000}, std::byte{0}, std::byte{0}, std::byte{0b00000010}});
 }
 TEST_F (VarInt, 28Bits) {
-  check (all_ones (28), {0b11111000, 0b11111111, 0b11111111, 0b11111111});
+  check (all_ones (28), {std::byte{0b11111000}, std::byte{0b11111111}, std::byte{0b11111111},
+                         std::byte{0b11111111}});
 }
 TEST_F (VarInt, 2pow28) {
-  check (power (28), {0b00010000, 0, 0, 0, 0b00000010});
+  check (power (28),
+         {std::byte{0b00010000}, std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0b00000010}});
 }
 TEST_F (VarInt, 35Bits) {
-  check (all_ones (35), {0b11110000, 0b11111111, 0b11111111, 0b11111111, 0b11111111});
+  check (all_ones (35), {std::byte{0b11110000}, std::byte{0b11111111}, std::byte{0b11111111},
+                         std::byte{0b11111111}, std::byte{0b11111111}});
 }
 TEST_F (VarInt, 2pow35) {
-  check (power (35), {0b00100000, 0, 0, 0, 0, 0b00000010});
+  check (power (35), {std::byte{0b00100000}, std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0},
+                      std::byte{0b00000010}});
 }
 TEST_F (VarInt, 42Bits) {
-  check (all_ones (42), {0b11100000, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111});
+  check (all_ones (42), {std::byte{0b11100000}, std::byte{0b11111111}, std::byte{0b11111111},
+                         std::byte{0b11111111}, std::byte{0b11111111}, std::byte{0b11111111}});
 }
 TEST_F (VarInt, 2pow42) {
-  check (power (42), {0b01000000, 0, 0, 0, 0, 0, 0b00000010});
+  check (power (42), {std::byte{0b01000000}, std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0},
+                      std::byte{0}, std::byte{0b00000010}});
 }
 TEST_F (VarInt, 49Bits) {
-  check (all_ones (49),
-         {0b11000000, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111});
+  check (all_ones (49), {std::byte{0b11000000}, std::byte{0b11111111}, std::byte{0b11111111},
+                         std::byte{0b11111111}, std::byte{0b11111111}, std::byte{0b11111111},
+                         std::byte{0b11111111}});
 }
 TEST_F (VarInt, 2pow49) {
-  check (power (49), {0b10000000, 0, 0, 0, 0, 0, 0, 0b00000010});
+  check (power (49), {std::byte{0b10000000}, std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0},
+                      std::byte{0}, std::byte{0}, std::byte{0b00000010}});
 }
 TEST_F (VarInt, 56Bits) {
-  check (all_ones (56), {0b10000000, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111,
-                         0b11111111, 0b11111111});
+  check (all_ones (56), {std::byte{0b10000000}, std::byte{0b11111111}, std::byte{0b11111111},
+                         std::byte{0b11111111}, std::byte{0b11111111}, std::byte{0b11111111},
+                         std::byte{0b11111111}, std::byte{0b11111111}});
 }
 TEST_F (VarInt, 2pow63) {
-  check (power (63), {0, 0, 0, 0, 0, 0, 0, 0, 0b10000000});
+  check (power (63), {std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0},
+                      std::byte{0}, std::byte{0}, std::byte{0}, std::byte{0b10000000}});
 }
 TEST_F (VarInt, 64Bits) {
-  check (~UINT64_C (0), {0, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF});
+  check (~UINT64_C (0),
+         {std::byte{0}, std::byte{0xFF}, std::byte{0xFF}, std::byte{0xFF}, std::byte{0xFF},
+          std::byte{0xFF}, std::byte{0xFF}, std::byte{0xFF}, std::byte{0xFF}});
 }
