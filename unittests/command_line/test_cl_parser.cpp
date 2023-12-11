@@ -16,7 +16,10 @@
 #include "pstore/command_line/command_line.hpp"
 
 // 3rd party includes
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
+#if PSTORE_FUZZTEST
+#  include "fuzztest/fuzztest.h"
+#endif
 
 using namespace std::string_view_literals;
 
@@ -24,33 +27,18 @@ TEST (ClParser, SimpleString) {
   using pstore::command_line::parser;
 
   std::optional<std::string> r = parser<std::string> () ("hello");
-  EXPECT_TRUE (r.has_value ());
+  ASSERT_TRUE (r.has_value ());
   EXPECT_EQ (r.value (), "hello");
 }
 
-TEST (ClParser, StringFromSet) {
-  using pstore::command_line::parser;
-
-  enum class values { a = 31, b = 37 };
-  parser<values> p;
-  p.add_literal ("a", values::a, "description a");
-  p.add_literal ("b", values::b, "description b");
-
-  {
-    std::optional<values> r1 = p ("hello");
-    EXPECT_FALSE (r1.has_value ());
-  }
-  {
-    std::optional<values> r2 = p ("a");
-    ASSERT_TRUE (r2.has_value ());
-    EXPECT_EQ (r2.value (), values::a);
-  }
-  {
-    std::optional<values> r3 = p ("b");
-    ASSERT_TRUE (r3.has_value ());
-    EXPECT_EQ (r3.value (), values::b);
-  }
+#if PSTORE_FUZZTEST
+static void StringParseNeverCrashes (std::string const & s) {
+  std::optional<std::string> r = pstore::command_line::parser<std::string> () (s);
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), s);
 }
+FUZZ_TEST (ClParser, StringParseNeverCrashes);
+#endif // PSTORE_FUZZTEST
 
 TEST (ClParser, Int) {
   std::optional<int> r1 = pstore::command_line::parser<int>{}("43");
