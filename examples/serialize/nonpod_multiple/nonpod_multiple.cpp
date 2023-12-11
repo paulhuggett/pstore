@@ -71,13 +71,13 @@ namespace pstore::serialize {
 namespace {
 
   // Write an array of "foo" instance to the "bytes" container.
-  std::vector<std::uint8_t> write_two_foos () {
+  std::vector<std::byte> write_two_foos () {
     using pstore::gsl::make_span;
     using pstore::serialize::write;
     using pstore::serialize::archive::vector_writer;
 
     // We're going to write data to this container.
-    std::vector<std::uint8_t> bytes;
+    std::vector<std::byte> bytes;
     // 'vector_writer' is an archiver which writes to a std::vector.
     vector_writer writer (bytes);
     // This is the array of foo instances that we will be writing.
@@ -95,7 +95,7 @@ namespace {
   }
 
   // Now use the contents of the "bytes" vector to materialize two foo instances.
-  void read_two_foos (std::vector<std::uint8_t> const & bytes) {
+  void read_two_foos (std::vector<std::byte> const & bytes) {
     using pstore::gsl::make_span;
     using pstore::serialize::read;
     using pstore::serialize::archive::make_reader;

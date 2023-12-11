@@ -219,11 +219,11 @@ namespace pstore::serialize::archive {
       // (This is a varargs function so that it is considered last in template
       // resolution.)
       template <typename Policy>
-      std::size_t get (Policy const & /*policy*/, ...) { // NOLINT(cert-dcl50-cpp)
+      std::size_t get (Policy const & /*policy*/, ...) const { // NOLINT(cert-dcl50-cpp)
         return writer_.bytes_consumed ();
       }
       template <typename Policy>
-      std::size_t get (Policy const & policy, decltype (&Policy::bytes_produced)) {
+      std::size_t get (Policy const & policy, decltype (&Policy::bytes_produced)) const {
         return policy.bytes_produced ();
       }
 
@@ -272,7 +272,7 @@ namespace pstore::serialize::archive {
     class vector_writer_policy {
     public:
       using result_type = std::size_t;
-      using container = std::vector<std::uint8_t>;
+      using container = std::vector<std::byte>;
       using const_iterator = container::const_iterator;
 
       explicit vector_writer_policy (container & bytes) noexcept
@@ -281,7 +281,7 @@ namespace pstore::serialize::archive {
       template <typename Ty>
       auto put (Ty const & t) -> result_type {
         auto const old_size = bytes_.size ();
-        auto const * const first = reinterpret_cast<std::uint8_t const *> (&t);
+        auto const * const first = reinterpret_cast<std::byte const *> (&t);
         std::copy (first, first + sizeof (Ty), std::back_inserter (bytes_));
         return old_size;
       }
@@ -289,7 +289,7 @@ namespace pstore::serialize::archive {
       template <typename SpanType>
       auto putn (SpanType sp) -> result_type {
         auto const old_size = bytes_.size ();
-        auto const * const first = reinterpret_cast<std::uint8_t const *> (sp.data ());
+        auto const * const first = reinterpret_cast<std::byte const *> (sp.data ());
         std::copy (first, first + sp.size_bytes (), std::back_inserter (bytes_));
         return old_size;
       }
@@ -315,12 +315,12 @@ namespace pstore::serialize::archive {
   // *  v e c t o r   w r i t e r  *
   // *******************************
 
-  /// \brief An archive-writer which writes data to a std::vector of std::uint8_t bytes.
+  /// \brief An archive-writer which writes data to a std::vector of std::byte.
   /// Owns a vector of bytes to which data is appended when the put<>() method is called.
 
   class vector_writer final : public writer_base<details::vector_writer_policy> {
   public:
-    explicit vector_writer (std::vector<std::uint8_t> & container)
+    explicit vector_writer (std::vector<std::byte> & container)
             : writer_base<details::vector_writer_policy> (
                 details::vector_writer_policy{container}) {}
     vector_writer (vector_writer const &) = delete;
@@ -363,11 +363,11 @@ namespace pstore::serialize::archive {
       using result_type = void *;
 
       buffer_writer_policy (void * const first, void * const last) noexcept
-              : begin_ (static_cast<std::uint8_t *> (first))
+              : begin_ (static_cast<std::byte *> (first))
 #ifndef NDEBUG
-              , end_ (static_cast<std::uint8_t *> (last))
+              , end_ (static_cast<std::byte *> (last))
 #endif
-              , it_ (static_cast<std::uint8_t *> (first)) {
+              , it_ (static_cast<std::byte *> (first)) {
 
         (void) last;
         PSTORE_ASSERT (end_ >= it_);
@@ -396,7 +396,7 @@ namespace pstore::serialize::archive {
 
       void flush () noexcept {}
 
-      using const_iterator = std::uint8_t const *;
+      using const_iterator = std::byte const *;
 
       /// Returns a const_iterator for the beginning of the byte range.
       const_iterator begin () const noexcept { return begin_; }
@@ -405,14 +405,14 @@ namespace pstore::serialize::archive {
 
     private:
       /// The start of the input buffer.
-      std::uint8_t * begin_;
+      std::byte * begin_;
 #ifndef NDEBUG
       /// The end of the input buffer range.
-      std::uint8_t * end_;
+      std::byte * end_;
 #endif
       /// Initially equal to begin_, but incremented as data is written to the
       /// archive. Always <= end_;
-      std::uint8_t * it_;
+      std::byte * it_;
     };
   } // namespace details
 
@@ -434,8 +434,8 @@ namespace pstore::serialize::archive {
     ///               data.
     /// \param size   The size, in bytes, of the buffer pointed to by 'first'.
     buffer_writer (void * const first, std::size_t const size)
-            : buffer_writer (static_cast<std::uint8_t *> (first),
-                             static_cast<std::uint8_t *> (first) + size) {}
+            : buffer_writer (static_cast<std::byte *> (first),
+                             static_cast<std::byte *> (first) + size) {}
 
     /// \brief Constructs a buffer_writer from a pointer to allocated uninitialized
     /// storage.
@@ -529,7 +529,7 @@ namespace pstore::serialize::archive {
     void get (Ty & v) {
       static_assert (std::is_standard_layout<Ty>::value,
                      "range_reader can only read standard-layout types");
-      auto ptr = reinterpret_cast<std::uint8_t *> (&v);
+      auto ptr = reinterpret_cast<std::byte *> (&v);
       auto const * const last = ptr + sizeof (Ty);
       while (ptr != last) {
         *(ptr++) = *(first_++);
@@ -541,7 +541,7 @@ namespace pstore::serialize::archive {
       using element_type = typename SpanType::element_type;
       static_assert (std::is_standard_layout<element_type>::value,
                      "range_reader can only read standard-layout types");
-      auto out = reinterpret_cast<std::uint8_t *> (span.data ());
+      auto out = reinterpret_cast<std::byte *> (span.data ());
       auto const * const last = out + span.size_bytes ();
       while (out != last) {
         *(out++) = *(first_++);
@@ -573,20 +573,20 @@ namespace pstore::serialize::archive {
   public:
     /// Constructs the writer using a pair of pointer to define the range [first, last).
     constexpr buffer_reader (void const * const first, void const * const last) noexcept
-            : first_ (static_cast<std::uint8_t const *> (first))
-            , last_ (static_cast<std::uint8_t const *> (last)) {}
+            : first_ (static_cast<std::byte const *> (first))
+            , last_ (static_cast<std::byte const *> (last)) {}
 
     /// Constructs the writer using a pointer and size to define the range [first,
     /// first+size).
     constexpr buffer_reader (void const * const first, std::size_t const size) noexcept
-            : first_ (static_cast<std::uint8_t const *> (first))
-            , last_ (static_cast<std::uint8_t const *> (first) + size) {}
+            : first_ (static_cast<std::byte const *> (first))
+            , last_ (static_cast<std::byte const *> (first) + size) {}
 
     /// Constructs the writer using a pointer and size to define the range [first,
     /// first+size).
     template <typename SpanType>
     explicit buffer_reader (SpanType const span) noexcept
-            : first_ (reinterpret_cast<std::uint8_t const *> (span.data ()))
+            : first_ (reinterpret_cast<std::byte const *> (span.data ()))
             , last_ (first_ + span.size_bytes ()) {}
 
     /// Reads a single instance of a standard-layout type T from the input iterator and
@@ -605,8 +605,8 @@ namespace pstore::serialize::archive {
     }
 
   private:
-    std::uint8_t const * first_; ///< The start of the range from which data is read.
-    std::uint8_t const * last_;  ///< The end of the range from which data is read.
+    std::byte const * first_; ///< The start of the range from which data is read.
+    std::byte const * last_;  ///< The end of the range from which data is read.
   };
 
 } // end namespace pstore::serialize::archive

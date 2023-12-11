@@ -25,7 +25,7 @@ struct pod_type {
 
 int main () {
   using namespace pstore::serialize;
-  std::vector<std::uint8_t> bytes;
+  std::vector<std::byte> bytes;
   archive::vector_writer writer{bytes};
   pod_type pt{30, 40};
   write (writer, pt);

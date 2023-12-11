@@ -70,7 +70,7 @@ namespace pstore::serialize {
 TEST_F (NonIntrusiveSerializer, WriteAndRead) {
   non_standard_layout_type const expected{42};
 
-  std::vector<std::uint8_t> bytes;
+  std::vector<std::byte> bytes;
   pstore::serialize::archive::vector_writer writer (bytes);
   pstore::serialize::write (writer, expected);
 

@@ -62,7 +62,7 @@ namespace {
 
   // Serialize an instance of "foo" to the "bytes" vector.
   auto write_foo () {
-    std::vector<std::uint8_t> bytes;
+    std::vector<std::byte> bytes;
     pstore::serialize::archive::vector_writer writer{bytes};
     foo f (42);
     std::cout << "Writing: " << f << '\n';
@@ -72,7 +72,7 @@ namespace {
   }
 
   // Materialize an instance of "foo" from the "bytes" container.
-  void read (std::vector<std::uint8_t> const & bytes) {
+  void read (std::vector<std::byte> const & bytes) {
     auto reader = pstore::serialize::archive::make_reader (std::begin (bytes));
     auto const f = pstore::serialize::read<foo> (reader);
     std::cout << "Read: " << f << '\n';

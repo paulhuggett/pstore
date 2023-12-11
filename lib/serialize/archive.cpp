@@ -30,11 +30,9 @@ namespace {
     pstore::ios_flags_saver const flags{os};
     os << std::setfill ('0') << std::hex;
 
-    using value_type = typename std::iterator_traits<InputIterator>::value_type;
     char const * separator = "";
-    std::for_each (first, last, [&] (value_type v) {
-      PSTORE_ASSERT (v >= 0 && v <= 0xff);
-      os << separator << std::setw (2) << unsigned{v};
+    std::for_each (first, last, [&] (std::byte v) {
+      os << separator << std::setw (2) << static_cast<unsigned> (v);
       separator = " ";
     });
     return os;
