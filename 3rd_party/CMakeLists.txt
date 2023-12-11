@@ -1,6 +1,6 @@
-if (PSTORE_IS_INSIDE_LLVM)
+if (PSTORE_IS_INSIDE_LLVM OR PSTORE_FUZZTEST)
   # compiling inside LLVM. We don't add the googletest library because LLVM
-  # provides a copy for us.
+  # provides a copy for us. Same for the Google Fuzztest library.
 else ()
   if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/googletest/CMakeLists.txt")
     # Tell gtest to link against the "Multi-threaded Debug DLL runtime library"
@@ -31,7 +31,7 @@ else ()
       )
     endforeach ()
   endif ()
-endif (PSTORE_IS_INSIDE_LLVM)
+endif (PSTORE_IS_INSIDE_LLVM OR PSTORE_FUZZTEST)
 
 add_subdirectory (peejay)
 

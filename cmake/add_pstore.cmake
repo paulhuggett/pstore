@@ -27,16 +27,14 @@ endmacro ()
 # ~~~
 # Adds a switch to the compile options if supported by the compiler.
 #
-# target_name: The name of the target to which the compile option should be
-#              added.
-# flag:        The name of the compiler switch to be added.
+# target: The name of the target to which the compile option should be added.
+# flag: The name of the compiler switch to be added.
 # result_var:  The name of the CMake cache variable into which the result of the
-#              test will be stored. This should be different for each switch
-#              being tested.
-function (disable_warning_if_possible target_name flag result_var)
+#   test will be stored. This should be different for each switch being tested.
+function (disable_warning_if_possible target flag result_var)
   check_cxx_compiler_flag (${flag} ${result_var})
   if (${${result_var}})
-    target_compile_options (${target_name} PRIVATE ${flag})
+    target_compile_options (${target} PRIVATE ${flag})
   endif ()
 endfunction ()
 
@@ -116,35 +114,35 @@ endfunction (pstore_standalone_compiler_setup)
 
 # pstore add additional compiler flags
 # ~~~
-function (pstore_add_additional_compiler_flags target_name)
+function (pstore_add_additional_compiler_flags target)
   if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if (NOT PSTORE_EXCEPTIONS)
-      target_compile_options (${target_name} PRIVATE -fno-exceptions -fno-rtti)
+      target_compile_options (${target} PRIVATE -fno-exceptions -fno-rtti)
     endif ()
 
-    target_compile_options (${target_name} PRIVATE -Wno-c++14-extensions)
+    target_compile_options (${target} PRIVATE -Wno-c++14-extensions)
 
     disable_warning_if_possible (
-      ${target_name} -Wno-c++20-compat PSTORE_CLANG_SUPPORTS_CXX20_COMPAT
+      ${target} -Wno-c++20-compat PSTORE_CLANG_SUPPORTS_CXX20_COMPAT
     )
     disable_warning_if_possible (
-      ${target_name} -Wno-return-std-move-in-c++11
+      ${target} -Wno-return-std-move-in-c++11
       PSTORE_CLANG_SUPPORTS_WNO_RETURN_MOVE
     )
     # TODO: this warning is far too pervasive in clang3.8 but much better in
     # later builds. Only disable for older versions.
     disable_warning_if_possible (
-      ${target_name} -Wno-nullability-completeness PSTORE_CLANG_SUPPORTS_NX
+      ${target} -Wno-nullability-completeness PSTORE_CLANG_SUPPORTS_NX
     )
     disable_warning_if_possible (
-      ${target_name} -Wno-nullability-extension PSTORE_CLANG_SUPPORTS_NX
+      ${target} -Wno-nullability-extension PSTORE_CLANG_SUPPORTS_NX
     )
     disable_warning_if_possible (
-      ${target_name} -Wno-zero-as-null-pointer-constant
+      ${target} -Wno-zero-as-null-pointer-constant
       PSTORE_CLANG_SUPPORTS_NPC
     )
     disable_warning_if_possible (
-      ${target_name} -Wno-unsafe-buffer-usage
+      ${target} -Wno-unsafe-buffer-usage
       PSTORE_CLANG_SUPPORTS_UNSAFE_BUFFER_USAGE
     )
 
@@ -152,48 +150,48 @@ function (pstore_add_additional_compiler_flags target_name)
     # variables for MSVC to swallow the code. Remove when VS doesn't require
     # capture.
     disable_warning_if_possible (
-      ${target_name} -Wno-unused-lambda-capture PSTORE_CLANG_SUPPORTS_ULC
+      ${target} -Wno-unused-lambda-capture PSTORE_CLANG_SUPPORTS_ULC
     )
 
     if (PSTORE_COVERAGE)
       target_compile_options (
-        ${target_name} PRIVATE -fprofile-instr-generate -fcoverage-mapping
+        ${target} PRIVATE -fprofile-instr-generate -fcoverage-mapping
       )
-      target_compile_options (${target_name} PRIVATE -fno-inline-functions)
+      target_compile_options (${target} PRIVATE -fno-inline-functions)
       target_link_libraries (
-        ${target_name} PUBLIC -fprofile-instr-generate -fcoverage-mapping
+        ${target} PUBLIC -fprofile-instr-generate -fcoverage-mapping
       )
     endif (PSTORE_COVERAGE)
 
   elseif (CMAKE_COMPILER_IS_GNUCXX)
 
     if (NOT PSTORE_EXCEPTIONS)
-      target_compile_options (${target_name} PRIVATE -fno-exceptions -fno-rtti)
+      target_compile_options (${target} PRIVATE -fno-exceptions -fno-rtti)
     endif ()
 
-    target_compile_options (${target_name} PRIVATE -Wall -Wextra -pedantic)
+    target_compile_options (${target} PRIVATE -Wall -Wextra -pedantic)
 
     # A warning telling us that the signature will change in C++17 isn't
     # important right now.
     disable_warning_if_possible (
-      ${target_name} -Wno-noexcept-type PSTORE_GCC_SUPPORTS_EXCEPT_TYPE
+      ${target} -Wno-noexcept-type PSTORE_GCC_SUPPORTS_EXCEPT_TYPE
     )
     disable_warning_if_possible (
-      ${target_name} -Wno-ignored-attributes
+      ${target} -Wno-ignored-attributes
       PSTORE_GCC_SUPPORTS_IGNORED_ATTRIBUTES
     )
 
     if (PSTORE_COVERAGE)
       target_compile_options (
-        ${target_name} PRIVATE -fprofile-arcs -ftest-coverage
+        ${target} PRIVATE -fprofile-arcs -ftest-coverage
       )
-      target_link_libraries (${target_name} PUBLIC --coverage)
+      target_link_libraries (${target} PUBLIC --coverage)
     endif (PSTORE_COVERAGE)
 
   elseif (MSVC)
 
     if (NOT PSTORE_EXCEPTIONS)
-      # target_compile_options (${target_name} PRIVATE "/EHs-" "/EHc-" "/GR-")
+      # target_compile_options (${target} PRIVATE "/EHs-" "/EHc-" "/GR-")
 
       # Remove /EHsc (which enables exceptions) from the cmake's default
       # compiler switches.
@@ -202,8 +200,8 @@ function (pstore_add_additional_compiler_flags target_name)
                       CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS}
       )
 
-      target_compile_options (${target_name} PUBLIC -EHs-c-)
-      target_compile_definitions (${target_name} PRIVATE -D_HAS_EXCEPTIONS=0)
+      target_compile_options (${target} PUBLIC -EHs-c-)
+      target_compile_definitions (${target} PRIVATE -D_HAS_EXCEPTIONS=0)
     endif (NOT PSTORE_EXCEPTIONS)
 
     # 1. conditional expression is constant. We're not yet using C++17 therefore
@@ -212,10 +210,10 @@ function (pstore_add_additional_compiler_flags target_name)
     # 3. assignment operator could not be generated.
     # 4. unreachable code
     target_compile_options (
-      ${target_name} PRIVATE -W4 -wd4127 -wd4146 -wd4512 -wd4702
+      ${target} PRIVATE -W4 -wd4127 -wd4146 -wd4512 -wd4702
     )
     target_compile_definitions (
-      ${target_name}
+      ${target}
       PRIVATE -D_CRT_SECURE_NO_WARNINGS -D_ENABLE_ATOMIC_ALIGNMENT_FIX
               -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_SCL_SECURE_NO_WARNINGS
               -D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING
@@ -229,8 +227,10 @@ function (pstore_add_additional_compiler_flags target_name)
 
   # On Windows, we're a "Unicode" app.
   if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")
-    target_compile_definitions ("${target_name}" PRIVATE -DUNICODE -D_UNICODE)
+    target_compile_definitions ("${target}" PRIVATE -DUNICODE -D_UNICODE)
   endif ()
+
+  target_compile_definitions (${target} PUBLIC PSTORE_FUZZTEST=$<BOOL:${PSTORE_FUZZTEST}>)
 
 endfunction (pstore_add_additional_compiler_flags)
 
@@ -379,29 +379,29 @@ endfunction (add_pstore_example)
 # add_pstore_test_library
 # ##############################################################################
 
-function (add_pstore_test_library target_name)
+function (add_pstore_test_library target)
   if (PSTORE_IS_INSIDE_LLVM)
-    add_library (${target_name} STATIC ${ARGN})
-    pstore_add_additional_compiler_flags (${target_name})
+    add_library (${target} STATIC ${ARGN})
+    pstore_add_additional_compiler_flags (${target})
     include_directories (${LLVM_MAIN_SRC_DIR}/utils/unittest/googletest/include)
     include_directories (${LLVM_MAIN_SRC_DIR}/utils/unittest/googlemock/include)
-    target_link_libraries (${target_name} PUBLIC gtest)
+    target_link_libraries (${target} PUBLIC gtest)
   else ()
-    add_library (${target_name} STATIC ${ARGN})
+    add_library (${target} STATIC ${ARGN})
     set_target_properties (
-      ${target_name} PROPERTIES CXX_STANDARD "${pstore_cxx_version}"
+      ${target} PROPERTIES CXX_STANDARD "${pstore_cxx_version}"
                                 CXX_STANDARD_REQUIRED Yes CXX_EXTENSIONS Off
     )
-    pstore_standalone_compiler_setup (TARGET ${target_name})
-    pstore_add_additional_compiler_flags (${target_name})
+    pstore_standalone_compiler_setup (TARGET ${target})
+    pstore_add_additional_compiler_flags (${target})
     target_include_directories (
-      ${target_name} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+      ${target} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
     )
-    target_link_libraries (${target_name} PUBLIC gtest gmock)
+    target_link_libraries (${target} PUBLIC gtest gmock)
   endif (PSTORE_IS_INSIDE_LLVM)
 
   set_target_properties (
-    ${target_name} PROPERTIES FOLDER "pstore test libraries"
+    ${target} PROPERTIES FOLDER "pstore test libraries"
   )
 endfunction (add_pstore_test_library)
 
@@ -409,24 +409,33 @@ endfunction (add_pstore_test_library)
 # add_pstore_unit_test
 # ##############################################################################
 
-function (add_pstore_unit_test target_name)
+function (add_pstore_unit_test target)
   if (PSTORE_IS_INSIDE_LLVM)
-    add_unittest (PstoreUnitTests ${target_name} ${ARGN})
-    pstore_add_additional_compiler_flags (${target_name})
+    add_unittest (PstoreUnitTests ${target} ${ARGN})
+    pstore_add_additional_compiler_flags (${target})
   else ()
-    add_executable (${target_name} ${ARGN})
+    add_executable (${target} ${ARGN})
     set_target_properties (
-      ${target_name}
+      ${target}
       PROPERTIES FOLDER "pstore tests"
                  CXX_STANDARD "${pstore_cxx_version}"
                  CXX_STANDARD_REQUIRED Yes
                  CXX_EXTENSIONS Off
     )
     target_include_directories (
-      ${target_name} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+      ${target} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
     )
-    pstore_standalone_compiler_setup (TARGET ${target_name} IS_UNIT_TEST)
-    pstore_add_additional_compiler_flags (${target_name})
-    target_link_libraries (${target_name} PRIVATE pstore-unit-test-harness)
+    pstore_standalone_compiler_setup (TARGET ${target} IS_UNIT_TEST)
+    pstore_add_additional_compiler_flags (${target})
+    if (NOT PSTORE_FUZZTEST)
+      target_link_libraries (${target} PRIVATE pstore-unit-test-harness)
+    endif ()
   endif (PSTORE_IS_INSIDE_LLVM)
+
+  if (PSTORE_FUZZTEST)
+    target_link_libraries (${target} PUBLIC gtest gmock)
+    link_fuzztest (${target})
+    gtest_discover_tests (${target})
+  endif (PSTORE_FUZZTEST)
+
 endfunction (add_pstore_unit_test)

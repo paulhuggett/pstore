@@ -16,7 +16,10 @@
 #include "pstore/command_line/command_line.hpp"
 
 // 3rd party includes
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
+#if PSTORE_FUZZTEST
+#  include "fuzztest/fuzztest.h"
+#endif
 
 using namespace std::string_view_literals;
 
@@ -24,33 +27,18 @@ TEST (ClParser, SimpleString) {
   using pstore::command_line::parser;
 
   std::optional<std::string> r = parser<std::string> () ("hello");
-  EXPECT_TRUE (r.has_value ());
+  ASSERT_TRUE (r.has_value ());
   EXPECT_EQ (r.value (), "hello");
 }
 
-TEST (ClParser, StringFromSet) {
-  using pstore::command_line::parser;
-
-  enum class values { a = 31, b = 37 };
-  parser<values> p;
-  p.add_literal ("a", values::a, "description a");
-  p.add_literal ("b", values::b, "description b");
-
-  {
-    std::optional<values> r1 = p ("hello");
-    EXPECT_FALSE (r1.has_value ());
-  }
-  {
-    std::optional<values> r2 = p ("a");
-    ASSERT_TRUE (r2.has_value ());
-    EXPECT_EQ (r2.value (), values::a);
-  }
-  {
-    std::optional<values> r3 = p ("b");
-    ASSERT_TRUE (r3.has_value ());
-    EXPECT_EQ (r3.value (), values::b);
-  }
+#if PSTORE_FUZZTEST
+static void StringParseNeverCrashes (std::string const & s) {
+  std::optional<std::string> r = pstore::command_line::parser<std::string> () (s);
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), s);
 }
+FUZZ_TEST (ClParser, StringParseNeverCrashes);
+#endif // PSTORE_FUZZTEST
 
 TEST (ClParser, Int) {
   std::optional<int> r1 = pstore::command_line::parser<int>{}("43");
@@ -82,6 +70,24 @@ TEST (ClParser, IntTooLarge) {
   std::optional<std::int8_t> const r = pstore::command_line::parser<std::int8_t>{}("256");
   EXPECT_FALSE (r.has_value ());
 }
+
+#if PSTORE_FUZZTEST
+static void IntParse (std::string const & arg) {
+  int expected = 0;
+  auto last = arg.data () + arg.size ();
+  auto [ptr, ec] = std::from_chars (arg.data (), last, expected);
+  if (ptr != last) {
+    ec = std::errc::invalid_argument;
+  }
+
+  std::optional<int> r = pstore::command_line::parser<int> () (arg);
+  EXPECT_EQ (r.has_value (), ec == std::errc{});
+  if (r) {
+    EXPECT_EQ (*r, expected);
+  }
+}
+FUZZ_TEST (ClParser, IntParse);
+#endif // PSTORE_FUZZTEST
 
 TEST (ClParser, Modifiers) {
   using namespace pstore::command_line;
@@ -120,25 +126,51 @@ namespace {
 } // namespace
 
 TEST_F (ClParserEnum, Red) {
-  std::optional<color> const r1 = parser_ ("red");
-  ASSERT_TRUE (r1.has_value ());
-  EXPECT_EQ (r1.value (), color::red);
+  std::optional<color> const r = parser_ ("red");
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), color::red);
 }
 TEST_F (ClParserEnum, Green) {
-  std::optional<color> const r1 = parser_ ("green");
-  ASSERT_TRUE (r1.has_value ());
-  EXPECT_EQ (r1.value (), color::green);
+  std::optional<color> const r = parser_ ("green");
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), color::green);
 }
 TEST_F (ClParserEnum, Blue) {
-  std::optional<color> const r1 = parser_ ("blue");
-  ASSERT_TRUE (r1.has_value ());
-  EXPECT_EQ (r1.value (), color::blue);
+  std::optional<color> const r = parser_ ("blue");
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), color::blue);
 }
 TEST_F (ClParserEnum, Bad) {
-  std::optional<color> const r4 = parser_ ("bad");
-  EXPECT_FALSE (r4.has_value ());
+  std::optional<color> const r = parser_ ("bad");
+  EXPECT_FALSE (r.has_value ());
 }
 TEST_F (ClParserEnum, Empty) {
-  std::optional<color> const r4 = parser_ ("");
-  EXPECT_FALSE (r4.has_value ());
+  std::optional<color> const r = parser_ ("");
+  EXPECT_FALSE (r.has_value ());
 }
+
+#if PSTORE_FUZZTEST
+static void EnumParse (std::string const & arg) {
+  enum class color { red, green, blue };
+  pstore::command_line::parser<color> parser;
+  parser.add_literal ("red", color::red, "description red");
+  parser.add_literal ("green", color::green, "description green");
+  parser.add_literal ("blue", color::blue, "description blue");
+
+  std::optional<color> const r = parser (arg);
+
+  if (arg == "red") {
+    ASSERT_TRUE (r.has_value ());
+    EXPECT_EQ (*r, color::red);
+  } else if (arg == "green") {
+    ASSERT_TRUE (r.has_value ());
+    EXPECT_EQ (*r, color::green);
+  } else if (arg == "blue") {
+    ASSERT_TRUE (r.has_value ());
+    EXPECT_EQ (*r, color::blue);
+  } else {
+    EXPECT_FALSE (r.has_value ());
+  }
+}
+FUZZ_TEST (ClParser, EnumParse);
+#endif // PSTORE_FUZZTEST
