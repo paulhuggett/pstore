@@ -112,6 +112,24 @@ option (PSTORE_NOISY_UNIT_TESTS
         "Produce complete ('noisy') output from the unit test executables"
 )
 option (PSTORE_WERROR "Compiler warnings are errors")
+option (PSTORE_FUZZTEST "Enable FuzzTest")
+
+
+if (PSTORE_FUZZTEST)
+  set (FUZZTEST_FUZZING_MODE On)
+  include (FetchContent)
+  set (FUZZTEST_REPO_BRANCH "main" CACHE STRING "FuzzTest repository branch.")
+  message ("Building fuzztest at branch " ${FUZZTEST_REPO_BRANCH})
+  FetchContent_Declare (
+    fuzztest
+    GIT_REPOSITORY https://github.com/google/fuzztest.git
+    GIT_TAG ${FUZZTEST_REPO_BRANCH}
+  )
+  FetchContent_MakeAvailable (fuzztest)
+  enable_testing ()
+  include (GoogleTest)
+  fuzztest_setup_fuzzing_flags ()
+endif (PSTORE_FUZZTEST)
 
 # The name of the vacuum (GC) executable.
 set (PSTORE_VACUUM_TOOL_NAME "pstore-vacuumd")
