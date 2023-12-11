@@ -245,24 +245,25 @@ namespace pstore::command_line {
   /// single value "a,b".
   constexpr details::comma_separated const comma_separated;
 
+  /// A modifier which sets the help category of an option. The help output groups options
+  /// from the same category together to help the user understand how different options are
+  /// related and affect one another.
+  class category {
+  public:
+    explicit constexpr category (option_category const & cat) noexcept
+            : cat_{cat} {}
+    /// \tparam Option A subclass of option.
+    /// \param option  An option instance.
+    /// \returns  A reference to \p option.
+    template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
+    Option & apply (Option & option) const {
+      option.set_category (&cat_);
+      return option;
+    }
 
-    class category {
-    public:
-      explicit constexpr category (option_category const & cat) noexcept
-              : cat_{cat} {}
-      /// \tparam Option A subclass of option.
-      /// \param option  An option instance.
-      /// \returns  A reference to \p option.
-      template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
-      Option & apply (Option & option) const {
-        option.set_category (&cat_);
-        return option;
-      }
-
-    private:
-      option_category const & cat_;
-    };
-
+  private:
+    option_category const & cat_;
+  };
 
 
   template <typename Modifier>
@@ -279,14 +280,14 @@ namespace pstore::command_line {
     return name{n};
   }
 
-
   template <typename Option>
-  void apply_to_option (Option &&) {}
+  std::enable_if_t<is_option<Option>, void> apply_modifiers_to_option (Option &&) {}
 
-  template <typename Option, typename M0, typename... Mods>
-  void apply_to_option (Option && opt, M0 && m0, Mods &&... mods) {
-    make_modifier (std::forward<M0> (m0)).apply (opt);
-    apply_to_option (std::forward<Option> (opt), std::forward<Mods> (mods)...);
+  template <typename Option, typename Modifier, typename... Mods>
+  std::enable_if_t<is_option<Option> && !is_option<Modifier>, void>
+  apply_modifiers_to_option (Option && opt, Modifier && m0, Mods &&... mods) {
+    make_modifier (std::forward<Modifier> (m0)).apply (opt);
+    apply_modifiers_to_option (std::forward<Option> (opt), std::forward<Mods> (mods)...);
   }
 
 } // namespace pstore::command_line
