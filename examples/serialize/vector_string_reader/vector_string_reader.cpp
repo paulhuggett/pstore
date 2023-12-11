@@ -36,14 +36,14 @@ namespace {
     pstore::ios_flags_saver const _{os};
     auto separator = "";
     os << std::setfill ('0') << std::hex;
-    std::for_each (begin, end, [&] (unsigned const v) {
-      os << separator << std::setw (2) << v;
+    std::for_each (begin, end, [&] (std::byte const v) {
+      os << separator << std::setw (2) << static_cast<unsigned> (v);
       separator = " ";
     });
     return os;
   }
 
-  using container_type = std::vector<std::uint8_t>;
+  using container_type = std::vector<std::byte>;
 
   void read_one_string_at_a_time (container_type const & bytes) {
     auto reader = serialize::archive::make_reader (std::begin (bytes));
@@ -69,8 +69,10 @@ namespace {
 } // namespace
 
 int main () {
-  container_type data{'H', 'e', 'l', 'l', 'o', '\0', 'T', 'h', 'e', 'r', 'e', '\0'};
-
+  std::vector<char> const input{'H', 'e', 'l', 'l', 'o', '\0', 'T', 'h', 'e', 'r', 'e', '\0'};
+  container_type data;
+  std::transform (std::begin (input), std::end (input), std::back_inserter (data),
+                  [] (char c) { return static_cast<std::byte> (c); });
   std::cout << "Reading two strings from the following input data:\n";
   dump (std::cout, std::begin (data), std::end (data));
   std::cout << '\n';
