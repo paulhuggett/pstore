@@ -126,7 +126,6 @@ namespace pstore::command_line {
   }
 
   /// Checks whether Option is a type derived from pstore::command_line::option.
-  /// \tparam Option  The type to be tested.
   template <typename Option>
   inline constexpr bool is_option =
     std::is_base_of_v<option, std::remove_reference_t<std::remove_cv_t<Option>>>;
