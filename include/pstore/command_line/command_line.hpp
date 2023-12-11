@@ -60,7 +60,7 @@ namespace pstore::command_line {
             , program_name_{std::move (program_name)}
             , overview_{std::move (program_overview)}
             , outs_{outs} {
-      apply_to_option (*this, std::forward<Mods> (mods)...);
+      apply_modifiers_to_option (*this, std::forward<Mods> (mods)...);
     }
 
     help (help const &) = delete;

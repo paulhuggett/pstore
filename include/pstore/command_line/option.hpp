@@ -125,6 +125,12 @@ namespace pstore::command_line {
     return result;
   }
 
+  /// Checks whether Option is a type derived from pstore::command_line::option.
+  /// \tparam Option  The type to be tested.
+  template <typename Option>
+  inline constexpr bool is_option =
+    std::is_base_of_v<option, std::remove_reference_t<std::remove_cv_t<Option>>>;
+
   //*           _    *
   //*  ___ _ __| |_  *
   //* / _ \ '_ \  _| *
@@ -137,7 +143,7 @@ namespace pstore::command_line {
   public:
     template <typename... Mods>
     explicit opt (Mods &&... mods) {
-      apply_to_option (*this, std::forward<Mods> (mods)...);
+      apply_modifiers_to_option (*this, std::forward<Mods> (mods)...);
     }
     opt (opt const &) = delete;
     opt (opt &&) noexcept = delete;
@@ -205,7 +211,7 @@ namespace pstore::command_line {
   public:
     template <typename... Mods>
     explicit opt (Mods &&... mods) {
-      apply_to_option (*this, std::forward<Mods> (mods)...);
+      apply_modifiers_to_option (*this, std::forward<Mods> (mods)...);
     }
     opt (opt const &) = delete;
     opt (opt &&) noexcept = delete;
@@ -251,7 +257,7 @@ namespace pstore::command_line {
     template <typename... Mods>
     explicit list (Mods &&... mods)
             : option (occurrences_flag::zero_or_more) {
-      apply_to_option (*this, std::forward<Mods> (mods)...);
+      apply_modifiers_to_option (*this, std::forward<Mods> (mods)...);
     }
 
     list (list const &) = delete;
@@ -325,7 +331,7 @@ namespace pstore::command_line {
   public:
     template <typename... Mods>
     explicit alias (Mods &&... mods) {
-      apply_to_option (*this, std::forward<Mods> (mods)...);
+      apply_modifiers_to_option (*this, std::forward<Mods> (mods)...);
     }
 
     alias (alias const &) = delete;
