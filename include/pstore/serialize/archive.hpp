@@ -153,10 +153,8 @@ namespace pstore::serialize::archive {
     /// Must not be used once the stream has been flushed.
 
     /// \param t  The value to be written to the output.
-    template <typename Ty>
+    template <typename Ty, typename = std::enable_if_t<std::is_standard_layout_v<Ty>>>
     auto put (Ty const & t) -> result_type {
-      static_assert (std::is_standard_layout<Ty>::value,
-                     "writer_base can only write standard-layout types!");
       PSTORE_ASSERT (!flushed_);
       result_type r = policy_.put (t);
       bytes_consumed_ += sizeof (t);
@@ -170,13 +168,11 @@ namespace pstore::serialize::archive {
     ///
     /// \param sp  The span of values to be written.
     /// \returns The value returned by the archive putn() function.
-    template <typename Span>
-    auto putn (Span sp) -> result_type {
-      using element_type = typename Span::element_type;
-      static_assert (std::is_standard_layout<element_type>::value,
-                     "writer_base can only write standard-layout types!");
+    template <typename ElementType, std::ptrdiff_t Extent,
+              typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+    auto putn (gsl::span<ElementType, Extent> sp) -> result_type {
       PSTORE_ASSERT (!flushed_);
-      auto r = putn_helper::template putn<Span> (policy_, sp);
+      auto r = putn_helper::template putn<ElementType, Extent> (policy_, sp);
       bytes_consumed_ += unsigned_cast (sp.size_bytes ());
       return r;
     }
@@ -206,7 +202,7 @@ namespace pstore::serialize::archive {
     ///@}
 
   protected:
-    explicit writer_base (WriterPolicy policy = WriterPolicy ())
+    explicit constexpr writer_base (WriterPolicy policy = WriterPolicy ())
             : policy_{std::move (policy)} {}
 
   private:
@@ -235,16 +231,18 @@ namespace pstore::serialize::archive {
     public:
       using result_type = typename policy_type::result_type;
 
-      template <typename Span>
-      static auto putn (WriterPolicy & policy, Span span) -> result_type {
+      template <typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+      static auto putn (WriterPolicy & policy, gsl::span<ElementType, Extent> span) -> result_type {
         return invoke (policy, span, nullptr);
       }
 
     private:
       // This overload is always in the set of overloads but a function with
       // ellipsis parameter has the lowest ranking for overload resolution.
-      template <typename P, typename Span>
-      static auto invoke (P & policy, Span span, ...) // NOLINT(cert-dcl50-cpp)
+      template <typename P, typename ElementType, std::ptrdiff_t Extent>
+      static auto invoke (P & policy, gsl::span<ElementType, Extent> span,
+                          ...) // NOLINT(cert-dcl50-cpp)
         -> result_type {
         sticky_assign<result_type> r;
         for (auto & v : span) {
@@ -255,9 +253,9 @@ namespace pstore::serialize::archive {
 
       // This overload is called if P has a putn<>() method. SFINAE means that we fall
       // back to the ellipsis overload if it does not.
-      template <typename P, typename Span>
-      static auto invoke (P & policy, Span span, decltype (&P::template putn<Span>))
-        -> result_type {
+      template <typename P, typename ElementType, std::ptrdiff_t Extent>
+      static auto invoke (P & policy, gsl::span<ElementType, Extent> span,
+                          decltype (&P::template putn<ElementType, Extent>)) -> result_type {
         return policy.putn (span);
       }
     };
@@ -362,12 +360,12 @@ namespace pstore::serialize::archive {
     public:
       using result_type = void *;
 
-      buffer_writer_policy (void * const first, void * const last) noexcept
-              : begin_ (static_cast<std::byte *> (first))
+      constexpr buffer_writer_policy (std::byte * const first, std::byte * const last) noexcept
+              : begin_ (first)
 #ifndef NDEBUG
-              , end_ (static_cast<std::byte *> (last))
+              , end_ (last)
 #endif
-              , it_ (static_cast<std::byte *> (first)) {
+              , it_ (first) {
 
         (void) last;
         PSTORE_ASSERT (end_ >= it_);
@@ -397,6 +395,7 @@ namespace pstore::serialize::archive {
       void flush () noexcept {}
 
       using const_iterator = std::byte const *;
+      using iterator = const_iterator;
 
       /// Returns a const_iterator for the beginning of the byte range.
       const_iterator begin () const noexcept { return begin_; }
@@ -423,32 +422,34 @@ namespace pstore::serialize::archive {
     ///              write data.
     /// \param last  The end of the range of address to which the buffer_writer will
     ///              write data.
-    buffer_writer (void * const first, void * const last)
+    constexpr buffer_writer (std::byte * const first, std::byte * const last)
             : writer_base<policy_type> (policy_type{first, last}) {}
-    buffer_writer (buffer_writer const &) = delete;
-    buffer_writer (buffer_writer &&) = delete;
+    constexpr buffer_writer (buffer_writer const &) = delete;
+    constexpr buffer_writer (buffer_writer &&) noexcept = delete;
 
     /// \brief Constructs the writer starting at the address given by 'first' and with a
     ///        number of bytes 'size'.
     /// \param first  The start address of the buffer to which buffer_writer will write
     ///               data.
     /// \param size   The size, in bytes, of the buffer pointed to by 'first'.
-    buffer_writer (void * const first, std::size_t const size)
-            : buffer_writer (static_cast<std::byte *> (first),
-                             static_cast<std::byte *> (first) + size) {}
+
+    constexpr buffer_writer (std::byte * const first, std::size_t const size)
+            : buffer_writer (first, first + size) {}
 
     /// \brief Constructs a buffer_writer from a pointer to allocated uninitialized
     /// storage.
-    template <typename T>
-    explicit buffer_writer (T * t)
+    template <typename T, typename std::enable_if_t<!std::is_same_v<T, buffer_writer> &&
+                                                    std::is_standard_layout_v<T>>>
+    explicit constexpr buffer_writer (T * const t)
             : buffer_writer (t, sizeof (T)) {}
 
     ~buffer_writer () noexcept override;
 
     buffer_writer & operator= (buffer_writer const &) = delete;
-    buffer_writer & operator= (buffer_writer &&) = delete;
+    buffer_writer & operator= (buffer_writer &&) noexcept = delete;
 
     using const_iterator = policy_type::const_iterator;
+    using iterator = policy_type::iterator;
 
     /// Returns a const_iterator for the beginning of the byte vector managed by the
     /// object.
@@ -477,12 +478,13 @@ namespace pstore::serialize::archive {
     class null_policy {
     public:
       using result_type = void_type;
-      template <typename Ty>
+      template <typename Ty, typename = std::enable_if_t<std::is_standard_layout_v<Ty>>>
       auto put (Ty const &) -> result_type {
         return {};
       }
-      template <typename SpanType>
-      auto putn (SpanType) -> result_type {
+      template <typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+      auto putn (gsl::span<ElementType, Extent>) -> result_type {
         return {};
       }
 
@@ -497,12 +499,12 @@ namespace pstore::serialize::archive {
   public:
     null () = default;
     null (null const &) = delete;
-    null (null &&) = delete;
+    null (null &&) noexcept = delete;
 
     ~null () noexcept override;
 
     null & operator= (null const &) = delete;
-    null & operator= (null &&) = delete;
+    null & operator= (null &&) noexcept = delete;
   };
 
 
@@ -513,38 +515,35 @@ namespace pstore::serialize::archive {
   /// \brief An archive-reader which consumes data from an iterator.
   template <typename InputIterator>
   class range_reader {
-    static_assert (sizeof (typename std::iterator_traits<InputIterator>::value_type) == 1,
+    static_assert (sizeof (typename std::iterator_traits<InputIterator>::value_type) ==
+                     sizeof (std::byte),
                    "archive_reader reads from a byte-wide sequence");
 
   public:
     /// Constructs the writer using an input iterator.
-    explicit range_reader (InputIterator first)
+    explicit constexpr range_reader (InputIterator first)
             : first_ (first) {}
 
     InputIterator iterator () { return first_; }
 
     /// Reads a single instance of a standard-layout type Ty from the input iterator and
     /// returns the value extracted.
-    template <typename Ty>
+    template <typename Ty, typename = std::enable_if_t<std::is_standard_layout_v<Ty>>>
     void get (Ty & v) {
-      static_assert (std::is_standard_layout<Ty>::value,
-                     "range_reader can only read standard-layout types");
       auto ptr = reinterpret_cast<std::byte *> (&v);
       auto const * const last = ptr + sizeof (Ty);
       while (ptr != last) {
-        *(ptr++) = *(first_++);
+        *(ptr++) = static_cast<std::byte> (*(first_++));
       }
     }
 
-    template <typename SpanType>
-    void getn (SpanType span) {
-      using element_type = typename SpanType::element_type;
-      static_assert (std::is_standard_layout<element_type>::value,
-                     "range_reader can only read standard-layout types");
+    template <typename ElementType, std::ptrdiff_t Extent,
+              typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+    void getn (gsl::span<ElementType, Extent> const span) {
       auto out = reinterpret_cast<std::byte *> (span.data ());
       auto const * const last = out + span.size_bytes ();
       while (out != last) {
-        *(out++) = *(first_++);
+        *(out++) = static_cast<std::byte> (*(first_++));
       }
     }
 
@@ -559,7 +558,7 @@ namespace pstore::serialize::archive {
   /// \result Returns an instance of range_reader which will consume bytes from the
   /// iterator.
   template <typename InputIterator>
-  range_reader<InputIterator> make_reader (InputIterator first) {
+  constexpr range_reader<InputIterator> make_reader (InputIterator first) {
     return range_reader<InputIterator>{first};
   }
 
@@ -572,26 +571,27 @@ namespace pstore::serialize::archive {
   class buffer_reader {
   public:
     /// Constructs the writer using a pair of pointer to define the range [first, last).
-    constexpr buffer_reader (void const * const first, void const * const last) noexcept
-            : first_ (static_cast<std::byte const *> (first))
-            , last_ (static_cast<std::byte const *> (last)) {}
+    constexpr buffer_reader (std::byte const * const first, std::byte const * const last) noexcept
+            : first_ (first)
+            , last_ (last) {}
 
-    /// Constructs the writer using a pointer and size to define the range [first,
-    /// first+size).
-    constexpr buffer_reader (void const * const first, std::size_t const size) noexcept
-            : first_ (static_cast<std::byte const *> (first))
-            , last_ (static_cast<std::byte const *> (first) + size) {}
 
-    /// Constructs the writer using a pointer and size to define the range [first,
+    /// Constructs the reader using a pointer and size to define the range [first,
     /// first+size).
-    template <typename SpanType>
-    explicit buffer_reader (SpanType const span) noexcept
+    constexpr buffer_reader (std::byte const * const first, std::size_t const size) noexcept
+            : first_ (first)
+            , last_ (first + size) {}
+
+    /// Constructs the read using a span to define the range.
+    template <typename ElementType, std::ptrdiff_t Extent,
+              typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+    explicit buffer_reader (gsl::span<ElementType, Extent> const span) noexcept
             : first_ (reinterpret_cast<std::byte const *> (span.data ()))
             , last_ (first_ + span.size_bytes ()) {}
 
     /// Reads a single instance of a standard-layout type T from the input iterator and
     /// returns the value extracted.
-    template <typename T>
+    template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     T get () {
       std::remove_const_t<T> result;
       static_assert (std::is_standard_layout<T>::value,

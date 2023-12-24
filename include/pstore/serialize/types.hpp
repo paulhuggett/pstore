@@ -160,54 +160,59 @@ namespace pstore::serialize {
 
     struct getn_helper {
     public:
-      template <typename Archive, typename Span>
-      static void getn (Archive && archive, Span span) {
-        getn_helper::invoke<Archive, Span> (std::forward<Archive> (archive), span, nullptr);
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+      static void getn (Archive && archive, gsl::span<ElementType, Extent> span) {
+        getn_helper::invoke<Archive, ElementType, Extent> (std::forward<Archive> (archive), span,
+                                                           nullptr);
       }
 
     private:
       /// This overload is always in the set of overloads but a function with
       /// ellipsis parameter has the lowest ranking for overload resolution.
-      template <typename Archive, typename Span>
-      static void invoke (Archive && archive, Span span, ...) {
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
+      static void invoke (Archive && archive, gsl::span<ElementType, Extent> span, ...) {
         for (auto & v : span) {
           archive.get (v);
         }
       }
 
       /// This overload is called if Archive has a getn() method.
-      template <typename Archive, typename Span>
-      static void invoke (Archive && archive, Span span,
-                          decltype (&std::remove_reference_t<Archive>::template getn<Span>)) {
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
+      static void
+      invoke (Archive && archive, gsl::span<ElementType, Extent> span,
+              decltype (&std::remove_reference_t<Archive>::template getn<ElementType, Extent>)) {
         archive.getn (span);
       }
     };
 
     struct readn_helper {
     public:
-      template <typename Archive, typename SpanType>
-      static void readn (Archive && archive, SpanType span) {
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+      static void readn (Archive && archive, gsl::span<ElementType, Extent> span) {
         readn_helper::invoke (std::forward<Archive> (archive), span, nullptr);
       }
 
     private:
       /// This overload is always in the set of overloads but a function with
       /// ellipsis parameter has the lowest ranking for overload resolution.
-      template <typename Archive, typename SpanType>
-      static void invoke (Archive && archive, SpanType span, ...) {
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
+      static void invoke (Archive && archive, gsl::span<ElementType, Extent> span, ...) {
         for (auto & v : span) {
-          serializer<typename SpanType::element_type>::read (archive, v);
+          serializer<ElementType>::read (archive, v);
         }
       }
 
       /// This overload is called if the serializer for SpanType::element_type has a
       /// readn() method. SFINAE means that we fall back to the ellipsis overload if it
       /// does not.
-      template <typename Archive, typename SpanType>
-      static void invoke (Archive && archive, SpanType span,
-                          decltype (&serializer<typename SpanType::element_type>::template readn<
-                                    std::remove_reference_t<Archive>, SpanType>)) {
-        serializer<typename SpanType::element_type>::readn (std::forward<Archive> (archive), span);
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
+      static void
+      invoke (Archive && archive, gsl::span<ElementType, Extent> span,
+              decltype (&serializer<ElementType>::template readn<std::remove_reference_t<Archive>,
+                                                                 ElementType, Extent>)) {
+        serializer<ElementType>::readn (std::forward<Archive> (archive), span);
       }
     };
 
@@ -249,10 +254,9 @@ namespace pstore::serialize {
       // This overload is called if Archive has a writen() method. SFINAE means that we
       // fall back to the ellipsis overload if it does not.
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-      static auto
-      invoke (Archive && archive, gsl::span<ElementType, Extent> span,
-              decltype (&serializer<std::decay_t<ElementType>>::template writen<
-                        std::remove_reference_t<Archive>, gsl::span<ElementType, Extent>>))
+      static auto invoke (Archive && archive, gsl::span<ElementType, Extent> span,
+                          decltype (&serializer<std::decay_t<ElementType>>::template writen<
+                                    std::remove_reference_t<Archive>, ElementType, Extent>))
         -> archive_result_type<std::decay_t<Archive>> {
         return serializer<std::decay_t<ElementType>>::writen (std::forward<Archive> (archive),
                                                               span);
@@ -277,11 +281,10 @@ namespace pstore::serialize {
     ///
     /// \param archive  The archive to which the span will be written.
     /// \param span     The span which is to be written.
-    template <typename Archive, typename SpanType>
-    static auto writen (Archive && archive, SpanType span) -> archive_result_type<Archive> {
-      static_assert (
-        std::is_same_v<std::decay_t<typename SpanType::element_type>, std::decay_t<Ty>>,
-        "span type does not match the serializer type");
+    template <typename Archive, typename ElementType, std::ptrdiff_t Extent,
+              typename = std::enable_if_t<std::is_same_v<ElementType, Ty>>>
+    static auto writen (Archive && archive, gsl::span<ElementType, Extent> span)
+      -> archive_result_type<Archive> {
       return archive.putn (span);
     }
 
@@ -300,10 +303,9 @@ namespace pstore::serialize {
     ///
     /// \param archive  The archive from which the value will be read.
     /// \param span     A span pointing to uninitialized memory
-    template <typename Archive, typename Span>
-    static void readn (Archive && archive, Span span) {
-      static_assert (std::is_same_v<typename Span::element_type, Ty>,
-                     "span type does not match the serializer type");
+    template <typename Archive, typename ElementType, std::ptrdiff_t Extent,
+              typename = std::enable_if_t<std::is_same_v<ElementType, Ty>>>
+    static void readn (Archive && archive, gsl::span<ElementType, Extent> span) {
       details::getn_helper::getn (std::forward<Archive> (archive), span);
     }
   };
