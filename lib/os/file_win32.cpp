@@ -271,7 +271,7 @@ namespace pstore {
 
     // read
     // ~~~~
-    std::size_t file_handle::read_buffer (gsl::not_null<void *> buffer, std::size_t size) {
+    std::size_t file_handle::read_buffer (gsl::not_null<std::byte *> buffer, std::size_t size) {
       this->ensure_open ();
 
       return details::split<DWORD> (buffer, size, [this] (void * ptr, DWORD num_to_read) -> DWORD {
@@ -286,7 +286,7 @@ namespace pstore {
 
     // write buffer
     // ~~~~~~~~~~~~
-    void file_handle::write_buffer (gsl::not_null<void const *> buffer, std::size_t size) {
+    void file_handle::write_buffer (gsl::not_null<std::byte const *> buffer, std::size_t size) {
       this->ensure_open ();
 
       std::size_t const bytes_written = details::split<DWORD> (

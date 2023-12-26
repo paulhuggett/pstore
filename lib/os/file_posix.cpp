@@ -285,7 +285,7 @@ namespace pstore::file {
 
   // read buffer
   // ~~~~~~~~~~~
-  std::size_t file_handle::read_buffer (gsl::not_null<void *> const buffer,
+  std::size_t file_handle::read_buffer (gsl::not_null<std::byte *> const buffer,
                                         std::size_t const nbytes) {
     if (nbytes > unsigned_cast (std::numeric_limits<ssize_t>::max ())) {
       raise (std::errc::invalid_argument, "read_buffer");
@@ -302,7 +302,7 @@ namespace pstore::file {
 
   // write buffer
   // ~~~~~~~~~~~~
-  void file_handle::write_buffer (gsl::not_null<void const *> const buffer,
+  void file_handle::write_buffer (gsl::not_null<std::byte const *> const buffer,
                                   std::size_t const nbytes) {
     this->ensure_open ();
 
