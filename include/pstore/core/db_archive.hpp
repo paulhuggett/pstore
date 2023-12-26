@@ -41,7 +41,7 @@ namespace pstore::serialize::archive {
       /// Writes an instance of a standard-layout type T to the database.
       /// \param value  The value to be written to the output container.
       /// \returns The pstore address at which the value was written.
-      template <typename Ty>
+      template <typename Ty, typename = std::enable_if_t<std::is_standard_layout_v<Ty>>>
       auto put (Ty const & value) -> result_type {
         std::shared_ptr<Ty> ptr;
         auto addr = typed_address<Ty>::null ();
@@ -50,14 +50,13 @@ namespace pstore::serialize::archive {
         return addr.to_address ();
       }
 
-      template <typename Span>
-      auto putn (Span sp) -> result_type {
-        using element_type = typename std::remove_const_t<typename Span::element_type>;
-
-        std::shared_ptr<element_type> ptr;
-        auto addr = typed_address<element_type>::null ();
+      template <typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+      auto putn (gsl::span<ElementType, Extent> sp) -> result_type {
+        std::shared_ptr<ElementType> ptr;
+        auto addr = typed_address<ElementType>::null ();
         std::tie (ptr, addr) =
-          transaction_.template alloc_rw<element_type> (unsigned_cast (sp.size ()));
+          transaction_.template alloc_rw<ElementType> (unsigned_cast (sp.size ()));
         std::copy (std::begin (sp), std::end (sp), ptr.get ());
         return addr.to_address ();
       }
@@ -122,11 +121,9 @@ namespace pstore::serialize::archive {
     /// Reads a span of a trivial type from the current store address.
     ///
     /// \param span  A span of uninitialized memory into which the data will be placed.
-    ///
-    /// \tparam SpanType  A GSL span which describes a range of uninitialized memory.
-    template <typename SpanType, typename = std::enable_if_t<
-                                   std::is_standard_layout_v<typename SpanType::element_type>>>
-    void getn (SpanType span);
+    template <typename ElementType, std::ptrdiff_t Extent,
+              typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+    void getn (gsl::span<ElementType, Extent> span);
 
   private:
     database const & db_; ///< The database from which data is read.
@@ -149,13 +146,11 @@ namespace pstore::serialize::archive {
 
   // getn
   // ~~~~
-  template <typename SpanType, typename>
-  void database_reader::getn (SpanType span) {
-    using element_type = typename SpanType::element_type;
-
+  template <typename ElementType, std::ptrdiff_t Extent, typename>
+  void database_reader::getn (gsl::span<ElementType, Extent> span) {
     // Adjust addr_ so that it is correctly aligned for element_type.
-    auto const extra_for_alignment = calc_alignment (addr_.absolute (), alignof (element_type));
-    PSTORE_ASSERT (extra_for_alignment < sizeof (element_type));
+    auto const extra_for_alignment = calc_alignment (addr_.absolute (), alignof (ElementType));
+    PSTORE_ASSERT (extra_for_alignment < sizeof (ElementType));
     addr_ += extra_for_alignment;
 
     // Load the data.
