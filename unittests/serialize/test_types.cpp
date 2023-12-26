@@ -55,13 +55,13 @@ namespace pstore::serialize {
     using value_type = NonIntrusiveSerializer::non_standard_layout_type;
 
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & p) -> archive_result_type<Archive> {
-      return serialize::write (std::forward<Archive> (archive), p.a);
+    static auto write (Archive & archive, value_type const & p) -> archive_result_type<Archive> {
+      return serialize::write (archive, p.a);
     }
 
     template <typename Archive>
-    static void read (Archive && archive, value_type & out) {
-      new (&out) value_type (serialize::read<int> (std::forward<Archive> (archive)));
+    static void read (Archive & archive, value_type & out) {
+      new (&out) value_type (serialize::read<int> (archive));
     }
   };
 
@@ -109,12 +109,12 @@ namespace pstore::serialize {
     using value_type = SerializeSpanFallback::simple_struct;
 
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & p) -> archive_result_type<Archive> {
+    static auto write (Archive & archive, value_type const & p) -> archive_result_type<Archive> {
       return archive.write (p);
     }
 
     template <typename Archive>
-    static void read (Archive && archive, value_type & out) {
+    static void read (Archive & archive, value_type & out) {
       archive.read (out);
     }
   };
@@ -174,12 +174,12 @@ namespace pstore::serialize {
     using value_type = SerializeSpan::simple_struct;
 
     template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-    static auto writen (Archive && mock, gsl::span<ElementType, Extent> sp)
+    static auto writen (Archive & mock, gsl::span<ElementType, Extent> sp)
       -> archive_result_type<Archive> {
       return mock.writen (sp);
     }
     template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-    static void readn (Archive && mock, gsl::span<ElementType, Extent> sp) {
+    static void readn (Archive & mock, gsl::span<ElementType, Extent> sp) {
       mock.readn (sp);
     }
   };

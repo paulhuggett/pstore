@@ -125,8 +125,8 @@ TEST_F (DbArchive, WriteAUint64Span) {
   mock_mutex mutex;
   auto transaction = begin (db, std::unique_lock<mock_mutex>{mutex});
   auto const where = pstore::address{db.size ()};
-  pstore::serialize::write (pstore::serialize::archive::make_writer (transaction),
-                            pstore::gsl::make_span (original));
+  auto writer = pstore::serialize::archive::make_writer (transaction);
+  pstore::serialize::write (writer, pstore::gsl::make_span (original));
 
   // Now read that value back again using the raw pstore API and check that the round-trip was
   // successful.
@@ -183,8 +183,8 @@ TEST_F (DbArchiveWriteSpan, WriteUint64Span) {
     .WillOnce (invoke_base_allocate);
 
   // Write the span.
-  using namespace pstore::serialize;
-  write (archive::make_writer (transaction), pstore::gsl::make_span (original));
+  auto writer = pstore::serialize::archive::make_writer (transaction);
+  pstore::serialize::write (writer, pstore::gsl::make_span (original));
 }
 
 namespace {
@@ -285,9 +285,8 @@ TEST_F (DbArchiveReadSpan, ReadUint64Span) {
     .Times (1)
     .WillOnce (invoke_base_getu);
 
-  using namespace pstore::serialize;
-  read (archive::database_reader (db, addr.to_address ()),
-        pstore::gsl::span<std::uint64_t>{actual});
+  auto reader = pstore::serialize::archive::database_reader (db, addr.to_address ());
+  pstore::serialize::read (reader, pstore::gsl::span<std::uint64_t>{actual});
 
   EXPECT_THAT (actual, testing::ContainerEq (original));
 }

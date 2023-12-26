@@ -38,12 +38,12 @@ namespace {
     // pstore::serialize::serializer<Ty>.
 
     template <typename Archive, typename = std::enable_if_t<!std::is_same_v<Archive, foo>>>
-    explicit foo (Archive && archive)
-            : a_ (pstore::serialize::read<int> (std::forward<Archive> (archive))) {}
+    explicit foo (Archive & archive)
+            : a_ (pstore::serialize::read<int> (archive)) {}
 
     template <typename Archive>
-    auto write (Archive && archive) const -> typename std::decay_t<Archive>::result_type {
-      return pstore::serialize::write (std::forward<Archive> (archive), a_);
+    auto write (Archive & archive) const -> typename std::decay_t<Archive>::result_type {
+      return pstore::serialize::write (archive, a_);
     }
 
     foo & operator= (foo const &) noexcept = default;

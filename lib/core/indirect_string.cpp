@@ -46,8 +46,8 @@ namespace pstore {
       return reinterpret_cast<sstring_view<char const *> const *> (address_ & ~in_heap_mask)
         ->length ();
     }
-    return serialize::string_helper::read_length (
-      serialize::archive::make_reader (db_, address{address_}));
+    auto reader = serialize::archive::make_reader (db_, address{address_});
+    return serialize::string_helper::read_length (reader);
   }
 
   // operator<
@@ -102,7 +102,8 @@ namespace pstore {
     transaction.allocate (0, aligned_to);
 
     // Write the string body.
-    auto const body_address = serialize::write (serialize::archive::make_writer (transaction), str);
+    auto archive = serialize::archive::make_writer (transaction);
+    auto const body_address = serialize::write (archive, str);
 
     // Modify the in-store address field so that it points to the string body.
     auto const addr = transaction.getrw (address_to_patch);
@@ -126,8 +127,8 @@ namespace pstore {
   // ~~~~
   indirect_string indirect_string::read (database const & db,
                                          typed_address<indirect_string> const addr) {
-    return serialize::read<indirect_string> (
-      serialize::archive::make_reader (db, addr.to_address ()));
+    auto reader = serialize::archive::make_reader (db, addr.to_address ());
+    return serialize::read<indirect_string> (reader);
   }
 
   // flush
@@ -157,7 +158,8 @@ namespace pstore {
 
   raw_sstring_view get_sstring_view (database const & db, address const addr,
                                      gsl::not_null<shared_sstring_view *> const owner) {
-    *owner = serialize::read<shared_sstring_view> (serialize::archive::make_reader (db, addr));
+    auto reader = serialize::archive::make_reader (db, addr);
+    *owner = serialize::read<shared_sstring_view> (reader);
     return {owner->data (), owner->length ()};
   }
 

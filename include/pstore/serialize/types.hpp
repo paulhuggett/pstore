@@ -92,12 +92,16 @@
 #ifndef PSTORE_SERIALIZE_TYPES_HPP
 #define PSTORE_SERIALIZE_TYPES_HPP
 
-#include <algorithm>
-#include <cstring>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <memory>
+#include <new>
+#include <type_traits>
 
 #include "pstore/serialize/common.hpp"
+#include "pstore/support/assert.hpp"
 #include "pstore/support/gsl.hpp"
-#include "pstore/support/portab.hpp"
 
 namespace pstore::serialize {
 
@@ -119,7 +123,7 @@ namespace pstore::serialize {
     /// Requires that the type Ty implements a method with the following signature:
     ///
     ///     template <typename Archive>
-    ///     void write (Archive && archive) const;
+    ///     void write (Archive & archive) const;
     ///
     /// This function should write the contents of the object to the supplied archive
     /// instance.
@@ -128,8 +132,8 @@ namespace pstore::serialize {
     /// \param v        An object which is the source for the write operation. Its contents
     ///                 are written to the archive.
     template <typename Archive>
-    static auto write (Archive && archive, Ty const & v) -> archive_result_type<Archive> {
-      return v.write (std::forward<Archive> (archive));
+    static auto write (Archive & archive, Ty const & v) -> archive_result_type<Archive> {
+      return v.write (archive);
     }
 
     /// \brief Reads a value of type Ty from an archive.
@@ -137,7 +141,7 @@ namespace pstore::serialize {
     /// Requires that the type Ty provides a constructor with the following signature:
     ///
     ///     template <typename Archive>
-    ///     explicit Ty (Archive && archive);
+    ///     explicit Ty (Archive & archive);
     ///
     /// (You are encouraged to make such a constructor `explicit`, although this is not
     /// required.) This method should build the value of the new object from the contents
@@ -148,9 +152,9 @@ namespace pstore::serialize {
     ///   placed. This is uninitialized memory suitable for construction of an instance of
     ///   type Ty.
     template <typename Archive>
-    static void read (Archive && archive, Ty & v) {
+    static void read (Archive & archive, Ty & v) {
       PSTORE_ASSERT (reinterpret_cast<std::uintptr_t> (&v) % alignof (Ty) == 0);
-      new (&v) Ty (std::forward<Archive> (archive));
+      new (&v) Ty (archive);
     }
   };
 
@@ -160,16 +164,15 @@ namespace pstore::serialize {
     struct getn_helper {
     public:
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-      static void getn (Archive && archive, gsl::span<ElementType, Extent> span) {
-        getn_helper::invoke<Archive, ElementType, Extent> (std::forward<Archive> (archive), span,
-                                                           nullptr);
+      static void getn (Archive & archive, gsl::span<ElementType, Extent> span) {
+        getn_helper::invoke (archive, span, nullptr);
       }
 
     private:
       /// This overload is always in the set of overloads but a function with
       /// ellipsis parameter has the lowest ranking for overload resolution.
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-      static void invoke (Archive && archive, gsl::span<ElementType, Extent> span, ...) {
+      static void invoke (Archive & archive, gsl::span<ElementType, Extent> span, ...) {
         for (auto & v : span) {
           archive.get (v);
         }
@@ -178,7 +181,7 @@ namespace pstore::serialize {
       /// This overload is called if Archive has a getn() method.
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
       static void
-      invoke (Archive && archive, gsl::span<ElementType, Extent> span,
+      invoke (Archive & archive, gsl::span<ElementType, Extent> span,
               decltype (&std::remove_reference_t<Archive>::template getn<ElementType, Extent>)) {
         archive.getn (span);
       }
@@ -187,15 +190,15 @@ namespace pstore::serialize {
     struct readn_helper {
     public:
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-      static void readn (Archive && archive, gsl::span<ElementType, Extent> span) {
-        readn_helper::invoke (std::forward<Archive> (archive), span, nullptr);
+      static void readn (Archive & archive, gsl::span<ElementType, Extent> span) {
+        readn_helper::invoke (archive, span, nullptr);
       }
 
     private:
       /// This overload is always in the set of overloads but a function with
       /// ellipsis parameter has the lowest ranking for overload resolution.
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-      static void invoke (Archive && archive, gsl::span<ElementType, Extent> span, ...) {
+      static void invoke (Archive & archive, gsl::span<ElementType, Extent> span, ...) {
         for (auto & v : span) {
           serializer<ElementType>::read (archive, v);
         }
@@ -206,10 +209,10 @@ namespace pstore::serialize {
       /// does not.
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
       static void
-      invoke (Archive && archive, gsl::span<ElementType, Extent> span,
+      invoke (Archive & archive, gsl::span<ElementType, Extent> span,
               decltype (&serializer<ElementType>::template readn<std::remove_reference_t<Archive>,
                                                                  ElementType, Extent>)) {
-        serializer<ElementType>::readn (std::forward<Archive> (archive), span);
+        serializer<ElementType>::readn (archive, span);
       }
     };
 
@@ -230,14 +233,14 @@ namespace pstore::serialize {
     struct writen_helper {
     public:
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-      static auto writen (Archive && archive, gsl::span<ElementType, Extent> span)
+      static auto writen (Archive & archive, gsl::span<ElementType, Extent> span)
         -> archive_result_type<std::decay_t<Archive>> {
-        return writen_helper::invoke (std::forward<Archive> (archive), span, nullptr);
+        return writen_helper::invoke (archive, span, nullptr);
       }
 
     private:
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-      static auto invoke (Archive && archive, gsl::span<ElementType, Extent> span, ...)
+      static auto invoke (Archive & archive, gsl::span<ElementType, Extent> span, ...)
         -> archive_result_type<std::decay_t<Archive>> {
         // A simmple implementation of writen() which loops over the span calling
         // write() for each element.
@@ -251,12 +254,11 @@ namespace pstore::serialize {
       // This overload is called if Archive has a writen() method. SFINAE means that we
       // fall back to the ellipsis overload if it does not.
       template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-      static auto invoke (Archive && archive, gsl::span<ElementType, Extent> span,
+      static auto invoke (Archive & archive, gsl::span<ElementType, Extent> span,
                           decltype (&serializer<std::decay_t<ElementType>>::template writen<
                                     std::remove_reference_t<Archive>, ElementType, Extent>))
         -> archive_result_type<std::decay_t<Archive>> {
-        return serializer<std::decay_t<ElementType>>::writen (std::forward<Archive> (archive),
-                                                              span);
+        return serializer<std::decay_t<ElementType>>::writen (archive, span);
       }
     };
 
@@ -270,7 +272,7 @@ namespace pstore::serialize {
     /// \param archive  The archive to which the span will be written.
     /// \param v        The object value which is to be written.
     template <typename Archive>
-    static auto write (Archive && archive, Ty const & v) -> archive_result_type<Archive> {
+    static auto write (Archive & archive, Ty const & v) -> archive_result_type<Archive> {
       return archive.put (v);
     }
 
@@ -280,7 +282,7 @@ namespace pstore::serialize {
     /// \param span     The span which is to be written.
     template <typename Archive, typename ElementType, std::ptrdiff_t Extent,
               typename = std::enable_if_t<std::is_same_v<ElementType, Ty>>>
-    static auto writen (Archive && archive, gsl::span<ElementType, Extent> span)
+    static auto writen (Archive & archive, gsl::span<ElementType, Extent> span)
       -> archive_result_type<Archive> {
       return archive.putn (span);
     }
@@ -291,7 +293,7 @@ namespace pstore::serialize {
     /// \param out      A reference to uninitialized memory into which an instance of Ty
     ///                 will be read.
     template <typename Archive>
-    static void read (Archive && archive, Ty & out) {
+    static void read (Archive & archive, Ty & out) {
       PSTORE_ASSERT (reinterpret_cast<std::uintptr_t> (&out) % alignof (Ty) == 0);
       archive.get (out);
     }
@@ -302,8 +304,8 @@ namespace pstore::serialize {
     /// \param span     A span pointing to uninitialized memory
     template <typename Archive, typename ElementType, std::ptrdiff_t Extent,
               typename = std::enable_if_t<std::is_same_v<ElementType, Ty>>>
-    static void readn (Archive && archive, gsl::span<ElementType, Extent> span) {
-      details::getn_helper::getn (std::forward<Archive> (archive), span);
+    static void readn (Archive & archive, gsl::span<ElementType, Extent> span) {
+      details::getn_helper::getn (archive, span);
     }
   };
 
@@ -326,19 +328,19 @@ namespace pstore::serialize {
   constexpr bool is_compatible_v = is_compatible<T1, T2>::value;
 
   template <typename Archive, typename ElementType>
-  void read_uninit (Archive && archive, ElementType & uninit) {
-    serializer<ElementType>::read (std::forward<Archive> (archive), uninit);
+  void read_uninit (Archive & archive, ElementType & uninit) {
+    serializer<ElementType>::read (archive, uninit);
   }
   /// A read of a span of 1 is optimized into a read of an individual value.
   template <typename Archive, typename ElementType>
-  void read_uninit (Archive && archive, gsl::span<ElementType, 1> uninit_span) {
+  void read_uninit (Archive & archive, gsl::span<ElementType, 1> uninit_span) {
     static_assert (uninit_span.size () == 1, "Expected span to be 1 in specialization");
-    serializer<ElementType>::read (std::forward<Archive> (archive), uninit_span[0]);
+    serializer<ElementType>::read (archive, uninit_span[0]);
   }
 
   template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-  void read_uninit (Archive && archive, gsl::span<ElementType, Extent> uninit_span) {
-    details::readn_helper::readn (std::forward<Archive> (archive), uninit_span);
+  void read_uninit (Archive & archive, gsl::span<ElementType, Extent> uninit_span) {
+    details::readn_helper::readn (archive, uninit_span);
   }
 
 
@@ -380,14 +382,14 @@ namespace pstore::serialize {
   ///@{
   /// \brief Read a single value from an archive
   template <typename Ty, typename Archive>
-  Ty read (Archive && archive) {
+  Ty read (Archive & archive) {
     using T2 = typename std::remove_const_t<Ty>;
     std::aligned_storage_t<sizeof (T2), alignof (T2)> uninit_buffer;
     flood (&uninit_buffer);
 
     // Deserialize into the uninitialized buffer.
     auto & t2 = reinterpret_cast<T2 &> (uninit_buffer);
-    read_uninit (std::forward<Archive> (archive), t2);
+    read_uninit (archive, t2);
 
     // This object will destroy the remains of the T2 instance in uninit_buffer.
     auto const dtor = [] (T2 * const p) { p->~T2 (); };
@@ -398,17 +400,17 @@ namespace pstore::serialize {
   /// \brief Read a span containing a single value from an archive.
   /// This is optimized as a read of a single value.
   template <typename Ty, typename Archive>
-  void read (Archive && archive, gsl::span<Ty, 1> span) {
+  void read (Archive & archive, gsl::span<Ty, 1> span) {
     PSTORE_ASSERT (span.size () == 1U);
-    span[0] = read<Ty> (std::forward<Archive> (archive));
+    span[0] = read<Ty> (archive);
   }
 
   template <typename ElementType, std::ptrdiff_t Extent, typename Archive>
-  void read (Archive && archive, gsl::span<ElementType, Extent> span) {
+  void read (Archive & archive, gsl::span<ElementType, Extent> span) {
     for (auto & element : span) {
       element.~ElementType ();
     }
-    read_uninit (std::forward<Archive> (archive), span);
+    read_uninit (archive, span);
   }
   ///@}
 
@@ -417,35 +419,34 @@ namespace pstore::serialize {
   //* \ V  V / '_| |  _/ -_) *
   //*  \_/\_/|_| |_|\__\___| *
   //*                        *
-  ///@{
-  /// \brief Write a single value to an archive.
+  /// \brief Write a series of one of more values to an archive.
   template <typename Archive, typename Ty>
-  auto write (Archive && archive, Ty const & ty) -> archive_result_type<Archive> {
-    return serializer<Ty>::write (std::forward<Archive> (archive), ty);
+  auto write (Archive & archive, Ty const & ty) -> archive_result_type<Archive> {
+    return serializer<Ty>::write (archive, ty);
   }
 
+  template <typename Archive, typename Ty, typename... Args>
+  auto write (Archive & archive, Ty const & ty, Args const &... args)
+    -> archive_result_type<Archive> {
+    auto const result = write (archive, ty);
+    write (archive, args...);
+    return result;
+  }
+  ///@{
   /// \brief Write a span of elements to an archive.
   template <typename Archive, typename ElementType, std::ptrdiff_t Extent>
-  auto write (Archive && archive, gsl::span<ElementType, Extent> sp)
+  auto write (Archive & archive, gsl::span<ElementType, Extent> sp)
     -> archive_result_type<Archive> {
-    return details::writen_helper::writen (std::forward<Archive> (archive), sp);
+    return details::writen_helper::writen (archive, sp);
   }
 
   /// \brief Write a single-element span to an archive.
   template <typename Archive, typename ElementType>
-  auto write (Archive && archive, gsl::span<ElementType, 1> sp) -> archive_result_type<Archive> {
+  auto write (Archive & archive, gsl::span<ElementType, 1> sp) -> archive_result_type<Archive> {
     static_assert (sp.size () == 1, "Expected size to be 1 in specialization");
-    return serializer<ElementType>::write (std::forward<Archive> (archive), sp[0]);
+    return serializer<ElementType>::write (archive, sp[0]);
   }
 
-  /// \brief Write a series of values to an archive.
-  template <typename Archive, typename Ty, typename... Args>
-  auto write (Archive && archive, Ty const & ty, Args const &... args)
-    -> archive_result_type<Archive> {
-    auto const result = write (archive, ty);
-    write (std::forward<Archive> (archive), args...);
-    return result;
-  }
   ///@}
 
 } // namespace pstore::serialize

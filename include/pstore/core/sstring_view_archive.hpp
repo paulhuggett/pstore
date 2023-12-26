@@ -49,8 +49,8 @@ namespace pstore::serialize {
     using value_type = sstring_view<std::shared_ptr<char const>>;
 
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & str) -> archive_result_type<Archive> {
-      return string_helper::write (std::forward<Archive> (archive), str);
+    static auto write (Archive & archive, value_type const & str) -> archive_result_type<Archive> {
+      return string_helper::write (archive, str);
     }
 
     /// \brief Reads an instance of `sstring_view` from an archiver.
@@ -80,8 +80,8 @@ namespace pstore::serialize {
     using value_type = sstring_view<char const *>;
 
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & str) -> archive_result_type<Archive> {
-      return string_helper::write (std::forward<Archive> (archive), str);
+    static auto write (Archive & archive, value_type const & str) -> archive_result_type<Archive> {
+      return string_helper::write (archive, str);
     }
     // note that there's no read() implementation.
   };
@@ -111,12 +111,12 @@ namespace pstore::serialize {
   struct serializer<sstring_view<PointerType> const> {
     using value_type = sstring_view<PointerType>;
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & str) -> archive_result_type<Archive> {
-      return serializer::write (std::forward<Archive> (archive), str);
+    static auto write (Archive & archive, value_type const & str) -> archive_result_type<Archive> {
+      return serializer::write (archive, str);
     }
     template <typename Archive>
-    static void read (Archive && archive, value_type & str) {
-      serialize::read_uninit (std::forward<Archive> (archive), str);
+    static void read (Archive & archive, value_type & str) {
+      serialize::read_uninit (archive, str);
     }
   };
 

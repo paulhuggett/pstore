@@ -673,8 +673,10 @@ namespace pstore {
                                                                   address const addr) const
       -> value_type {
 
-      return serialize::read<std::pair<KeyType, ValueType>> (
-        serialize::archive::database_reader{db, addr});
+      auto reader = serialize::archive::database_reader{db, addr};
+      // Note that we can't use value_type here because we don't want KeyType to be
+      // const-qualified.
+      return serialize::read<std::pair<KeyType, ValueType>> (reader);
     }
 
     // get key
@@ -683,8 +685,8 @@ namespace pstore {
     auto hamt_map<KeyType, ValueType, Hash, KeyEqual>::get_key (database const & db,
                                                                 address const addr) const
       -> key_type {
-
-      return serialize::read<KeyType> (serialize::archive::database_reader{db, addr});
+      auto reader = serialize::archive::database_reader{db, addr};
+      return serialize::read<KeyType> (reader);
     }
 
     // store leaf
@@ -703,7 +705,8 @@ namespace pstore {
       transaction.allocate (0, aligned_to);
 
       // Now write the node and return where it went.
-      address const result = serialize::write (serialize::archive::make_writer (transaction), v);
+      auto writer = serialize::archive::make_writer (transaction);
+      address const result = serialize::write (writer, v);
       PSTORE_ASSERT ((result.absolute () & (aligned_to - 1U)) == 0U);
       parents->push (details::parent_type{index_pointer{result}});
 
