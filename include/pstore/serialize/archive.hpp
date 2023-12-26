@@ -358,7 +358,7 @@ namespace pstore::serialize::archive {
   namespace details {
     class buffer_writer_policy {
     public:
-      using result_type = void *;
+      using result_type = std::byte *;
 
       constexpr buffer_writer_policy (std::byte * const first, std::byte * const last) noexcept
               : begin_ (first)
@@ -392,7 +392,7 @@ namespace pstore::serialize::archive {
         return static_cast<std::size_t> (it_ - begin_);
       }
 
-      void flush () noexcept {}
+      void flush () noexcept { /* nothing to flush */ }
 
       using const_iterator = std::byte const *;
       using iterator = const_iterator;
