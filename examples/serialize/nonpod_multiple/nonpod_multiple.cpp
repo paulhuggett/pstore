@@ -52,17 +52,17 @@ namespace pstore::serialize {
     // Writes an instance of foo to an archive. The data stream contains
     // a single int value.
     template <typename Archive>
-    static auto write (Archive && archive, foo const & value) ->
+    static auto write (Archive & archive, foo const & value) ->
       typename std::decay_t<Archive>::result_type {
-      return serialize::write (std::forward<Archive> (archive), value.a_);
+      return serialize::write (archive, value.a_);
     }
 
     // Reads an instance of foo from an archive. To do this, we read an integer from
     // the supplied archive and use it to construct a new foo instance into the
     // uninitialized memory supplied by the caller.
     template <typename Archive>
-    static void read (Archive && archive, foo & sp) {
-      new (&sp) foo (serialize::read<decltype (sp.a_)> (std::forward<Archive> (archive)));
+    static void read (Archive & archive, foo & sp) {
+      new (&sp) foo (serialize::read<decltype (sp.a_)> (archive));
     }
   };
 

@@ -188,12 +188,12 @@ namespace pstore {
       using value_type = index::details::empty_class;
 
       template <typename Archive>
-      static auto write (Archive && archive, value_type const &) -> archive_result_type<Archive> {
+      static auto write (Archive & archive, value_type const &) -> archive_result_type<Archive> {
         // Tell the archiver to write an array of 0 elements. This should write
         // nothing at all but yield the location at which it would have gone (with the
         // correct type).
         auto const dummy = std::uint8_t{0};
-        return serialize::write (std::forward<Archive> (archive), gsl::make_span (&dummy, &dummy));
+        return serialize::write (archive, gsl::make_span (&dummy, &dummy));
       }
 
       template <typename Archive>

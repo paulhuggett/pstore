@@ -19,11 +19,20 @@
 #ifndef PSTORE_SERIALIZE_STANDARD_TYPES_HPP
 #define PSTORE_SERIALIZE_STANDARD_TYPES_HPP
 
+#include <array>
 #include <atomic>
-#include <map>
-#include <set>
+#include <cstddef>
+#include <functional>
+#include <iterator>
+#include <memory>
+#include <new>
+#include <string>
+#include <utility>
 
+#include "pstore/config/config.hpp"
 #include "pstore/serialize/types.hpp"
+#include "pstore/support/assert.hpp"
+#include "pstore/support/gsl.hpp"
 #include "pstore/support/varint.hpp"
 
 ///@{
@@ -42,13 +51,13 @@ namespace pstore::serialize {
     /// to two for strings < (2^14 - 1) characters (and three for strings longer
     /// than that.
     ///
-    /// \param archive  The Archiver to which the value 'str' should be written.
+    /// \param writer  The Archiver to which the value 'str' should be written.
     /// \param str      The string whose content is to be written to the archive.
     /// \returns The value returned by writing the first byte of the string length.
     ///   By convention, this is the "address" of the string data (although the precise
     ///   meaning is determined by the archive type).
     template <typename Archive, typename StringType>
-    static auto write (Archive && archive, StringType const & str) -> archive_result_type<Archive> {
+    static auto write (Archive & writer, StringType const & str) -> archive_result_type<Archive> {
       auto const length = str.length ();
 
       // Encode the string length as a variable-length integer.
@@ -62,21 +71,21 @@ namespace pstore::serialize {
         *(last++) = std::byte{0};
       }
       // Emit the string length.
-      auto const resl = serialize::write (
-        archive, gsl::make_span (std::addressof (*first), std::addressof (*last)));
+      auto const resl =
+        serialize::write (writer, gsl::make_span (std::addressof (*first), std::addressof (*last)));
 
       // Emit the string body.
-      serialize::write (std::forward<Archive> (archive), gsl::make_span (str));
+      serialize::write (writer, gsl::make_span (str));
       return resl;
     }
 
     template <typename Archive>
-    static std::size_t read_length (Archive && archive) {
+    static std::size_t read_length (Archive & reader) {
       std::array<std::byte, varint::max_output_length> encoded_length{{std::byte{0}}};
       // First read the two initial bytes. These contain the variable length value
       // but might not be enough for the entire value.
       static_assert (varint::max_output_length >= 2, "maximum encoded varint length must be >= 2");
-      serialize::read_uninit (archive, gsl::make_span (encoded_length.data (), 2));
+      serialize::read_uninit (reader, gsl::make_span (encoded_length.data (), 2));
 
       auto const varint_length = varint::decode_size (std::begin (encoded_length));
       PSTORE_ASSERT (varint_length > 0);
@@ -84,7 +93,7 @@ namespace pstore::serialize {
       // length value.
       if (varint_length > 2) {
         PSTORE_ASSERT (varint_length <= encoded_length.size ());
-        serialize::read_uninit (archive,
+        serialize::read_uninit (reader,
                                 gsl::make_span (encoded_length.data () + 2, varint_length - 2));
       }
 
@@ -99,17 +108,17 @@ namespace pstore::serialize {
 
     /// \brief Writes an instance of `std::string` to an archive.
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & str) -> archive_result_type<Archive> {
-      return string_helper::write (std::forward<Archive> (archive), str);
+    static auto write (Archive & writer, value_type const & str) -> archive_result_type<Archive> {
+      return string_helper::write (writer, str);
     }
 
     /// \brief Reads an instance of `std::string` from an archiver.
     ///
-    /// \param archive  The Archiver from which a string will be read.
+    /// \param reader  The Archiver from which a string will be read.
     /// \param str      A reference to uninitialized memory that is suitable for a new
     /// string instance.
     template <typename Archive>
-    static void read (Archive && archive, value_type & str) {
+    static void read (Archive & reader, value_type & str) {
       // Read the body of the string.
       new (&str) value_type;
 
@@ -121,7 +130,7 @@ namespace pstore::serialize {
       };
       std::unique_ptr<value_type, decltype (dtor)> deleter (&str, dtor);
 
-      auto const length = string_helper::read_length (archive);
+      auto const length = string_helper::read_length (reader);
       str.resize (length);
 
 #ifdef PSTORE_HAVE_NON_CONST_STD_STRING_DATA
@@ -132,7 +141,7 @@ namespace pstore::serialize {
       auto * const data = const_cast<char *> (str.data ());
 #endif
       // Now read the body of the string.
-      serialize::read_uninit (archive, gsl::make_span (data, static_cast<std::ptrdiff_t> (length)));
+      serialize::read_uninit (reader, gsl::make_span (data, static_cast<std::ptrdiff_t> (length)));
 
       // Release ownership from the deleter so that the initialized object is returned to
       // the caller.
@@ -146,12 +155,12 @@ namespace pstore::serialize {
   struct serializer<std::string const> {
     using value_type = std::string;
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & str) -> archive_result_type<Archive> {
-      return serializer::write (std::forward<Archive> (archive), str);
+    static auto write (Archive & writer, value_type const & str) -> archive_result_type<Archive> {
+      return serializer::write (writer, str);
     }
     template <typename Archive>
-    static void read (Archive && archive, value_type & str) {
-      serialize::read_uninit (std::forward<Archive> (archive), str);
+    static void read (Archive & reader, value_type & str) {
+      serialize::read_uninit (reader, str);
     }
   };
 
@@ -166,15 +175,15 @@ namespace pstore::serialize {
     /// Writes an initial std::size_t value with the number of elements in the container
     /// followed by an array of of those elements, in the order returned by iteration.
     ///
-    /// \param archive The archive to which the container is to be serialized.
+    /// \param writer The archive to which the container is to be serialized.
     /// \param ty The container whose contents are to be written.
 
     template <typename Archive>
-    static auto write (Archive && archive, Container const & ty) -> archive_result_type<Archive> {
+    static auto write (Archive & writer, Container const & ty) -> archive_result_type<Archive> {
       // TODO: size_t is not a fixed-size type. Prefer uintXX_t.
-      auto result = serialize::write (archive, std::size_t{ty.size ()});
+      auto result = serialize::write (writer, std::size_t{ty.size ()});
       for (typename Container::value_type const & m : ty) {
-        serialize::write (archive, m);
+        serialize::write (writer, m);
       }
       return result;
     }
@@ -188,16 +197,16 @@ namespace pstore::serialize {
     /// it is passed the container and value to be inserted. Its job is simply to insert
     /// the value into the given container.
     ///
-    /// \param archive The archive from which the container will be read.
+    /// \param reader The archive from which the container will be read.
     /// \param inserter A function which is responsible for inserting each of the
     ///                 Container::value_type elements from the archive into the container.
     template <typename Archive>
-    static void read (Archive && archive, insert_callback inserter) {
+    static void read (Archive & reader, insert_callback inserter) {
       // TODO: size_t is not a fixed-size type. Prefer uintXX_t.
-      auto const num_members = serialize::read<std::size_t> (archive);
+      auto const num_members = serialize::read<std::size_t> (reader);
       auto num_read = std::size_t{0};
       for (; num_read < num_members; ++num_read) {
-        inserter (serialize::read<typename Container::value_type> (archive));
+        inserter (serialize::read<typename Container::value_type> (reader));
       }
     }
   };
@@ -212,21 +221,20 @@ namespace pstore::serialize {
     ///
     /// The data stream format follows that of the underlying type.
     ///
-    /// \param archive  The archive to which the atomic will be written.
+    /// \param writer  The archive to which the atomic will be written.
     /// \param value    The `std::atomic<>` instance that is to be serialized.
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & value)
-      -> archive_result_type<Archive> {
-      return serialize::write (std::forward<Archive> (archive), value.load ());
+    static auto write (Archive & writer, value_type const & value) -> archive_result_type<Archive> {
+      return serialize::write (writer, value.load ());
     }
 
     /// \brief Reads an instance of `std::atomic<>` from an archive.
     ///
-    /// \param archive  The archiver from which the value will be read.
+    /// \param reader  The archiver from which the value will be read.
     /// \param value  The de-serialized std::atomic value.
     template <typename Archive>
-    static void read (Archive && archive, value_type & value) {
-      serialize::read_uninit<T> (std::forward<Archive> (archive), value);
+    static void read (Archive & reader, value_type & value) {
+      serialize::read_uninit<T> (reader, value);
     }
   };
 
@@ -241,26 +249,25 @@ namespace pstore::serialize {
     /// The data stream format consists of the two pair elements, first
     /// and second, read and written in that order.
     ///
-    /// \param archive  The archive to which the pair will be written.
+    /// \param writer  The archive to which the pair will be written.
     /// \param value    The `std::pair<>` instance that is to be serialized.
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & value)
-      -> archive_result_type<Archive> {
+    static auto write (Archive & writer, value_type const & value) -> archive_result_type<Archive> {
 
-      auto const result = serialize::write (archive, value.first);
-      serialize::write (std::forward<Archive> (archive), value.second);
+      auto const result = serialize::write (writer, value.first);
+      serialize::write (writer, value.second);
       return result;
     }
 
     /// \brief Reads an instance of `std::pair<>` from an archive.
     ///
-    /// \param archive  The archiver from which the value will be read.
+    /// \param writer  The archiver from which the value will be read.
     /// \param value  A reference to uninitialized memory into which the de-serialized pair
     /// will be read.
     template <typename Archive>
-    static void read (Archive && archive, value_type & value) {
-      serialize::read_uninit (archive, value.first);
-      serialize::read_uninit (std::forward<Archive> (archive), value.second);
+    static void read (Archive & writer, value_type & value) {
+      serialize::read_uninit (writer, value.first);
+      serialize::read_uninit (writer, value.second);
     }
   };
 
