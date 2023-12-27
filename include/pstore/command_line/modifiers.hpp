@@ -129,7 +129,11 @@ namespace pstore::command_line {
   /// A modifier which sets the name of an option.
   class name {
   public:
+    explicit name (std::string name) noexcept
+            : name_{std::move (name)} {}
     explicit name (std::string_view name)
+            : name_{name} {}
+    explicit name (char const * name)
             : name_{name} {}
     /// \tparam Option A subclass of option.
     /// \param option  An option instance.
@@ -202,6 +206,8 @@ namespace pstore::command_line {
   public:
     constexpr explicit init (T const & t)
             : init_{t} {}
+    constexpr explicit init (T && t) noexcept
+            : init_{std::move (t)} {}
     /// \tparam Option A subclass of option.
     /// \param option  An option instance.
     /// \returns  A reference to \p option.
@@ -216,7 +222,7 @@ namespace pstore::command_line {
   };
 
   template <typename T>
-  init (T const & t) -> init<T>;
+  init (T) -> init<T>;
 
 
   namespace details {
@@ -226,7 +232,7 @@ namespace pstore::command_line {
       /// \param option  An option instance.
       /// \returns  A reference to \p option.
       template <typename Option, typename = std::enable_if_t<std::is_base_of_v<option, Option>>>
-      Option & apply (Option & option) const {
+      Option & apply (Option & option) const noexcept {
         option.set_comma_separated ();
         return option;
       }
@@ -261,10 +267,10 @@ namespace pstore::command_line {
       return option;
     }
 
+
   private:
     option_category const & cat_;
   };
-
 
   template <typename Modifier>
   decltype (auto) make_modifier (Modifier && m) {
@@ -273,8 +279,8 @@ namespace pstore::command_line {
   inline name make_modifier (std::string_view n) {
     return name{n};
   }
-  inline name make_modifier (std::string const & n) {
-    return name{n};
+  inline name make_modifier (std::string n) {
+    return name{std::move (n)};
   }
   inline name make_modifier (char const * n) {
     return name{n};

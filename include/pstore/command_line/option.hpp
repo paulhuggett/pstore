@@ -61,7 +61,7 @@ namespace pstore::command_line {
     void set_comma_separated () noexcept { comma_separated_ = true; }
     bool allow_comma_separated () const noexcept { return comma_separated_; }
 
-    void set_category (option_category const * const cat) { category_ = cat; }
+    void set_category (option_category const * const cat) noexcept { category_ = cat; }
     virtual option_category const * category () const noexcept { return category_; }
 
     virtual void set_positional () { positional_ = true; }
@@ -239,8 +239,9 @@ namespace pstore::command_line {
   };
 
 
-  using string_opt = opt<std::string>;
   using bool_opt = opt<bool>;
+  using int_opt = opt<int>;
+  using string_opt = opt<std::string>;
   using unsigned_opt = opt<unsigned>;
 
   //*  _ _    _    *
@@ -274,6 +275,11 @@ namespace pstore::command_line {
 
     std::optional<std::string_view> arg_description () const noexcept override {
       return type_description<T>::value;
+    }
+
+    template <typename Container>
+    void set_initial_value (Container const & c) {
+      values_.assign (std::begin (c), std::end (c));
     }
 
     /// Results access

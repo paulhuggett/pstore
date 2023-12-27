@@ -21,7 +21,8 @@
 #  include "fuzztest/fuzztest.h"
 #endif
 
-using namespace std::string_view_literals;
+using namespace std::literals::string_view_literals;
+using namespace std::literals::string_literals;
 
 TEST (ClParser, SimpleString) {
   using pstore::command_line::parser;
@@ -91,21 +92,23 @@ FUZZ_TEST (ClParser, IntParse);
 
 TEST (ClParser, Modifiers) {
   using namespace pstore::command_line;
-  EXPECT_EQ (opt<int> ().get_occurrences_flag (), occurrences_flag::optional);
-  EXPECT_EQ (opt<int>{optional}.get_occurrences_flag (), occurrences_flag::optional);
-  EXPECT_EQ (opt<int>{required}.get_occurrences_flag (), occurrences_flag::required);
-  EXPECT_EQ (opt<int>{one_or_more}.get_occurrences_flag (), occurrences_flag::zero_or_more);
-  EXPECT_EQ (opt<int> (required, one_or_more).get_occurrences_flag (),
+  EXPECT_EQ (int_opt ().get_occurrences_flag (), occurrences_flag::optional);
+  EXPECT_EQ (int_opt{optional}.get_occurrences_flag (), occurrences_flag::optional);
+  EXPECT_EQ (int_opt{required}.get_occurrences_flag (), occurrences_flag::required);
+  EXPECT_EQ (int_opt{one_or_more}.get_occurrences_flag (), occurrences_flag::zero_or_more);
+  EXPECT_EQ (int_opt (required, one_or_more).get_occurrences_flag (),
              occurrences_flag::one_or_more);
-  EXPECT_EQ (opt<int> (optional, one_or_more).get_occurrences_flag (),
+  EXPECT_EQ (int_opt (optional, one_or_more).get_occurrences_flag (),
              occurrences_flag::zero_or_more);
 
-  EXPECT_EQ (opt<int> ().name (), "");
-  EXPECT_EQ (opt<int>{"name"sv}.name (), "name");
-  EXPECT_EQ (opt<int>{name ("name"sv)}.name (), "name");
+  EXPECT_EQ (int_opt ().name (), "");
+  EXPECT_EQ (int_opt{"name"sv}.name (), "name");
+  EXPECT_EQ (int_opt{name ("name"s)}.name (), "name") << "Setting name via std::string";
+  EXPECT_EQ (int_opt{name ("name"sv)}.name (), "name") << "Setting name via string_view";
+  EXPECT_EQ (int_opt{name ("name")}.name (), "name") << "Setting name via null-terminated string";
 
-  EXPECT_EQ (opt<int>{}.description (), "");
-  EXPECT_EQ (opt<int>{desc ("description")}.description (), "description");
+  EXPECT_EQ (int_opt{}.description (), "");
+  EXPECT_EQ (int_opt{desc ("description")}.description (), "description");
 }
 
 namespace {
