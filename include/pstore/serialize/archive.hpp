@@ -295,9 +295,10 @@ namespace pstore::serialize::archive {
       }
 
       /// Returns the size of the byte vector managed by the object.
-      constexpr std::size_t size () const noexcept { return bytes_.size (); }
+      std::size_t size () const noexcept { return bytes_.size (); }
 
-      constexpr void flush () noexcept { /* nothing to flush */
+      constexpr void flush () noexcept {
+        /* nothing to flush */
       }
 
       /// Returns a const_iterator for the beginning of the byte vector managed by the
