@@ -86,8 +86,8 @@ namespace {
     MOCK_CONST_METHOD0 (path, std::string ());
     MOCK_METHOD1 (seek, void (std::uint64_t));
     MOCK_METHOD0 (tell, std::uint64_t ());
-    MOCK_METHOD2 (read_buffer, std::size_t (pstore::gsl::not_null<void *>, std::size_t));
-    MOCK_METHOD2 (write_buffer, void (pstore::gsl::not_null<void const *>, std::size_t));
+    MOCK_METHOD2 (read_buffer, std::size_t (pstore::gsl::not_null<std::byte *>, std::size_t));
+    MOCK_METHOD2 (write_buffer, void (pstore::gsl::not_null<std::byte const *>, std::size_t));
     MOCK_METHOD0 (size, std::uint64_t ());
     MOCK_METHOD1 (truncate, void (std::uint64_t));
     MOCK_CONST_METHOD0 (latest_time, std::time_t ());
@@ -414,13 +414,14 @@ namespace {
     void SetUp () override {}
     void TearDown () override {}
 
-    using buffer = std::shared_ptr<std::uint8_t>;
+    using buffer = std::shared_ptr<std::byte>;
 
     static buffer make_buffer (std::size_t elements) {
-      return buffer (new std::uint8_t[elements], [] (std::uint8_t * p) { delete[] p; });
+      return buffer (new std::byte[elements], [] (std::byte * p) { delete[] p; });
     }
-    static buffer make_buffer (std::string const & str) {
-      auto result = make_buffer (str.length ());
+    template <std::size_t Length>
+    static buffer make_buffer (std::array<std::byte, Length> const & str) {
+      auto result = make_buffer (Length);
       std::copy (std::begin (str), std::end (str), result.get ());
       return result;
     }
@@ -436,9 +437,10 @@ TEST_F (MemoryFile, FileIsInitiallyEmpty) {
 }
 
 TEST_F (MemoryFile, ReadFileWithInitialContents) {
-  constexpr std::size_t elements = 11;
-  char const source_string[elements + 1]{"Hello World"};
-  ASSERT_EQ (elements, std::strlen (source_string)) << "Expected buffer length to be " << elements;
+  std::array<std::byte, 5> source_string{{static_cast<std::byte> (3), static_cast<std::byte> (5),
+                                          static_cast<std::byte> (7), static_cast<std::byte> (11),
+                                          static_cast<std::byte> (13)}};
+  constexpr auto elements = source_string.size ();
   pstore::file::in_memory mf (MemoryFile::make_buffer (source_string), elements, elements);
 
   EXPECT_EQ (0U, mf.tell ()) << "Expected the initial file offset to be 0";
@@ -447,57 +449,59 @@ TEST_F (MemoryFile, ReadFileWithInitialContents) {
   auto out = MemoryFile::make_buffer (elements);
   std::size_t const actual_read = mf.read_buffer (out.get (), elements);
   ASSERT_EQ (elements, actual_read);
-  EXPECT_TRUE (std::equal (out.get (), out.get () + elements, source_string));
+  EXPECT_TRUE (std::equal (out.get (), out.get () + elements, source_string.begin ()));
   EXPECT_EQ (elements, mf.tell ());
 }
 
 TEST_F (MemoryFile, ReadPastEndOfFileWithInitialContents) {
-  constexpr std::size_t elements = 5;
-  char const source_string[elements + 1]{"Hello"};
-  ASSERT_EQ (elements, std::strlen (source_string)) << "Expected source length to be " << elements;
-  pstore::file::in_memory mf (MemoryFile::make_buffer (source_string), elements, elements);
+  std::array<std::byte, 5> const source{
+    {std::byte{3}, std::byte{5}, std::byte{7}, std::byte{11}, std::byte{13}}};
+  constexpr auto elements = source.size ();
+  pstore::file::in_memory mf (MemoryFile::make_buffer (source), elements, elements);
 
   constexpr auto out_elements = std::size_t{7};
   auto out = MemoryFile::make_buffer (out_elements);
   std::size_t const actual_read = mf.read_buffer (out.get (), out_elements);
   ASSERT_EQ (elements, actual_read);
-  EXPECT_TRUE (std::equal (out.get (), out.get () + elements, "Hello\0"));
+  EXPECT_TRUE (std::equal (out.get (), out.get () + elements, source.begin ()));
   EXPECT_EQ (elements, mf.tell ());
 }
 
 TEST_F (MemoryFile, WriteToInitiallyEmptyFile) {
   constexpr std::size_t elements = 5;
   auto buffer = MemoryFile::make_buffer (elements);
-  std::fill (buffer.get (), buffer.get () + elements, std::uint8_t{0});
+  std::fill (buffer.get (), buffer.get () + elements, std::byte{0});
   pstore::file::in_memory mf (buffer, elements);
 
-  char const * source = "Hello";
+  std::array<std::byte, elements> source{
+    {std::byte{3}, std::byte{5}, std::byte{7}, std::byte{11}, std::byte{13}}};
   ASSERT_GE (sizeof (source), elements);
-  mf.write_buffer (source, elements);
+  mf.write_buffer (source.data (), elements);
   EXPECT_EQ (5U, mf.tell ());
   EXPECT_EQ (5U, mf.size ());
 
-  EXPECT_TRUE (std::equal (buffer.get (), buffer.get () + elements, source));
+  EXPECT_TRUE (std::equal (buffer.get (), buffer.get () + elements, source.begin ()));
 }
 
 TEST_F (MemoryFile, CrazyWriteSize) {
   constexpr std::size_t elements = 10;
   auto buffer = MemoryFile::make_buffer (elements);
-  std::fill (buffer.get (), buffer.get () + elements, std::uint8_t{0});
+  std::fill (buffer.get (), buffer.get () + elements, std::byte{0});
   pstore::file::in_memory mf (buffer, elements);
 
   mf.write (std::numeric_limits<std::uint32_t>::max ());
   mf.seek (4);
   constexpr auto length = std::numeric_limits<std::size_t>::max () - std::size_t{2};
-  char const * source = "Hello";
-  check_for_error ([&] { mf.write_buffer (source, length); }, std::errc::invalid_argument);
+  std::array<std::byte, 5> const source{
+    {std::byte{3}, std::byte{5}, std::byte{7}, std::byte{11}, std::byte{13}}};
+  check_for_error ([&] { mf.write_buffer (source.data (), length); }, std::errc::invalid_argument);
 }
 
 TEST_F (MemoryFile, Seek) {
-  constexpr std::size_t elements = 5;
-  char const source_string[elements + 1]{"abcde"};
-  ASSERT_EQ (elements, std::strlen (source_string)) << "Expected source length to be " << elements;
-  pstore::file::in_memory mf (MemoryFile::make_buffer (source_string), elements, elements);
+  std::array<std::byte, 5> const source{
+    {std::byte{3}, std::byte{5}, std::byte{7}, std::byte{11}, std::byte{13}}};
+  constexpr std::size_t elements = source.size ();
+  pstore::file::in_memory mf (MemoryFile::make_buffer (source), elements, elements);
 
   // Seek to position 1. Check tell() and read ().
   mf.seek (1);
@@ -505,10 +509,12 @@ TEST_F (MemoryFile, Seek) {
 
   {
     auto out1 = MemoryFile::make_buffer (4);
-    std::fill (out1.get (), out1.get () + 4, std::uint8_t{0});
+    std::fill (out1.get (), out1.get () + 4, std::byte{0});
     std::size_t const actual_read = mf.read_buffer (out1.get (), 4);
     ASSERT_EQ (4U, actual_read);
-    EXPECT_TRUE (std::equal (out1.get (), out1.get () + 4, "bcde"));
+    std::array<std::byte, 4> const last_four{
+      {std::byte{5}, std::byte{7}, std::byte{11}, std::byte{13}}};
+    EXPECT_TRUE (std::equal (out1.get (), out1.get () + 4, last_four.begin ()));
   }
   // Seek to 4. Check tell () and read past EOF.
   mf.seek (4);
@@ -516,10 +522,11 @@ TEST_F (MemoryFile, Seek) {
   {
 
     auto out2 = MemoryFile::make_buffer (2);
-    std::fill (out2.get (), out2.get () + 2, '\x7F');
+    std::fill (out2.get (), out2.get () + 2, std::byte{0x7F});
     std::size_t const actual_read = mf.read_buffer (out2.get (), 2);
     ASSERT_EQ (1U, actual_read);
-    EXPECT_TRUE (std::equal (out2.get (), out2.get () + 2, "e\x7F"));
+    std::array<std::byte, 2> const two{{std::byte{13}, std::byte{0x7F}}};
+    EXPECT_TRUE (std::equal (out2.get (), out2.get () + 2, two.begin ()));
   }
 
   // Seek past EOF
@@ -528,10 +535,11 @@ TEST_F (MemoryFile, Seek) {
 }
 
 TEST_F (MemoryFile, Truncate) {
-  constexpr std::size_t elements = 5;
-  char const source_string[elements + 1]{"abcde"};
-  ASSERT_EQ (elements, std::strlen (source_string)) << "Expected source length to be " << elements;
-  pstore::file::in_memory mf (MemoryFile::make_buffer (source_string), elements, elements);
+  std::array<std::byte, 5> const source{
+    {std::byte{3}, std::byte{5}, std::byte{7}, std::byte{11}, std::byte{13}}};
+  constexpr std::size_t elements = source.size ();
+
+  pstore::file::in_memory mf (MemoryFile::make_buffer (source), elements, elements);
 
   mf.truncate (0);
   EXPECT_EQ (0U, mf.size ());

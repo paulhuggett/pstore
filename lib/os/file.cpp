@@ -179,7 +179,7 @@ namespace pstore {
 
     // read buffer
     // ~~~~~~~~~~~
-    std::size_t in_memory::read_buffer (gsl::not_null<void *> const ptr, std::size_t nbytes) {
+    std::size_t in_memory::read_buffer (gsl::not_null<std::byte *> const ptr, std::size_t nbytes) {
       // The second half of this check is to catch integer overflows.
       if (pos_ + nbytes > eof_ || pos_ + nbytes < pos_) {
         nbytes = eof_ - pos_;
@@ -196,9 +196,9 @@ namespace pstore {
 #endif
       auto const length = static_cast<index_type> (length_);
       auto const pos = static_cast<index_type> (pos_);
-      auto span =
+      auto const span =
         gsl::make_span (buffer_.get (), length).subspan (pos, static_cast<index_type> (nbytes));
-      std::copy (std::begin (span), std::end (span), static_cast<element_type *> (ptr.get ()));
+      std::copy (std::begin (span), std::end (span), reinterpret_cast<element_type *> (ptr.get ()));
 
       PSTORE_ASSERT (pos_ + nbytes >= pos_);
       pos_ += nbytes;
@@ -207,7 +207,8 @@ namespace pstore {
 
     // write buffer
     // ~~~~~~~~~~~~
-    void in_memory::write_buffer (gsl::not_null<void const *> const ptr, std::size_t const nbytes) {
+    void in_memory::write_buffer (gsl::not_null<std::byte const *> const ptr,
+                                  std::size_t const nbytes) {
       this->check_writable ();
       PSTORE_ASSERT (length_ > pos_);
       if (nbytes > length_ - pos_) {
@@ -227,7 +228,7 @@ namespace pstore {
       auto dest_span =
         gsl::make_span (buffer_.get (), static_cast<index_type> (length_))
           .subspan (static_cast<index_type> (pos_), static_cast<index_type> (nbytes));
-      auto src_span = gsl::make_span (static_cast<element_type const *> (ptr.get ()),
+      auto src_span = gsl::make_span (reinterpret_cast<element_type const *> (ptr.get ()),
                                       static_cast<index_type> (nbytes));
 
       static_assert (std::is_same_v<decltype (src_span)::index_type, index_type>,
