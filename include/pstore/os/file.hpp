@@ -118,7 +118,7 @@ namespace pstore {
       std::size_t split (PointeeType * buffer, std::size_t size, Function const & function) {
         PSTORE_ASSERT (buffer != nullptr);
 
-        static_assert (sizeof (PointeeType) == sizeof (std::uint8_t),
+        static_assert (sizeof (PointeeType) == sizeof (std::byte),
                        "PointeeType must be a byte wide type");
         static_assert (sizeof (std::size_t) >= sizeof (WidthType),
                        "WidthType must not be wider than size_t");
@@ -131,17 +131,6 @@ namespace pstore {
           size -= chunk_size;
         }
         return result;
-      }
-
-      template <typename WidthType, typename Function>
-      std::size_t split (std::byte * const buffer, std::size_t const size,
-                         Function const & function) {
-        return split<WidthType> (buffer, size, function);
-      }
-      template <typename WidthType, typename Function>
-      std::size_t split (std::byte const * const buffer, std::size_t const size,
-                         Function const & function) {
-        return split<WidthType> (buffer, size, function);
       }
 
     } // end namespace details

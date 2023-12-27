@@ -274,14 +274,15 @@ namespace pstore {
     std::size_t file_handle::read_buffer (gsl::not_null<std::byte *> buffer, std::size_t size) {
       this->ensure_open ();
 
-      return details::split<DWORD> (buffer, size, [this] (void * ptr, DWORD num_to_read) -> DWORD {
-        auto num_read = DWORD{0};
-        if (!::ReadFile (file_, ptr, num_to_read, &num_read, nullptr /*overlapped*/)) {
-          DWORD const last_error = ::GetLastError ();
-          raise_file_error (last_error, "Unable to read", path_);
-        }
-        return num_read;
-      });
+      return details::split<DWORD> (
+        buffer.get (), size, [this] (std::byte * ptr, DWORD num_to_read) -> DWORD {
+          auto num_read = DWORD{0};
+          if (!::ReadFile (file_, ptr, num_to_read, &num_read, nullptr /*overlapped*/)) {
+            DWORD const last_error = ::GetLastError ();
+            raise_file_error (last_error, "Unable to read", path_);
+          }
+          return num_read;
+        });
     }
 
     // write buffer
@@ -290,7 +291,7 @@ namespace pstore {
       this->ensure_open ();
 
       std::size_t const bytes_written = details::split<DWORD> (
-        buffer, size, [this] (std::uint8_t const * ptr, DWORD num_to_write) -> DWORD {
+        buffer.get (), size, [this] (std::byte const * ptr, DWORD num_to_write) -> DWORD {
           auto num_written = DWORD{0};
           if (!::WriteFile (file_, ptr, num_to_write, &num_written, nullptr /* not overlapped*/)) {
             DWORD const last_error = ::GetLastError ();
