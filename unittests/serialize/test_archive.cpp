@@ -108,6 +108,7 @@ TEST (SerializeBufferReader, ReadByte) {
   std::array<std::uint8_t, 1> buffer{{28}};
   pstore::serialize::archive::buffer_reader reader (pstore::gsl::make_span (buffer));
   EXPECT_EQ (28, reader.get<std::uint8_t> ());
+  EXPECT_THROW (reader.get<std::uint8_t> (), std::system_error);
 }
 
 // NOLINTNEXTLINE

@@ -267,6 +267,7 @@ namespace pstore::serialize::archive {
 
 
   namespace details {
+
     class vector_writer_policy {
     public:
       using result_type = std::size_t;
@@ -276,16 +277,17 @@ namespace pstore::serialize::archive {
       explicit vector_writer_policy (container & bytes) noexcept
               : bytes_ (bytes) {}
 
-      template <typename Ty>
+      template <typename Ty, typename = std::enable_if_t<std::is_trivially_copyable_v<Ty>>>
       auto put (Ty const & t) -> result_type {
         auto const old_size = bytes_.size ();
-        auto const * const first = reinterpret_cast<std::byte const *> (&t);
-        std::copy (first, first + sizeof (Ty), std::back_inserter (bytes_));
+        std::copy (reinterpret_cast<std::byte const *> (&t),
+                   reinterpret_cast<std::byte const *> (&t + 1), std::back_inserter (bytes_));
         return old_size;
       }
 
-      template <typename SpanType>
-      auto putn (SpanType sp) -> result_type {
+      template <typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_trivially_copyable_v<ElementType>>>
+      auto putn (gsl::span<ElementType, Extent> sp) -> result_type {
         auto const old_size = bytes_.size ();
         auto const * const first = reinterpret_cast<std::byte const *> (sp.data ());
         std::copy (first, first + sp.size_bytes (), std::back_inserter (bytes_));
@@ -295,7 +297,9 @@ namespace pstore::serialize::archive {
       /// Returns the size of the byte vector managed by the object.
       std::size_t size () const noexcept { return bytes_.size (); }
 
-      void flush () noexcept {}
+      constexpr void flush () noexcept {
+        /* nothing to flush */
+      }
 
       /// Returns a const_iterator for the beginning of the byte vector managed by the
       /// object.
@@ -530,10 +534,9 @@ namespace pstore::serialize::archive {
     /// returns the value extracted.
     template <typename Ty, typename = std::enable_if_t<std::is_standard_layout_v<Ty>>>
     void get (Ty & v) {
-      auto ptr = reinterpret_cast<std::byte *> (&v);
-      auto const * const last = ptr + sizeof (Ty);
-      while (ptr != last) {
-        *(ptr++) = static_cast<std::byte> (*(first_++));
+      for (auto * ptr = reinterpret_cast<std::byte *> (&v);
+           ptr != reinterpret_cast<std::byte *> (&v + 1); ptr++, first_++) {
+        *ptr = static_cast<std::byte> (*first_);
       }
     }
 
@@ -575,7 +578,6 @@ namespace pstore::serialize::archive {
             : first_ (first)
             , last_ (last) {}
 
-
     /// Constructs the reader using a pointer and size to define the range [first,
     /// first+size).
     constexpr buffer_reader (std::byte const * const first, std::size_t const size) noexcept
@@ -593,12 +595,10 @@ namespace pstore::serialize::archive {
     /// returns the value extracted.
     template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
     T get () {
-      std::remove_const_t<T> result;
-      static_assert (std::is_standard_layout<T>::value,
-                     "buffer_reader(T&) can only read standard-layout types");
       if (first_ + sizeof (T) > last_) {
         raise (std::errc::no_buffer_space, "Attempted to read past the end of a buffer.");
       }
+      std::remove_const_t<T> result;
       std::memcpy (&result, first_, sizeof (T));
       first_ += sizeof (T);
       return result;
