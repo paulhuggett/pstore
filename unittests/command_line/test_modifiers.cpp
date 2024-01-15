@@ -19,7 +19,7 @@
 #include <string>
 #include <vector>
 
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 
 #include "pstore/command_line/command_line.hpp"
 #include "pstore/command_line/option.hpp"
@@ -31,7 +31,7 @@ using testing::Not;
 
 namespace {
 
-  enum class enumeration : int { a, b, c };
+  enum class enumeration { a, b, c };
 
 #if defined(_WIN32) && defined(_UNICODE)
   using string_stream = std::wostringstream;
@@ -46,27 +46,49 @@ namespace {
 
 } // end anonymous namespace
 
-TEST_F (Modifiers, DefaultConstruction) {
-  opt<enumeration> opt;
-  EXPECT_EQ (opt.get (), enumeration::a);
+TEST_F (Modifiers, InitStringOpt) {
+  // init() allows the initial (default) value of the option to be set.
+  EXPECT_EQ (string_opt{}.get (), "");
+  EXPECT_EQ (string_opt{init ("string"sv)}.get (), "string");
 }
 
-TEST_F (Modifiers, Init) {
-  // init() allows the initial (default) value of the option to be described.
-  opt<enumeration> opt_a{init (enumeration::a)};
-
-  EXPECT_EQ (opt_a.get (), enumeration::a);
-
-  opt<enumeration> opt_b{init (enumeration::b)};
-  EXPECT_EQ (opt_b.get (), enumeration::b);
+TEST_F (Modifiers, InitIntOpt) {
+  EXPECT_EQ (int_opt{}.get (), int{});
+  EXPECT_EQ (int_opt{init (42)}.get (), 42);
 }
 
+TEST_F (Modifiers, InitBoolOpt) {
+  EXPECT_EQ (bool_opt{}.get (), bool{});
+  EXPECT_TRUE (bool_opt{init (true)}.get ());
+}
+
+TEST_F (Modifiers, InitEnumOpt) {
+  EXPECT_EQ (opt<enumeration>{}.get (), enumeration{});
+  EXPECT_EQ (opt<enumeration>{init (enumeration::a)}.get (), enumeration::a);
+  EXPECT_EQ (opt<enumeration>{init (enumeration::b)}.get (), enumeration::b);
+}
+
+TEST_F (Modifiers, InitListOpt) {
+  EXPECT_THAT (list<int>{}, testing::IsEmpty ());
+  EXPECT_THAT ((list<int>{init{std::array{1, 2, 3}}}), testing::ElementsAre (1, 2, 3));
+  EXPECT_THAT ((list<int>{init{std::vector{4, 5, 6}}}), testing::ElementsAre (4, 5, 6));
+  EXPECT_THAT ((list<int>{init{pstore::small_vector{7, 8, 9}}}), testing::ElementsAre (7, 8, 9));
+}
+
+TEST_F (Modifiers, Description) {
+  EXPECT_EQ (opt<enumeration>{}.description (), "");
+  EXPECT_EQ (opt<enumeration>{desc ("description")}.description (), "description");
+}
+
+TEST_F (Modifiers, Usage) {
+  EXPECT_EQ (opt<int>{}.usage (), "");
+  EXPECT_EQ (opt<int>{usage ("usage")}.usage (), "usage");
+}
 
 namespace {
 
   class EnumerationParse : public testing::Test {
   public:
-    EnumerationParse () = default;
     ~EnumerationParse () override = default;
   };
 
