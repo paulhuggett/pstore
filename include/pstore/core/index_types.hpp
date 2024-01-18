@@ -39,7 +39,7 @@ namespace pstore {
       /// \param archive  The archive to which the span will be written.
       /// \param v        The object value which is to be written.
       template <typename Archive>
-      static auto write (Archive && archive, uint128 const & v) -> archive_result_type<Archive> {
+      static auto write (Archive & archive, uint128 const & v) -> archive_result_type<Archive> {
         return archive.put (v);
       }
 
@@ -47,10 +47,10 @@ namespace pstore {
       ///
       /// \param archive  The archive to which the span will be written.
       /// \param span     The span which is to be written.
-      template <typename Archive, typename SpanType>
-      static auto writen (Archive && archive, SpanType span) -> archive_result_type<Archive> {
-        static_assert (std::is_same_v<typename SpanType::element_type, uint128>,
-                       "span type does not match the serializer type");
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_same_v<ElementType, uint128>>>
+      static auto writen (Archive & archive, gsl::span<ElementType, Extent> const span)
+        -> archive_result_type<Archive> {
         return archive.putn (span);
       }
 
@@ -60,7 +60,7 @@ namespace pstore {
       /// \param out      A reference to uninitialized memory into which a uint128 will be
       /// read.
       template <typename Archive>
-      static void read (Archive && archive, uint128 & out) {
+      static void read (Archive & archive, uint128 & out) {
         PSTORE_ASSERT (reinterpret_cast<std::uintptr_t> (&out) % alignof (uint128) == 0);
         archive.get (out);
       }
@@ -69,11 +69,10 @@ namespace pstore {
       ///
       /// \param archive  The archive from which the value will be read.
       /// \param span     A span pointing to uninitialized memory
-      template <typename Archive, typename Span>
-      static void readn (Archive && archive, Span span) {
-        static_assert (std::is_same_v<typename Span::element_type, uint128>,
-                       "span type does not match the serializer type");
-        details::getn_helper::getn (std::forward<Archive> (archive), span);
+      template <typename Archive, typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_same_v<ElementType, uint128>>>
+      static void readn (Archive & archive, gsl::span<ElementType, Extent> const span) {
+        details::getn_helper::getn (archive, span);
       }
     };
 
@@ -119,9 +118,8 @@ namespace pstore {
 
     /// Returns a pointer to a index, loading it from the store on first access. If 'create' is
     /// false and the index does not already exist then nullptr is returned.
-    template <
-      pstore::trailer::indices Index, typename Database = pstore::database,
-      typename Return = typename inherit_const<Database, typename enum_to_index<Index>::type>::type>
+    template <pstore::trailer::indices Index, typename Database = pstore::database,
+              typename Return = inherit_const_t<Database, typename enum_to_index<Index>::type>>
     std::shared_ptr<Return> get_index (Database & db, bool const create = true) {
       auto & dx = db.get_mutable_index (Index);
 

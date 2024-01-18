@@ -83,7 +83,7 @@ namespace pstore {
       unsigned bytes;
       if (bits > 56U) {
         bytes = 8U;
-        *(out++) = 0U;
+        *(out++) = std::byte{0};
       } else {
         bytes = (bits - 1U) / 7U + 1U;
         // Encode the number of bytes in the low bits of the value itself.
@@ -93,15 +93,15 @@ namespace pstore {
       // clang-format off
       switch (bytes) {
       // NOLINTNEXTLINE(bugprone-branch-clone)
-      case 8: *(out++) = x & 0xFFU; x >>= 8U; PSTORE_FALLTHROUGH;
-      case 7: *(out++) = x & 0xFFU; x >>= 8U; PSTORE_FALLTHROUGH;
-      case 6: *(out++) = x & 0xFFU; x >>= 8U; PSTORE_FALLTHROUGH;
-      case 5: *(out++) = x & 0xFFU; x >>= 8U; PSTORE_FALLTHROUGH;
-      case 4: *(out++) = x & 0xFFU; x >>= 8U; PSTORE_FALLTHROUGH;
-      case 3: *(out++) = x & 0xFFU; x >>= 8U; PSTORE_FALLTHROUGH;
-      case 2: *(out++) = x & 0xFFU; x >>= 8U; PSTORE_FALLTHROUGH;
+      case 8: *(out++) = static_cast<std::byte> (x & 0xFFU); x >>= 8U; PSTORE_FALLTHROUGH;
+      case 7: *(out++) = static_cast<std::byte> (x & 0xFFU); x >>= 8U; PSTORE_FALLTHROUGH;
+      case 6: *(out++) = static_cast<std::byte> (x & 0xFFU); x >>= 8U; PSTORE_FALLTHROUGH;
+      case 5: *(out++) = static_cast<std::byte> (x & 0xFFU); x >>= 8U; PSTORE_FALLTHROUGH;
+      case 4: *(out++) = static_cast<std::byte> (x & 0xFFU); x >>= 8U; PSTORE_FALLTHROUGH;
+      case 3: *(out++) = static_cast<std::byte> (x & 0xFFU); x >>= 8U; PSTORE_FALLTHROUGH;
+      case 2: *(out++) = static_cast<std::byte> (x & 0xFFU); x >>= 8U; PSTORE_FALLTHROUGH;
       default:
-          *(out++) = x & 0xFFU;
+          *(out++) = static_cast<std::byte> (x & 0xFFU);
       }
       // clang-format on
       return out;
@@ -112,7 +112,7 @@ namespace pstore {
     inline unsigned decode_size (InputIterator in) {
       // (Note that ORing with 0x100 guarantees that bit 8 is set. This in turn ensures that
       // we won't ever pass 0 to clz() which would result in undefined behavior.
-      return bit_count::ctz (*in | 0x100U) + 1U;
+      return bit_count::ctz (static_cast<unsigned> (*in) | 0x100U) + 1U;
     }
 
     namespace details {
@@ -122,7 +122,7 @@ namespace pstore {
         ++in; // skip the length byte
         auto result = std::uint64_t{0};
         for (auto shift = 0U; shift < 64U; shift += 8U) {
-          result |= std::uint64_t{*(in++)} << shift;
+          result |= static_cast<std::uint64_t> (*(in++)) << shift;
         }
         return result;
       }
@@ -141,15 +141,15 @@ namespace pstore {
       // clang-format off
       switch (size) {
       // NOLINTNEXTLINE(bugprone-branch-clone)
-      case 8: result |= std::uint64_t{*(in++)} << shift; shift += 8; PSTORE_FALLTHROUGH;
-      case 7: result |= std::uint64_t{*(in++)} << shift; shift += 8; PSTORE_FALLTHROUGH;
-      case 6: result |= std::uint64_t{*(in++)} << shift; shift += 8; PSTORE_FALLTHROUGH;
-      case 5: result |= std::uint64_t{*(in++)} << shift; shift += 8; PSTORE_FALLTHROUGH;
-      case 4: result |= std::uint64_t{*(in++)} << shift; shift += 8; PSTORE_FALLTHROUGH;
-      case 3: result |= std::uint64_t{*(in++)} << shift; shift += 8; PSTORE_FALLTHROUGH;
-      case 2: result |= std::uint64_t{*(in++)} << shift; shift += 8; PSTORE_FALLTHROUGH;
+      case 8: result |= static_cast<std::uint64_t> (*(in++)) << shift; shift += 8; PSTORE_FALLTHROUGH;
+      case 7: result |= static_cast<std::uint64_t> (*(in++)) << shift; shift += 8; PSTORE_FALLTHROUGH;
+      case 6: result |= static_cast<std::uint64_t> (*(in++)) << shift; shift += 8; PSTORE_FALLTHROUGH;
+      case 5: result |= static_cast<std::uint64_t> (*(in++)) << shift; shift += 8; PSTORE_FALLTHROUGH;
+      case 4: result |= static_cast<std::uint64_t> (*(in++)) << shift; shift += 8; PSTORE_FALLTHROUGH;
+      case 3: result |= static_cast<std::uint64_t> (*(in++)) << shift; shift += 8; PSTORE_FALLTHROUGH;
+      case 2: result |= static_cast<std::uint64_t> (*(in++)) << shift; shift += 8; PSTORE_FALLTHROUGH;
       default:
-          result |= std::uint64_t{*(in++)} << shift;
+          result |= static_cast<std::uint64_t> (*(in++)) << shift;
       }
       // clang-format on
       return result >> size; // throw away the unwanted size bytes frm the first byte.

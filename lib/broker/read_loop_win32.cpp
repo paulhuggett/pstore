@@ -150,7 +150,7 @@ namespace {
           : pipe_handle_{std::move (ph)}
           , command_processor_{cp}
           , record_file_{record_file} {
-    using T = std::remove_pointer<decltype (this)>::type;
+    using T = std::remove_pointer_t<decltype (this)>;
     static_assert (offsetof (T, overlap_) == 0,
                    "OVERLAPPED must be the first member of the request structure");
     PSTORE_ASSERT (pipe_handle_.valid ());

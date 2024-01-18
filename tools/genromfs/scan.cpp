@@ -22,7 +22,7 @@
 
 #ifdef _WIN32
 #  define WIN32_LEAN_AND_MEAN
-#  define NO_MIN_MAX
+#  define NOMINMAX
 #  include <Windows.h>
 #else
 #  include <dirent.h>

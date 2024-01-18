@@ -18,11 +18,12 @@ cmake_minimum_required (VERSION 3.13)
 
 include (CheckCSourceCompiles)
 include (CMakeDependentOption)
-include (CPack)
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set (pstore_cxx_version "17" CACHE STRING "The version of C++ used by pstore")
+set (PSTORE_VERSION_MAJOR 0)
+set (PSTORE_VERSION_MINOR 1)
 
 # Work out whether the pstore library is being built inside the larger LLVM
 # framework or if it's a standalone build.
@@ -89,12 +90,10 @@ option (
 option (PSTORE_SIGNATURE_CHECKS_ENABLED
         "Perform internal structure signature checks. Disable for fuzzing." Yes
 )
-
 option (PSTORE_POSIX_SMALL_FILES
-        "On POSIX systems, keep pstore files as small as possible"
+        "On POSIX systems, keep pstore files as small as possible" Yes
 )
-option (
-  PSTORE_ALWAYS_SPANNING
+option (PSTORE_ALWAYS_SPANNING
   "A debugging aid which forces all requests to behave as 'spanning' pointers"
 )
 
@@ -113,6 +112,24 @@ option (PSTORE_NOISY_UNIT_TESTS
         "Produce complete ('noisy') output from the unit test executables"
 )
 option (PSTORE_WERROR "Compiler warnings are errors")
+option (PSTORE_FUZZTEST "Enable FuzzTest")
+
+
+if (PSTORE_FUZZTEST)
+  set (FUZZTEST_FUZZING_MODE On)
+  include (FetchContent)
+  set (FUZZTEST_REPO_BRANCH "main" CACHE STRING "FuzzTest repository branch.")
+  message ("Building fuzztest at branch " ${FUZZTEST_REPO_BRANCH})
+  FetchContent_Declare (
+    fuzztest
+    GIT_REPOSITORY https://github.com/google/fuzztest.git
+    GIT_TAG ${FUZZTEST_REPO_BRANCH}
+  )
+  FetchContent_MakeAvailable (fuzztest)
+  enable_testing ()
+  include (GoogleTest)
+  fuzztest_setup_fuzzing_flags ()
+endif (PSTORE_FUZZTEST)
 
 # The name of the vacuum (GC) executable.
 set (PSTORE_VACUUM_TOOL_NAME "pstore-vacuumd")
@@ -174,9 +191,34 @@ add_custom_target (
   USES_TERMINAL
 )
 
+
 cmake_policy (SET CMP0077 NEW)
 set (PEEJAY_CXX17 ON)
 add_subdirectory (3rd_party)
+
+# Some tests, as well as broker-ui use Node.js/npm so let's check they are
+# available and work out which version is installed.
+include (nodejs)
+pstore_find_nodejs (
+  PSTORE_NODEJS_EXECUTABLE node_version_major node_version_minor node_version_patch
+)
+if (PSTORE_NODEJS_EXECUTABLE)
+  if (node_version_major GREATER_EQUAL 8)
+    message (STATUS "Enabling Node.js in system tests")
+    list (APPEND LIT_PARAMS --param "nodejs=${PSTORE_NODEJS_EXECUTABLE}")
+  else ()
+    message (STATUS "Version 8 or later is required for system tests")
+  endif ()
+endif ()
+
+pstore_find_npm (
+  PSTORE_NPM_EXECUTABLE npm_version_major npm_version_minor npm_version_patch
+)
+if (PSTORE_NPM_EXECUTABLE)
+  message (STATUS "Enabling NPM in system tests")
+  list (APPEND LIT_PARAMS --param "npm=${PSTORE_NPM_EXECUTABLE}")
+endif (PSTORE_NPM_EXECUTABLE)
+
 
 include (clang_tidy)
 pstore_add_tidy_all_target ()
@@ -242,33 +284,28 @@ endif ()
 
 # One or more tests uses Node.js/npm so let's check that it's available and work
 # out which version is installed.
-include (nodejs)
-pstore_find_nodejs (
-  nodejs_executable node_version_major node_version_minor node_version_patch
-)
-if (nodejs_executable)
+if (PSTORE_NODEJS_EXECUTABLE)
   if (node_version_major GREATER_EQUAL 8)
     message (STATUS "Enabling Node.js in system tests")
-    list (APPEND LIT_PARAMS --param "nodejs=${nodejs_executable}")
+    list (APPEND LIT_PARAMS --param "nodejs=${PSTORE_NODEJS_EXECUTABLE}")
   else ()
     message (STATUS "Version 8 or later is required for system tests")
   endif ()
 endif ()
 
-pstore_find_npm (
-  npm_executable npm_version_major npm_version_minor npm_version_patch
-)
-if (npm_executable)
+if (PSTORE_NPM_EXECUTABLE)
   message (STATUS "Enabling NPM in system tests")
-  list (APPEND LIT_PARAMS --param "npm=${npm_executable}")
-endif (npm_executable)
+  list (APPEND LIT_PARAMS --param "npm=${PSTORE_NPM_EXECUTABLE}")
+endif (PSTORE_NPM_EXECUTABLE)
+
 
 if (PSTORE_EXAMPLES)
   set_target_properties (pstore-examples PROPERTIES FOLDER "pstore examples")
   set_target_properties (
     pstore-examples-serialize PROPERTIES FOLDER "pstore examples"
   )
-endif ()
+endif (PSTORE_EXAMPLES)
+
 
 # Add a target to the build which will run the system tests.
 find_package (Python3)
@@ -356,9 +393,8 @@ include (GNUInstallDirs)
 install (EXPORT pstore DESTINATION "${CMAKE_INSTALL_LIBDIR}/pstore"
          NAMESPACE pstore::
 )
-
-# List of four values that specify what project to install. The four values are:
-# - Build directory - Project Name - Project Component - Directory.
-set (CPACK_INSTALL_CMAKE_PROJECTS
-     "${CMAKE_CURRENT_BINARY_DIR};${CMAKE_PROJECT_NAME};ALL;/"
-)
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+set(CPACK_PACKAGE_VERSION_MAJOR "${PSTORE_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${PSTORE_VERSION_MINOR}")
+include (CPack)

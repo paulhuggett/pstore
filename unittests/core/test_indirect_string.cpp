@@ -71,16 +71,16 @@ TEST_F (IndirectString, StoreRefToHeapRoundTrip) {
 
     // Construct the indirect string and write it to the store.
     pstore::indirect_string indirect{db_, &sstring};
-    pstore::address const indirect_addr =
-      pstore::serialize::write (pstore::serialize::archive::make_writer (transaction), indirect);
+    auto writer = pstore::serialize::archive::make_writer (transaction);
+    pstore::address const indirect_addr = pstore::serialize::write (writer, indirect);
     EXPECT_EQ (transaction.size (), sizeof (pstore::address));
 
     transaction.commit ();
     return indirect_addr;
   }();
 
-  auto const ind2 = pstore::serialize::read<pstore::indirect_string> (
-    pstore::serialize::archive::make_reader (db_, pointer_addr));
+  auto reader = pstore::serialize::archive::make_reader (db_, pointer_addr);
+  auto const ind2 = pstore::serialize::read<pstore::indirect_string> (reader);
 
   EXPECT_EQ (ind2.length (), std::strlen (str));
   pstore::shared_sstring_view owner;
@@ -98,8 +98,8 @@ TEST_F (IndirectString, StoreRoundTrip) {
     // Construct the string and the indirect string. Write the indirect pointer to the store.
     pstore::raw_sstring_view const sstring = pstore::make_sstring_view (str);
     pstore::indirect_string indirect{db_, &sstring};
-    auto const indirect_addr =
-      pstore::serialize::write (pstore::serialize::archive::make_writer (transaction), indirect);
+    auto writer = pstore::serialize::archive::make_writer (transaction);
+    auto const indirect_addr = pstore::serialize::write (writer, indirect);
     EXPECT_EQ (transaction.size (), sizeof (pstore::address));
 
     // Now the body of the string (and patch the pointer).
@@ -111,8 +111,8 @@ TEST_F (IndirectString, StoreRoundTrip) {
     return indirect_addr;
   }();
 
-  auto const ind2 = pstore::serialize::read<pstore::indirect_string> (
-    pstore::serialize::archive::make_reader (db_, pointer_addr));
+  auto reader = pstore::serialize::archive::make_reader (db_, pointer_addr);
+  auto const ind2 = pstore::serialize::read<pstore::indirect_string> (reader);
 
   pstore::shared_sstring_view owner;
   EXPECT_EQ (ind2.as_string_view (&owner), pstore::make_sstring_view (str));
@@ -138,8 +138,9 @@ namespace {
 
     raw_sstring_view const sstring = make_sstring_view (str);
 
-    address const indirect_addr = serialize::write (serialize::archive::make_writer (transaction),
-                                                    indirect_string{transaction.db (), &sstring});
+    auto writer = serialize::archive::make_writer (transaction);
+    address const indirect_addr =
+      serialize::write (writer, indirect_string{transaction.db (), &sstring});
 
     address const body_addr = indirect_string::write_body_and_patch_address (
       transaction, sstring, typed_address<pstore::address>{indirect_addr});

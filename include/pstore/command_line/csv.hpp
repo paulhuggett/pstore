@@ -22,7 +22,7 @@
 
 namespace pstore::command_line {
 
-  std::list<std::string> csv (std::string const & s);
+  std::list<std::string> csv (std::string_view s);
 
   template <typename Iterator>
   std::list<std::string> csv (Iterator first, Iterator last) {

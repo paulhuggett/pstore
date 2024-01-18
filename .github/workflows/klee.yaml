@@ -16,7 +16,7 @@ jobs:
             options: -u 0 --ulimit="stack=-1:-1"
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@1b05615854632b887b69ae1be8cbefe72d3ae423 # v2.6.0
+              uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
               with:
                 egress-policy: audit
 
@@ -26,11 +26,11 @@ jobs:
                 submodules: 'True'
 
             - name: Create Build Environment
-              run: cmake -E make_directory "${{ runner.workspace }}/build"
+              run: cmake -E make_directory "${{ github.workspace }}/build"
 
             - name: Configure
               run: |
-                  cd "${{ runner.workspace }}/build"
+                  cd "${{ github.workspace }}/build"
                   cmake -G "Unix Makefiles"             \
                         -D CMAKE_BUILD_TYPE=Debug       \
                         -D CMAKE_CXX_COMPILER=clang++   \
@@ -43,5 +43,5 @@ jobs:
 
             - name: Build
               run: |
-                  cd "${{ runner.workspace }}/build"
+                  cd "${{ github.workspace }}/build"
                   cmake --build . --target pstore-klee-run-all

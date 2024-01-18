@@ -164,26 +164,26 @@ namespace pstore {
       /// Returns a const reference to the section data given the section kind. The section
       /// must exist in the fragment.
       template <section_kind Key>
-      auto at () const noexcept -> typename enum_to_section<Key>::type const & {
+      auto at () const noexcept -> enum_to_section_t<Key> const & {
         return at_impl<Key> (*this);
       }
       /// Returns a reference to the section data given the section kind. The section must
       /// exist in the fragment.
       template <section_kind Key>
-      auto at () noexcept -> typename enum_to_section<Key>::type & {
+      auto at () noexcept -> enum_to_section_t<Key> & {
         return at_impl<Key> (*this);
       }
 
       /// Returns a pointer to the section data given the section kind or nullptr if the
       /// section is not present.
       template <section_kind Key>
-      auto atp () const noexcept -> typename enum_to_section<Key>::type const * {
+      auto atp () const noexcept -> enum_to_section_t<Key> const * {
         return atp_impl<Key> (*this);
       }
       /// Returns a pointer to the section data given the section kind or nullptr if the
       /// section is not present.
       template <section_kind Key>
-      auto atp () noexcept -> typename enum_to_section<Key>::type * {
+      auto atp () noexcept -> enum_to_section_t<Key> * {
         return atp_impl<Key> (*this);
       }
       ///@}
@@ -275,8 +275,7 @@ namespace pstore {
       /// \returns A constant reference to the instance contained in the Key section if the
       ///   input fragment type is const; non-const otherwise.
       template <section_kind Key, typename Fragment,
-                typename ResultType =
-                  typename inherit_const<Fragment, typename enum_to_section<Key>::type>::type>
+                typename ResultType = inherit_const_t<Fragment, enum_to_section_t<Key>>>
       static ResultType & at_impl (Fragment && f) noexcept {
         PSTORE_ASSERT (f.has_section (Key));
         return f.template offset_to_instance<ResultType> (f.arr_[Key]);
@@ -292,8 +291,7 @@ namespace pstore {
       /// \returns A constant pointer to the instance contained in the Key section if the
       ///   input fragment type is const; non-const otherwise.
       template <section_kind Key, typename Fragment,
-                typename ResultType =
-                  typename inherit_const<Fragment, typename enum_to_section<Key>::type>::type>
+                typename ResultType = inherit_const_t<Fragment, enum_to_section_t<Key>>>
       static ResultType * atp_impl (Fragment && f) noexcept {
         return f.has_section (Key) ? &f.template at<Key> () : nullptr;
       }
@@ -433,7 +431,7 @@ case section_kind::k: name = #k; break;
       PSTORE_ASSERT (std::is_sorted (first, last, [] (value_type const & a, value_type const & b) {
         section_kind const akind = a.kind ();
         section_kind const bkind = b.kind ();
-        using utype = std::underlying_type<section_kind>::type;
+        using utype = std::underlying_type_t<section_kind>;
         return static_cast<utype> (akind) < static_cast<utype> (bkind);
       }));
 #endif

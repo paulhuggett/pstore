@@ -53,14 +53,14 @@ namespace pstore {
     };
 #undef X
     constexpr auto num_section_kinds =
-      static_cast<std::underlying_type<section_kind>::type> (section_kind::last);
+      static_cast<std::underlying_type_t<section_kind>> (section_kind::last);
 
     std::ostream & operator<< (std::ostream & os, section_kind kind);
 
     constexpr auto first_repo_metadata_section = section_kind::linked_definitions;
 
     constexpr bool is_target_section (section_kind const t) noexcept {
-      using utype = std::underlying_type<section_kind>::type;
+      using utype = std::underlying_type_t<section_kind>;
       return static_cast<utype> (t) < static_cast<utype> (first_repo_metadata_section);
     }
 

@@ -22,13 +22,11 @@
 #include <ctime>
 #include <string>
 
-namespace pstore {
-  namespace http {
+namespace pstore::http {
 
-    std::string http_date (std::chrono::system_clock::time_point time);
-    std::string http_date (std::time_t time);
+  std::string http_date (std::chrono::system_clock::time_point time);
+  std::string http_date (std::time_t time);
 
-  } // end namespace http
-} // end namespace pstore
+} // end namespace pstore::http
 
 #endif // PSTORE_HTTP_HTTP_DATE_HPP

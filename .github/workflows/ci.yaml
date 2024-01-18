@@ -87,7 +87,7 @@ jobs:
 
         steps:
             - name: Harden Runner
-              uses: step-security/harden-runner@1b05615854632b887b69ae1be8cbefe72d3ae423 # v2.6.0
+              uses: step-security/harden-runner@eb238b55efaa70779f274895e782ed17c84f2895 # v2.6.1
               with:
                 egress-policy: audit
 
@@ -96,7 +96,7 @@ jobs:
               with:
                 submodules: 'True'
 
-            - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
+            - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
               with:
                 node-version: 16
 
@@ -105,11 +105,11 @@ jobs:
               run: sudo apt-get update && sudo apt-get install -y ${{ matrix.apt_install }}
 
             - name: Create Build Environment
-              run: cmake -E make_directory ${{ runner.workspace }}/build
+              run: cmake -E make_directory ${{ github.workspace }}/build
 
             - name: Configure CMake
               shell: bash
-              working-directory: ${{ runner.workspace }}/build
+              working-directory: ${{ github.workspace }}/build
               run: |
                   cmake "$GITHUB_WORKSPACE"                          \
                         -G "${{ matrix.generator }}"                 \
@@ -121,11 +121,11 @@ jobs:
                         ${{ matrix.options }}
 
             - name: Build
-              working-directory: ${{ runner.workspace }}/build
+              working-directory: ${{ github.workspace }}/build
               shell: bash
               run: cmake --build . --config ${{ matrix.build_type }}
 
             - name: System Tests
-              working-directory: ${{ runner.workspace }}/build
+              working-directory: ${{ github.workspace }}/build
               shell: bash
               run: cmake --build . --config ${{ matrix.build_type }} --target pstore-system-tests

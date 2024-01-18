@@ -114,10 +114,10 @@ namespace pstore {
   using inherit_const_t = typename inherit_const<T, R, RC>::type;
 
   static_assert (std::is_same_v<inherit_const_t<int, bool>, bool>, "int -> bool");
-  static_assert (std::is_same_v<inherit_const<int const, bool>::type, bool const>,
+  static_assert (std::is_same_v<inherit_const_t<int const, bool>, bool const>,
                  "int const -> bool const");
   static_assert (std::is_same_v<inherit_const_t<int &, bool>, bool>, "int& -> bool");
-  static_assert (std::is_same_v<inherit_const<int const &, bool>::type, bool const>,
+  static_assert (std::is_same_v<inherit_const_t<int const &, bool>, bool const>,
                  "int const & -> bool const");
   static_assert (std::is_same_v<inherit_const_t<int &&, bool>, bool>, "int && -> bool");
   static_assert (std::is_same_v<inherit_const_t<int const &&, bool>, bool const>,

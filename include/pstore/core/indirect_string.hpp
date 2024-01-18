@@ -149,10 +149,6 @@ namespace pstore {
         -> archive_result_type<archive::database_writer> {
         return write_string_address (archive, value);
       }
-      static auto write (archive::database_writer && archive, value_type const & value)
-        -> archive_result_type<archive::database_writer> {
-        return write_string_address (std::move (archive), value);
-      }
 
       /// \brief Reads an instance of `indirect_string` from an archiver.
       ///
@@ -163,13 +159,10 @@ namespace pstore {
       static void read (archive::database_reader & archive, value_type & value) {
         read_string_address (archive, value);
       }
-      static void read (archive::database_reader && archive, value_type & value) {
-        read_string_address (std::move (archive), value);
-      }
 
     private:
       template <typename DBArchive>
-      static auto write_string_address (DBArchive && archive, value_type const & value)
+      static auto write_string_address (DBArchive & archive, value_type const & value)
         -> archive_result_type<DBArchive> {
 
         // The body of an indirect string must be written separately by the caller.
@@ -181,7 +174,7 @@ namespace pstore {
       }
 
       template <typename DBArchive>
-      static void read_string_address (DBArchive && archive, value_type & value) {
+      static void read_string_address (DBArchive & archive, value_type & value) {
         database const & db = archive.get_db ();
         new (&value)
           value_type (db, *db.getrou (typed_address<address>::make (archive.get_address ())));
@@ -195,9 +188,9 @@ namespace pstore {
 namespace std {
 
   template <>
-  struct hash<::pstore::indirect_string> {
-    size_t operator() (::pstore::indirect_string const & str) const {
-      ::pstore::shared_sstring_view owner;
+  struct hash<pstore::indirect_string> {
+    size_t operator() (pstore::indirect_string const & str) const {
+      pstore::shared_sstring_view owner;
       return std::hash<pstore::raw_sstring_view>{}(str.as_string_view (&owner));
     }
   };

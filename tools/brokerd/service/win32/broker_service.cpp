@@ -48,8 +48,6 @@ broker_service::~broker_service () = default;
 void broker_service::start_handler (DWORD argc, TCHAR * argv[]) {
   this->write_event_log_entry ("broker service starting", event_type::information);
 
-  command_line::option::reset_container ();
-
   switches opt;
   std::tie (opt, broker::exit_code) = get_switches (argc, argv);
 

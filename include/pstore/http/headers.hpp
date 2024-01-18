@@ -20,22 +20,20 @@
 
 #include "pstore/support/maybe.hpp"
 
-namespace pstore {
-  namespace http {
+namespace pstore::http {
 
-    struct header_info {
-      bool operator== (header_info const & rhs) const;
-      bool operator!= (header_info const & rhs) const { return !operator== (rhs); }
+  struct header_info {
+    bool operator== (header_info const & rhs) const;
+    bool operator!= (header_info const & rhs) const { return !operator== (rhs); }
 
-      bool upgrade_to_websocket = false;
-      bool connection_upgrade = false;
-      pstore::maybe<std::string> websocket_key;
-      pstore::maybe<unsigned> websocket_version;
+    bool upgrade_to_websocket = false;
+    bool connection_upgrade = false;
+    pstore::maybe<std::string> websocket_key;
+    pstore::maybe<unsigned> websocket_version;
 
-      header_info handler (std::string const & key, std::string const & value);
-    };
+    header_info handler (std::string const & key, std::string const & value);
+  };
 
-  } // end namespace http
-} // end namespace pstore
+} // end namespace pstore::http
 
 #endif // PSTORE_HTTP_HEADERS_HPP

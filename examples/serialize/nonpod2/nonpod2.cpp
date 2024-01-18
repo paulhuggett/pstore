@@ -48,15 +48,15 @@ namespace pstore::serialize {
     // Writes an instance of foo to an archive. The data stream contains
     // a single int value.
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & value) ->
+    static auto write (Archive & archive, value_type const & value) ->
       typename std::decay_t<Archive>::result_type {
-      return serialize::write (std::forward<Archive> (archive), value.a_);
+      return serialize::write (archive, value.a_);
     }
 
     // Reads an instance of foo from an archive.
     template <typename Archive>
-    static void read (Archive && archive, value_type & sp) {
-      new (&sp) foo (serialize::read<int> (std::forward<Archive> (archive)));
+    static void read (Archive & archive, value_type & sp) {
+      new (&sp) foo (serialize::read<int> (archive));
     }
   };
 
@@ -65,7 +65,7 @@ namespace pstore::serialize {
 namespace {
 
   auto write_foo () {
-    std::vector<std::uint8_t> bytes;
+    std::vector<std::byte> bytes;
     pstore::serialize::archive::vector_writer writer (bytes);
 
     foo f (42);
@@ -76,7 +76,7 @@ namespace {
     return bytes;
   }
 
-  void read_foo (std::vector<std::uint8_t> const & bytes) {
+  void read_foo (std::vector<std::byte> const & bytes) {
     auto reader = pstore::serialize::archive::make_reader (std::begin (bytes));
     foo f = pstore::serialize::read<foo> (reader);
     std::cout << "Read: " << f << '\n';
@@ -85,6 +85,6 @@ namespace {
 } // end anonymous namespace
 
 int main () {
-  std::vector<std::uint8_t> bytes = write_foo ();
+  std::vector<std::byte> bytes = write_foo ();
   read_foo (bytes);
 }

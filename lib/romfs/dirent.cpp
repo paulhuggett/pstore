@@ -20,9 +20,10 @@
 #include "pstore/romfs/romfs.hpp"
 
 auto pstore::romfs::dirent::opendir () const -> error_or<gsl::not_null<class directory const *>> {
+  using return_type = error_or<gsl::not_null<class directory const *>>;
   // NOLINTNEXTLINE (bugprone-sizeof-expression)
   if (!is_directory () || stat_.size != sizeof (directory const *)) {
-    return error_or<directory const *> (make_error_code (error_code::enotdir));
+    return return_type{make_error_code (error_code::enotdir)};
   }
-  return error_or<directory const *> (reinterpret_cast<directory const *> (contents_.get ()));
+  return return_type{reinterpret_cast<directory const *> (contents_.get ())};
 }

@@ -86,7 +86,7 @@ TEST_F (DbArchive, ReadAUint64Span) {
   // Now the read the array back again.
   pstore::serialize::archive::database_reader archive (db, addr.to_address ());
   std::array<std::uint64_t, 2> actual{{UINT64_C (0)}};
-  pstore::serialize::read (archive, ::pstore::gsl::span<std::uint64_t>{actual});
+  pstore::serialize::read (archive, pstore::gsl::span<std::uint64_t>{actual});
 
   EXPECT_THAT (original, ContainerEq (actual));
 }
@@ -101,7 +101,7 @@ TEST_F (DbArchive, WriteASingleUint64) {
   mock_mutex mutex;
   auto transaction = begin (db, std::unique_lock<mock_mutex>{mutex});
   auto archive = pstore::serialize::archive::make_writer (transaction);
-  auto where = pstore::typed_address<std::uint64_t>::make (db.size ());
+  auto const where = pstore::typed_address<std::uint64_t>::make (db.size ());
   pstore::serialize::write (archive, original);
 
   // Now read that value back again using the raw pstore API and check that the round-trip was
@@ -124,9 +124,9 @@ TEST_F (DbArchive, WriteAUint64Span) {
   // Write the 'original' array span to the store using a serializer.
   mock_mutex mutex;
   auto transaction = begin (db, std::unique_lock<mock_mutex>{mutex});
-  auto where = pstore::address{db.size ()};
-  pstore::serialize::write (pstore::serialize::archive::make_writer (transaction),
-                            pstore::gsl::make_span (original));
+  auto const where = pstore::address{db.size ()};
+  auto writer = pstore::serialize::archive::make_writer (transaction);
+  pstore::serialize::write (writer, pstore::gsl::make_span (original));
 
   // Now read that value back again using the raw pstore API and check that the round-trip was
   // successful.
@@ -170,7 +170,6 @@ TEST_F (DbArchiveWriteSpan, WriteUint64Span) {
     UINT64_C (0x0011223344556677),
     UINT64_C (0x8899AABBCCDDEEFF),
   }};
-  auto const span = ::pstore::gsl::make_span (original);
 
   mock_mutex mutex;
   mock_transaction transaction (db, std::unique_lock<mock_mutex>{mutex});
@@ -184,8 +183,8 @@ TEST_F (DbArchiveWriteSpan, WriteUint64Span) {
     .WillOnce (invoke_base_allocate);
 
   // Write the span.
-  using namespace pstore::serialize;
-  write (archive::make_writer (transaction), span);
+  auto writer = pstore::serialize::archive::make_writer (transaction);
+  pstore::serialize::write (writer, pstore::gsl::make_span (original));
 }
 
 namespace {
@@ -286,9 +285,8 @@ TEST_F (DbArchiveReadSpan, ReadUint64Span) {
     .Times (1)
     .WillOnce (invoke_base_getu);
 
-  using namespace pstore::serialize;
-  read (archive::database_reader (db, addr.to_address ()),
-        pstore::gsl::span<std::uint64_t>{actual});
+  auto reader = pstore::serialize::archive::database_reader (db, addr.to_address ());
+  pstore::serialize::read (reader, pstore::gsl::span<std::uint64_t>{actual});
 
   EXPECT_THAT (actual, testing::ContainerEq (original));
 }

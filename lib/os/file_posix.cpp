@@ -252,7 +252,7 @@ namespace pstore::file {
   void file_handle::seek (std::uint64_t position) {
     this->ensure_open ();
 
-    using common_type = std::common_type<uoff_type, std::uint64_t>::type;
+    using common_type = std::common_type_t<uoff_type, std::uint64_t>;
     static constexpr auto max = static_cast<common_type> (std::numeric_limits<off_t>::max ());
 
     int mode = SEEK_SET;
@@ -285,7 +285,7 @@ namespace pstore::file {
 
   // read buffer
   // ~~~~~~~~~~~
-  std::size_t file_handle::read_buffer (gsl::not_null<void *> const buffer,
+  std::size_t file_handle::read_buffer (gsl::not_null<std::byte *> const buffer,
                                         std::size_t const nbytes) {
     if (nbytes > unsigned_cast (std::numeric_limits<ssize_t>::max ())) {
       raise (std::errc::invalid_argument, "read_buffer");
@@ -302,7 +302,7 @@ namespace pstore::file {
 
   // write buffer
   // ~~~~~~~~~~~~
-  void file_handle::write_buffer (gsl::not_null<void const *> const buffer,
+  void file_handle::write_buffer (gsl::not_null<std::byte const *> const buffer,
                                   std::size_t const nbytes) {
     this->ensure_open ();
 

@@ -69,7 +69,7 @@ namespace pstore {
       /// \note This function is used on platforms that don't have a native implementation
       /// of the mkstemp() function.
       template <typename RandomGenerator>
-      std::string name_from_template (std::string const & tmpl, RandomGenerator rng) {
+      std::string name_from_template (std::string_view tmpl, RandomGenerator rng) {
         // Walk backwards looking for the start of the sequence of 'X'
         // characters that form the end of the template string.
         auto const it =
@@ -118,7 +118,7 @@ namespace pstore {
       std::size_t split (PointeeType * buffer, std::size_t size, Function const & function) {
         PSTORE_ASSERT (buffer != nullptr);
 
-        static_assert (sizeof (PointeeType) == sizeof (std::uint8_t),
+        static_assert (sizeof (PointeeType) == sizeof (std::byte),
                        "PointeeType must be a byte wide type");
         static_assert (sizeof (std::size_t) >= sizeof (WidthType),
                        "WidthType must not be wider than size_t");
@@ -131,16 +131,6 @@ namespace pstore {
           size -= chunk_size;
         }
         return result;
-      }
-
-      template <typename WidthType, typename Function>
-      std::size_t split (void * const buffer, std::size_t const size, Function const & function) {
-        return split<WidthType> (static_cast<std::uint8_t *> (buffer), size, function);
-      }
-      template <typename WidthType, typename Function>
-      std::size_t split (void const * const buffer, std::size_t const size,
-                         Function const & function) {
-        return split<WidthType> (static_cast<std::uint8_t const *> (buffer), size, function);
       }
 
     } // end namespace details
@@ -212,20 +202,21 @@ namespace pstore {
       /// a StandardLayoutType.
       /// \param s  A span of instances which may contain zero or more members.
       /// \return The number of bytes read.
-      template <typename SpanType, typename = typename std::enable_if_t<
-                                     std::is_standard_layout_v<typename SpanType::element_type>>>
-      std::size_t read_span (SpanType const & s) {
+      template <typename ElementType, std::ptrdiff_t Extent,
+                typename = std::enable_if_t<std::is_standard_layout_v<ElementType>>>
+      std::size_t read_span (gsl::span<ElementType, Extent> const s) {
         auto const size = s.size_bytes ();
         PSTORE_ASSERT (size >= 0);
-        using utype = typename std::make_unsigned_t<decltype (size)>;
-        return this->read_buffer (s.data (), static_cast<utype> (s.size_bytes ()));
+        using utype = std::make_unsigned_t<decltype (size)>;
+        return this->read_buffer (reinterpret_cast<std::byte *> (s.data ()),
+                                  static_cast<utype> (s.size_bytes ()));
       }
 
       /// \brief Reads a series of raw bytes from the file as an instance of type T.
-      template <typename T, typename = typename std::enable_if_t<std::is_standard_layout_v<T>>>
+      template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
       void read (T * const t) {
         PSTORE_ASSERT (t != nullptr);
-        if (this->read_buffer (t, sizeof (T)) != sizeof (T)) {
+        if (this->read_buffer (reinterpret_cast<std::byte *> (t), sizeof (T)) != sizeof (T)) {
           raise (error_code::did_not_read_number_of_bytes_requested);
         }
       }
@@ -238,14 +229,14 @@ namespace pstore {
       void write_span (SpanType const & s) {
         auto const bytes = s.size_bytes ();
         PSTORE_ASSERT (bytes >= 0);
-        auto const ubytes = static_cast<typename std::make_unsigned_t<decltype (bytes)>> (bytes);
+        auto const ubytes = static_cast<std::make_unsigned_t<decltype (bytes)>> (bytes);
         this->write_buffer (s.data (), ubytes);
       }
 
       /// \brief Writes 't' as a series of raw bytes to the file.
-      template <typename T, typename = typename std::enable_if_t<std::is_standard_layout_v<T>>>
+      template <typename T, typename = std::enable_if_t<std::is_standard_layout_v<T>>>
       void write (T const & t) {
-        this->write_buffer (&t, sizeof (T));
+        this->write_buffer (reinterpret_cast<std::byte const *> (&t), sizeof (T));
       }
       ///@}
 
@@ -331,7 +322,7 @@ namespace pstore {
       /// There must be at least nbytes available.
       /// \param nbytes  The number of bytes that are to be read.
       /// \returns The number of bytes actually read.
-      virtual std::size_t read_buffer (gsl::not_null<void *> buffer, std::size_t nbytes) = 0;
+      virtual std::size_t read_buffer (gsl::not_null<std::byte *> buffer, std::size_t nbytes) = 0;
 
       /// \brief Writes nbytes to the file, reading them from the location given by buffer.
       ///
@@ -341,7 +332,7 @@ namespace pstore {
       /// \param buffer  A pointer to the memory containing the data to be written. At least
       /// 'nbytes' must be available.
       /// \param nbytes  The number of bytes that are to be written.
-      virtual void write_buffer (gsl::not_null<void const *> buffer, std::size_t nbytes) = 0;
+      virtual void write_buffer (gsl::not_null<std::byte const *> buffer, std::size_t nbytes) = 0;
 
       ///@}
     };
@@ -445,18 +436,16 @@ namespace pstore {
 
       bool lock_impl (file_base::blocking_mode mode);
 
-#ifdef PSTORE_HAVE_IS_TRIVIALLY_COPYABLE
-      static_assert (std::is_trivially_copyable<decltype (file_)>::value,
+      static_assert (std::is_trivially_copyable_v<decltype (file_)>,
                      "file_ is not trivially copyable: use std::move() in move ctor and assign");
-      static_assert (std::is_trivially_copyable<decltype (offset_)>::value,
+      static_assert (std::is_trivially_copyable_v<decltype (offset_)>,
                      "offset_ is not trivially copyable: use std::move() in move ctor and assign");
-      static_assert (std::is_trivially_copyable<decltype (size_)>::value,
+      static_assert (std::is_trivially_copyable_v<decltype (size_)>,
                      "size_ is not trivially copyable: use std::move() in move ctor and assign");
-      static_assert (std::is_trivially_copyable<decltype (kind_)>::value,
+      static_assert (std::is_trivially_copyable_v<decltype (kind_)>,
                      "kind_ is not trivially copyable: use std::move() in move ctor and assign");
-      static_assert (std::is_trivially_copyable<decltype (locked_)>::value,
+      static_assert (std::is_trivially_copyable_v<decltype (locked_)>,
                      "locked_ is not trivially copyable: use std::move() in move ctor and assign");
-#endif // PSTORE_HAVE_IS_TRIVIALLY_COPYABLE
     };
 
 
@@ -485,7 +474,8 @@ namespace pstore {
         PSTORE_ASSERT (eof <= length);
       }
 
-      void close () override {}
+      void close () override { /* nothing to do */
+      }
       bool is_open () const noexcept override { return true; }
       bool is_writable () const noexcept override { return writable_; }
       std::string path () const override;
@@ -502,10 +492,12 @@ namespace pstore {
                  blocking_mode const /*bl*/) override {
         return true;
       }
-      void unlock (std::uint64_t const /*offset*/, std::size_t const /*size*/) override {}
+      void unlock (std::uint64_t const /*offset*/,
+                   std::size_t const /*size*/) override { /* nothing to do */
+      }
 
       /// Returns the underlying memory managed by the file object.
-      std::shared_ptr<void> data () { return buffer_; }
+      std::shared_ptr<void> data () const { return buffer_; }
 
       /// Reads nbytes from the file, storing them at the location given by buffer. Returns
       /// the number of bytes read. The file position indicator for the file is incremented by
@@ -513,14 +505,14 @@ namespace pstore {
       ///
       /// \note This member function is protected in the base class. I make it public here for
       /// unit testing.
-      std::size_t read_buffer (gsl::not_null<void *> buffer, std::size_t nbytes) override;
+      std::size_t read_buffer (gsl::not_null<std::byte *> buffer, std::size_t nbytes) override;
 
       /// Writes writes nbytes to the file, reading them from the location given by ptr. The
       /// file position indicator for the file is incremented by the number of bytes written.
       ///
       /// \note This member function is protected in the base class. I make it public here for
       /// unit testing.
-      void write_buffer (gsl::not_null<void const *> ptr, std::size_t nbytes) override;
+      void write_buffer (gsl::not_null<std::byte const *> ptr, std::size_t nbytes) override;
 
     private:
       /// The buffer used by the in-memory file.
@@ -655,12 +647,12 @@ namespace pstore {
       static constexpr oshandle invalid_oshandle = -1;
 #endif
 
-      oshandle raw_handle () noexcept { return file_; }
+      [[nodiscard]] oshandle raw_handle () const noexcept { return file_; }
 
     private:
-      std::size_t read_buffer (gsl::not_null<void *> buffer, std::size_t nbytes) override;
-      void write_buffer (gsl::not_null<void const *> buffer, std::size_t nbytes) override;
-      void ensure_open ();
+      std::size_t read_buffer (gsl::not_null<std::byte *> buffer, std::size_t nbytes) override;
+      void write_buffer (gsl::not_null<std::byte const *> buffer, std::size_t nbytes) override;
+      void ensure_open () const;
       static error_or<oshandle> close_noex (oshandle const file);
 
 #ifdef _WIN32
@@ -671,19 +663,17 @@ namespace pstore {
       oshandle file_ = invalid_oshandle;
       bool is_writable_ = false;
 
-#ifdef PSTORE_HAVE_IS_TRIVIALLY_COPYABLE
       static_assert (
-        std::is_trivially_copyable<decltype (file_)>::value,
+        std::is_trivially_copyable_v<decltype (file_)>,
         "file_ is not trivially copyable: use std::move() in rvalue ref ctor and assign");
-      static_assert (std::is_trivially_copyable<decltype (is_writable_)>::value,
+      static_assert (std::is_trivially_copyable_v<decltype (is_writable_)>,
                      "is_writable_ is not trivially copyable: use std::move() in rvalue ref "
                      "ctor and assign");
-#endif // PSTORE_HAVE_IS_TRIVIALLY_COPYABLE
     };
 
-    // ensure_open
+    // ensure open
     // ~~~~~~~~~~~
-    inline void file_handle::ensure_open () {
+    inline void file_handle::ensure_open () const {
       if (!this->is_open ()) {
         raise (std::errc::bad_file_descriptor);
       }

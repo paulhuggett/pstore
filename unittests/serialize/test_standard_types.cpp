@@ -38,7 +38,7 @@ namespace {
             : writer_{bytes_} {}
 
   protected:
-    std::vector<std::uint8_t> bytes_;
+    std::vector<std::byte> bytes_;
     pstore::serialize::archive::vector_writer writer_;
 
     static constexpr auto const three_byte_varint = std::string::size_type{1} << 14;
@@ -50,10 +50,9 @@ TEST_F (StringWriter, WriteCharString) {
   std::string const str{"hello"};
   pstore::serialize::write (writer_, str);
 
-  EXPECT_THAT (bytes_,
-               ::testing::ElementsAre (std::uint8_t{0b1011}, std::uint8_t{0}, std::uint8_t{'h'},
-                                       std::uint8_t{'e'}, std::uint8_t{'l'}, std::uint8_t{'l'},
-                                       std::uint8_t{'o'}));
+  EXPECT_THAT (bytes_, ::testing::ElementsAre (std::byte{0b1011}, std::byte{0}, std::byte{'h'},
+                                               std::byte{'e'}, std::byte{'l'}, std::byte{'l'},
+                                               std::byte{'o'}));
   EXPECT_EQ (bytes_.size (), writer_.bytes_consumed ());
   EXPECT_EQ (bytes_.size (), writer_.bytes_produced ());
 }
@@ -67,10 +66,10 @@ TEST_F (StringWriter, WriteMaxTwoByteLengthCharString) {
 
   EXPECT_EQ (str.length () + 2, bytes_.size ());
   auto first = std::begin (bytes_);
-  EXPECT_EQ (0b11111110, *(first++));
-  EXPECT_EQ (0b11111111, *(first++));
-  std::vector<std::uint8_t> const body (first, std::end (bytes_));
-  std::vector<std::uint8_t> const expected_body (src_length, src_char);
+  EXPECT_EQ (std::byte{0b11111110}, *(first++));
+  EXPECT_EQ (std::byte{0b11111111}, *(first++));
+  std::vector<std::byte> const body (first, std::end (bytes_));
+  std::vector<std::byte> const expected_body (src_length, static_cast<std::byte> (src_char));
 
   EXPECT_THAT (body, ::testing::ContainerEq (expected_body));
   EXPECT_EQ (bytes_.size (), writer_.bytes_consumed ());
@@ -86,11 +85,11 @@ TEST_F (StringWriter, WriteThreeByteLengthCharString) {
 
   EXPECT_EQ (str.length () + 3, bytes_.size ());
   auto first = std::begin (bytes_);
-  EXPECT_EQ (0b00000100, *(first++));
-  EXPECT_EQ (0b00000000, *(first++));
-  EXPECT_EQ (0b00000010, *(first++));
-  std::vector<std::uint8_t> const body (first, std::end (bytes_));
-  std::vector<std::uint8_t> const expected_body (src_length, src_char);
+  EXPECT_EQ (std::byte{0b00000100}, *(first++));
+  EXPECT_EQ (std::byte{0b00000000}, *(first++));
+  EXPECT_EQ (std::byte{0b00000010}, *(first++));
+  std::vector<std::byte> const body (first, std::end (bytes_));
+  std::vector<std::byte> const expected_body (src_length, static_cast<std::byte> (src_char));
 
   EXPECT_THAT (body, ::testing::ContainerEq (expected_body));
   EXPECT_EQ (bytes_.size (), writer_.bytes_consumed ());
@@ -116,7 +115,7 @@ TEST_F (StringWriter, ReadMaxTwoByteLengthCharString) {
     auto output_it = std::back_inserter (bytes_);
     pstore::varint::encode (src_length, output_it);
     std::generate_n (output_it, src_length,
-                     [src_char] () { return static_cast<std::uint8_t> (src_char); });
+                     [src_char] () { return static_cast<std::byte> (src_char); });
   }
 
   auto archive = pstore::serialize::archive::make_reader (std::begin (writer_));
@@ -135,7 +134,7 @@ TEST_F (StringWriter, ReadThreeByteLengthCharString) {
     auto output_it = std::back_inserter (bytes_);
     pstore::varint::encode (src_length, output_it);
     std::generate_n (output_it, src_length,
-                     [src_char] () { return static_cast<std::uint8_t> (src_char); });
+                     [src_char] () { return static_cast<std::byte> (src_char); });
   }
 
   auto archive = pstore::serialize::archive::make_reader (std::begin (writer_));
@@ -164,7 +163,7 @@ namespace {
 
   protected:
     static std::set<int> const set_;
-    std::vector<std::uint8_t> bytes_;
+    std::vector<std::byte> bytes_;
     pstore::serialize::archive::vector_writer writer_;
   };
 
@@ -180,22 +179,22 @@ namespace pstore::serialize {
     using value_type = std::set<int>;
 
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & ty) -> archive_result_type<Archive> {
-      return container_archive_helper<value_type>::write (std::forward<Archive> (archive), ty);
+    static auto write (Archive & archive, value_type const & ty) -> archive_result_type<Archive> {
+      return container_archive_helper<value_type>::write (archive, ty);
     }
 
     template <typename Archive>
-    static void read (Archive && archive, value_type & out) {
+    static void read (Archive & archive, value_type & out) {
       new (&out) value_type;
       auto inserter = [&out] (int v) { out.insert (v); };
-      container_archive_helper<value_type>::read (std::forward<Archive> (archive), inserter);
+      container_archive_helper<value_type>::read (archive, inserter);
     }
   };
 
 } // end namespace pstore::serialize
 
 TEST_F (SetWriter, write) {
-  std::vector<std::uint8_t> bytes;
+  std::vector<std::byte> bytes;
   pstore::serialize::archive::vector_writer expected{bytes};
   pstore::serialize::write (expected, std::size_t{3});
   pstore::serialize::write (expected, int{2});
@@ -230,7 +229,7 @@ namespace {
 
   protected:
     static map_type const map_;
-    std::vector<std::uint8_t> bytes_;
+    std::vector<std::byte> bytes_;
     pstore::serialize::archive::vector_writer writer_;
   };
 
@@ -248,17 +247,16 @@ namespace pstore::serialize {
     using value_type = MapWriter::map_type::value_type;
 
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & ty) -> archive_result_type<Archive> {
+    static auto write (Archive & archive, value_type const & ty) -> archive_result_type<Archive> {
       auto result = serialize::write (archive, ty.first);
-      serialize::write (std::forward<Archive> (archive), ty.second);
+      serialize::write (archive, ty.second);
       return result;
     }
 
     template <typename Archive>
-    static void read (Archive && archive, value_type & out) {
+    static void read (Archive & archive, value_type & out) {
       auto const first = serialize::read<decltype (value_type::first)> (archive);
-      auto const second =
-        serialize::read<decltype (value_type::second)> (std::forward<Archive> (archive));
+      auto const second = serialize::read<decltype (value_type::second)> (archive);
       new (&out) value_type (first, second);
     }
   };
@@ -269,22 +267,22 @@ namespace pstore::serialize {
     using value_type = MapWriter::map_type;
 
     template <typename Archive>
-    static auto write (Archive && archive, value_type const & ty) -> archive_result_type<Archive> {
-      return container_archive_helper<value_type>::write (std::forward<Archive> (archive), ty);
+    static auto write (Archive & archive, value_type const & ty) -> archive_result_type<Archive> {
+      return container_archive_helper<value_type>::write (archive, ty);
     }
 
     template <typename Archive>
-    static void read (Archive && archive, value_type & out) {
+    static void read (Archive & archive, value_type & out) {
       new (&out) value_type;
       auto inserter = [&out] (MapWriter::map_type::value_type const & v) { out.insert (v); };
-      return container_archive_helper<value_type>::read (std::forward<Archive> (archive), inserter);
+      return container_archive_helper<value_type>::read (archive, inserter);
     }
   };
 
 } // end namespace pstore::serialize
 
 TEST_F (MapWriter, write) {
-  std::vector<std::uint8_t> expected_bytes;
+  std::vector<std::byte> expected_bytes;
   pstore::serialize::archive::vector_writer expected{expected_bytes};
 
   pstore::serialize::write (expected, std::size_t{2});

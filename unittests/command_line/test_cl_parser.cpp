@@ -16,108 +16,164 @@
 #include "pstore/command_line/command_line.hpp"
 
 // 3rd party includes
-#include <gtest/gtest.h>
+#include "gtest/gtest.h"
+#if PSTORE_FUZZTEST
+#  include "fuzztest/fuzztest.h"
+#endif
+
+using namespace std::literals::string_view_literals;
+using namespace std::literals::string_literals;
 
 TEST (ClParser, SimpleString) {
   using pstore::command_line::parser;
 
   std::optional<std::string> r = parser<std::string> () ("hello");
-  EXPECT_TRUE (r.has_value ());
+  ASSERT_TRUE (r.has_value ());
   EXPECT_EQ (r.value (), "hello");
 }
 
-TEST (ClParser, StringFromSet) {
-  using pstore::command_line::parser;
-
-  parser<std::string> p;
-  p.add_literal_option ("a", 31, "description a");
-  p.add_literal_option ("b", 37, "description b");
-
-  {
-    std::optional<std::string> r1 = p ("hello");
-    EXPECT_FALSE (r1.has_value ());
-  }
-  {
-    std::optional<std::string> r2 = p ("a");
-    EXPECT_TRUE (r2.has_value ());
-    EXPECT_EQ (r2.value (), "a");
-  }
-  {
-    std::optional<std::string> r3 = p ("b");
-    EXPECT_TRUE (r3.has_value ());
-    EXPECT_EQ (r3.value (), "b");
-  }
+#if PSTORE_FUZZTEST
+static void StringParseNeverCrashes (std::string const & s) {
+  std::optional<std::string> r = pstore::command_line::parser<std::string> () (s);
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), s);
 }
+FUZZ_TEST (ClParser, StringParseNeverCrashes);
+#endif // PSTORE_FUZZTEST
 
 TEST (ClParser, Int) {
-  using pstore::command_line::parser;
-  {
-    std::optional<int> r1 = parser<int> () ("43");
-    EXPECT_TRUE (r1.has_value ());
-    EXPECT_EQ (r1.value (), 43);
-  }
-  {
-    parser<int> p;
-    std::optional<int> r2 = p ("");
-    EXPECT_FALSE (r2.has_value ());
-  }
-  {
-    std::optional<int> r3 = parser<int> () ("bad");
-    EXPECT_FALSE (r3.has_value ());
-  }
-  {
-    std::optional<int> r4 = parser<int> () ("42bad");
-    EXPECT_FALSE (r4.has_value ());
-  }
+  std::optional<int> r1 = pstore::command_line::parser<int>{}("43");
+  EXPECT_EQ (r1.value_or (0), 43);
 }
 
-TEST (ClParser, Enum) {
-  using pstore::command_line::parser;
+TEST (ClParser, IntEmpty) {
+  pstore::command_line::parser<int> p;
+  std::optional<int> const r = p ("");
+  EXPECT_FALSE (r.has_value ());
+}
 
-  enum color { red, blue, green };
-  parser<color> p;
-  p.add_literal_option ("red", red, "description red");
-  p.add_literal_option ("blue", blue, "description blue");
-  p.add_literal_option ("green", green, "description green");
-  {
-    std::optional<color> const r1 = p ("red");
-    EXPECT_TRUE (r1.has_value ());
-    EXPECT_EQ (r1.value (), red);
+TEST (ClParser, IntBad) {
+  std::optional<int> const r = pstore::command_line::parser<int>{}("bad");
+  EXPECT_FALSE (r.has_value ());
+}
+
+TEST (ClParser, IntWithBadTail) {
+  std::optional<int> const r = pstore::command_line::parser<int>{}("42bad");
+  EXPECT_FALSE (r.has_value ());
+}
+
+TEST (ClParser, IntNegative) {
+  std::optional<int> const r = pstore::command_line::parser<int>{}("-42");
+  EXPECT_EQ (r.value_or (0), -42);
+}
+
+TEST (ClParser, IntTooLarge) {
+  std::optional<std::int8_t> const r = pstore::command_line::parser<std::int8_t>{}("256");
+  EXPECT_FALSE (r.has_value ());
+}
+
+#if PSTORE_FUZZTEST
+static void IntParse (std::string const & arg) {
+  int expected = 0;
+  auto last = arg.data () + arg.size ();
+  auto [ptr, ec] = std::from_chars (arg.data (), last, expected);
+  if (ptr != last) {
+    ec = std::errc::invalid_argument;
   }
-  {
-    std::optional<color> const r2 = p ("blue");
-    EXPECT_TRUE (r2.has_value ());
-    EXPECT_EQ (r2.value (), blue);
-  }
-  {
-    std::optional<color> const r3 = p ("green");
-    EXPECT_TRUE (r3.has_value ());
-    EXPECT_EQ (r3.value (), green);
-  }
-  {
-    std::optional<color> const r4 = p ("bad");
-    EXPECT_FALSE (r4.has_value ());
-  }
-  {
-    std::optional<color> const r5 = p ("");
-    EXPECT_FALSE (r5.has_value ());
+
+  std::optional<int> r = pstore::command_line::parser<int> () (arg);
+  EXPECT_EQ (r.has_value (), ec == std::errc{});
+  if (r) {
+    EXPECT_EQ (*r, expected);
   }
 }
+FUZZ_TEST (ClParser, IntParse);
+#endif // PSTORE_FUZZTEST
 
 TEST (ClParser, Modifiers) {
   using namespace pstore::command_line;
-  EXPECT_EQ (opt<int> ().get_num_occurrences_flag (), num_occurrences_flag::optional);
-  EXPECT_EQ (opt<int>{optional}.get_num_occurrences_flag (), num_occurrences_flag::optional);
-  EXPECT_EQ (opt<int>{required}.get_num_occurrences_flag (), num_occurrences_flag::required);
-  EXPECT_EQ (opt<int>{one_or_more}.get_num_occurrences_flag (), num_occurrences_flag::zero_or_more);
-  EXPECT_EQ (opt<int> (required, one_or_more).get_num_occurrences_flag (),
-             num_occurrences_flag::one_or_more);
-  EXPECT_EQ (opt<int> (optional, one_or_more).get_num_occurrences_flag (),
-             num_occurrences_flag::zero_or_more);
+  EXPECT_EQ (int_opt ().get_occurrences_flag (), occurrences_flag::optional);
+  EXPECT_EQ (int_opt{optional}.get_occurrences_flag (), occurrences_flag::optional);
+  EXPECT_EQ (int_opt{required}.get_occurrences_flag (), occurrences_flag::required);
+  EXPECT_EQ (int_opt{one_or_more}.get_occurrences_flag (), occurrences_flag::zero_or_more);
+  EXPECT_EQ (int_opt (required, one_or_more).get_occurrences_flag (),
+             occurrences_flag::one_or_more);
+  EXPECT_EQ (int_opt (optional, one_or_more).get_occurrences_flag (),
+             occurrences_flag::zero_or_more);
 
-  EXPECT_EQ (opt<int> ().name (), "");
-  EXPECT_EQ (opt<int>{"name"}.name (), "name");
+  EXPECT_EQ (int_opt ().name (), "");
+  EXPECT_EQ (int_opt{"name"sv}.name (), "name");
+  EXPECT_EQ (int_opt{name ("name"s)}.name (), "name") << "Setting name via std::string";
+  EXPECT_EQ (int_opt{name ("name"sv)}.name (), "name") << "Setting name via string_view";
+  EXPECT_EQ (int_opt{name ("name")}.name (), "name") << "Setting name via null-terminated string";
 
-  EXPECT_EQ (opt<int>{}.description (), "");
-  EXPECT_EQ (opt<int>{desc ("description")}.description (), "description");
+  EXPECT_EQ (int_opt{}.description (), "");
+  EXPECT_EQ (int_opt{desc ("description")}.description (), "description");
 }
+
+namespace {
+
+  class ClParserEnum : public testing::Test {
+  public:
+    ClParserEnum () {
+      parser_.add_literal ("red", color::red, "description red");
+      parser_.add_literal ("green", color::green, "description green");
+      parser_.add_literal ("blue", color::blue, "description blue");
+    }
+
+  protected:
+    enum class color { red, green, blue };
+    pstore::command_line::parser<color> parser_;
+  };
+
+} // namespace
+
+TEST_F (ClParserEnum, Red) {
+  std::optional<color> const r = parser_ ("red");
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), color::red);
+}
+TEST_F (ClParserEnum, Green) {
+  std::optional<color> const r = parser_ ("green");
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), color::green);
+}
+TEST_F (ClParserEnum, Blue) {
+  std::optional<color> const r = parser_ ("blue");
+  ASSERT_TRUE (r.has_value ());
+  EXPECT_EQ (r.value (), color::blue);
+}
+TEST_F (ClParserEnum, Bad) {
+  std::optional<color> const r = parser_ ("bad");
+  EXPECT_FALSE (r.has_value ());
+}
+TEST_F (ClParserEnum, Empty) {
+  std::optional<color> const r = parser_ ("");
+  EXPECT_FALSE (r.has_value ());
+}
+
+#if PSTORE_FUZZTEST
+static void EnumParse (std::string const & arg) {
+  enum class color { red, green, blue };
+  pstore::command_line::parser<color> parser;
+  parser.add_literal ("red", color::red, "description red");
+  parser.add_literal ("green", color::green, "description green");
+  parser.add_literal ("blue", color::blue, "description blue");
+
+  std::optional<color> const r = parser (arg);
+
+  if (arg == "red") {
+    ASSERT_TRUE (r.has_value ());
+    EXPECT_EQ (*r, color::red);
+  } else if (arg == "green") {
+    ASSERT_TRUE (r.has_value ());
+    EXPECT_EQ (*r, color::green);
+  } else if (arg == "blue") {
+    ASSERT_TRUE (r.has_value ());
+    EXPECT_EQ (*r, color::blue);
+  } else {
+    EXPECT_FALSE (r.has_value ());
+  }
+}
+FUZZ_TEST (ClParser, EnumParse);
+#endif // PSTORE_FUZZTEST

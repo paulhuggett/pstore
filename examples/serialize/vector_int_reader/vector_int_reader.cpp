@@ -30,14 +30,14 @@ namespace {
     pstore::ios_flags_saver const _{os};
     auto separator = "";
     os << std::setfill ('0') << std::hex;
-    std::for_each (begin, end, [&] (unsigned const v) {
-      os << separator << std::setw (2) << v;
+    std::for_each (begin, end, [&] (std::byte const v) {
+      os << separator << std::setw (2) << static_cast<unsigned> (v);
       separator = " ";
     });
     return os;
   }
 
-  using container_type = std::vector<std::uint8_t>;
+  using container_type = std::vector<std::byte>;
 
   void read_one_int_at_a_time (container_type const & bytes) {
     auto reader = serialize::archive::make_reader (std::begin (bytes));
@@ -62,7 +62,8 @@ namespace {
 } // namespace
 
 int main () {
-  container_type const data{0x1e, 0x00, 0x00, 0x00, 0x28, 0x00, 0x00, 0x00};
+  container_type const data{std::byte{0x1e}, std::byte{0x00}, std::byte{0x00}, std::byte{0x00},
+                            std::byte{0x28}, std::byte{0x00}, std::byte{0x00}, std::byte{0x00}};
 
   std::cout << "Reading two ints from the following input data:\n";
   dump (std::cout, std::begin (data), std::end (data));

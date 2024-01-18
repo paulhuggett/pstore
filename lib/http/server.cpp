@@ -15,6 +15,12 @@
 //===----------------------------------------------------------------------===//
 /// \file server.cpp
 /// \brief Implements the top-level HTTP server functions.
+
+#ifdef _WIN32
+#  define NOMINMAX
+#  define WIN32_LEAN_AND_MEAN
+#endif
+
 #include "pstore/http/server.hpp"
 
 // Standard library includes
@@ -234,108 +240,105 @@ namespace {
 
 } // end anonymous namespace
 
-namespace pstore {
-  namespace http {
+namespace pstore::http {
 
-    int server (romfs::romfs & file_system, gsl::not_null<server_status *> const status,
-                channel_container const & channels,
-                std::function<void (in_port_t)> notify_listening) {
-      using priority = logger::priority;
+  int server (romfs::romfs & file_system, gsl::not_null<server_status *> const status,
+              channel_container const & channels,
+              std::function<void (in_port_t)> notify_listening) {
+    using priority = logger::priority;
 
-      error_or<socket_descriptor> const eparentfd = initialize_socket (status->port ());
-      if (!eparentfd) {
-        log (priority::error, "opening socket: ", eparentfd.get_error ().message ());
-        return 0;
-      }
-
-      socket_descriptor const & parentfd = eparentfd.get ();
-      status->set_real_port_number (parentfd);
-
-      log (priority::info, "starting server-loop on port ", status->port ());
-
-      std::vector<std::unique_ptr<std::thread>> websockets_workers;
-      notify_listening (status->port ());
-
-      for (auto expected_state = server_status::http_state::initializing;
-           status->listening (expected_state);
-           expected_state = server_status::http_state::listening) {
-
-        // Wait for a connection request.
-        error_or<socket_descriptor> echildfd = wait_for_connection (parentfd);
-        if (!echildfd) {
-          log (priority::error, "wait_for_connection: ", echildfd.get_error ().message ());
-          continue;
-        }
-        socket_descriptor & childfd = *echildfd;
-
-        // Get the HTTP request line.
-        auto reader = make_buffered_reader<socket_descriptor &> (net::refiller);
-
-        PSTORE_ASSERT (childfd.valid ());
-        error_or_n<socket_descriptor &, request_info> eri =
-          read_request (reader, std::ref (childfd));
-        if (!eri) {
-          log (priority::error, "Failed reading HTTP request: ", eri.get_error ().message ());
-          continue;
-        }
-        childfd = std::move (get<0> (eri));
-        request_info const & request = get<1> (eri);
-        log (priority::info,
-             "Request: ", request.method () + ' ' + request.version () + ' ' + request.uri ());
-
-        // We only currently support the GET method.
-        if (request.method () != "GET") {
-          report_error (make_error_code (pstore::http::error_code::not_implemented), request,
-                        childfd);
-          continue;
-        }
-
-        // Respond appropriately based on the request and headers.
-        auto const serve_reply = [&] (socket_descriptor & io2,
-                                      header_info const & header_contents) -> std::error_code {
-          if (header_contents.connection_upgrade && header_contents.upgrade_to_websocket) {
-
-            error_or<std::unique_ptr<std::thread>> p =
-              upgrade_to_ws (reader, std::ref (childfd), request, header_contents, channels);
-            if (p) {
-              websockets_workers.emplace_back (std::move (*p));
-            }
-            return p.get_error ();
-          }
-
-          if (!details::starts_with (request.uri (), dynamic_path)) {
-            return serve_static_content (net::network_sender, std::ref (io2), request.uri (),
-                                         file_system)
-              .get_error ();
-          }
-
-          return serve_dynamic_content (net::network_sender, std::ref (io2), request.uri ())
-            .get_error ();
-        };
-
-        // Scan the HTTP headers.
-        PSTORE_ASSERT (childfd.valid ());
-        std::error_code const err = read_headers (
-          reader, std::ref (childfd),
-          [] (header_info io, std::string const & key, std::string const & value) {
-            return io.handler (key, value);
-          },
-          header_info ()) >>= serve_reply;
-
-        if (err) {
-          // Report the error to the user as an HTTP error.
-          report_error (err, request, childfd);
-        }
-
-        PSTORE_ASSERT (input_is_empty (reader, childfd));
-      }
-
-      for (std::unique_ptr<std::thread> const & worker : websockets_workers) {
-        worker->join ();
-      }
-
+    error_or<socket_descriptor> const eparentfd = initialize_socket (status->port ());
+    if (!eparentfd) {
+      log (priority::error, "opening socket: ", eparentfd.get_error ().message ());
       return 0;
     }
 
-  } // end namespace http
-} // end namespace pstore
+    socket_descriptor const & parentfd = eparentfd.get ();
+    status->set_real_port_number (parentfd);
+
+    log (priority::info, "starting server-loop on port ", status->port ());
+
+    std::vector<std::unique_ptr<std::thread>> websockets_workers;
+    notify_listening (status->port ());
+
+    for (auto expected_state = server_status::http_state::initializing;
+         status->listening (expected_state);
+         expected_state = server_status::http_state::listening) {
+
+      // Wait for a connection request.
+      error_or<socket_descriptor> echildfd = wait_for_connection (parentfd);
+      if (!echildfd) {
+        log (priority::error, "wait_for_connection: ", echildfd.get_error ().message ());
+        continue;
+      }
+      socket_descriptor & childfd = *echildfd;
+
+      // Get the HTTP request line.
+      auto reader = make_buffered_reader<socket_descriptor &> (net::refiller);
+
+      PSTORE_ASSERT (childfd.valid ());
+      error_or_n<socket_descriptor &, request_info> eri = read_request (reader, std::ref (childfd));
+      if (!eri) {
+        log (priority::error, "Failed reading HTTP request: ", eri.get_error ().message ());
+        continue;
+      }
+      childfd = std::move (get<0> (eri));
+      request_info const & request = get<1> (eri);
+      log (priority::info,
+           "Request: ", request.method () + ' ' + request.version () + ' ' + request.uri ());
+
+      // We only currently support the GET method.
+      if (request.method () != "GET") {
+        report_error (make_error_code (pstore::http::error_code::not_implemented), request,
+                      childfd);
+        continue;
+      }
+
+      // Respond appropriately based on the request and headers.
+      auto const serve_reply = [&] (socket_descriptor & io2,
+                                    header_info const & header_contents) -> std::error_code {
+        if (header_contents.connection_upgrade && header_contents.upgrade_to_websocket) {
+
+          error_or<std::unique_ptr<std::thread>> p =
+            upgrade_to_ws (reader, std::ref (childfd), request, header_contents, channels);
+          if (p) {
+            websockets_workers.emplace_back (std::move (*p));
+          }
+          return p.get_error ();
+        }
+
+        if (!details::starts_with (request.uri (), dynamic_path)) {
+          return serve_static_content (net::network_sender, std::ref (io2), request.uri (),
+                                       file_system)
+            .get_error ();
+        }
+
+        return serve_dynamic_content (net::network_sender, std::ref (io2), request.uri ())
+          .get_error ();
+      };
+
+      // Scan the HTTP headers.
+      PSTORE_ASSERT (childfd.valid ());
+      std::error_code const err = read_headers (
+        reader, std::ref (childfd),
+        [] (header_info io, std::string const & key, std::string const & value) {
+          return io.handler (key, value);
+        },
+        header_info ()) >>= serve_reply;
+
+      if (err) {
+        // Report the error to the user as an HTTP error.
+        report_error (err, request, childfd);
+      }
+
+      PSTORE_ASSERT (input_is_empty (reader, childfd));
+    }
+
+    for (std::unique_ptr<std::thread> const & worker : websockets_workers) {
+      worker->join ();
+    }
+
+    return 0;
+  }
+
+} // end namespace pstore::http

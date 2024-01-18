@@ -25,17 +25,15 @@ namespace pstore::command_line {
 
   template <>
   struct stream_trait<char> {
-    static constexpr std::string const & out_string (std::string const & str) noexcept {
-      return str;
-    }
-    static constexpr gsl::czstring out_text (gsl::czstring const str) noexcept { return str; }
+    static constexpr std::string_view out_string (std::string_view str) noexcept { return str; }
+    static constexpr std::string_view out_text (std::string_view str) noexcept { return str; }
   };
 
 #ifdef _WIN32
   template <>
   struct stream_trait<wchar_t> {
-    static std::wstring out_string (std::string const & str) { return utf::to_native_string (str); }
-    static std::wstring out_text (gsl::czstring const str) { return utf::to_native_string (str); }
+    static std::wstring out_string (std::string_view str) { return utf::to_native_string (str); }
+    static std::wstring out_text (std::string_view str) { return utf::to_native_string (str); }
   };
 #endif // _WIN32
 

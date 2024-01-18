@@ -19,18 +19,19 @@
 #include <string>
 #include <vector>
 
-#include <gmock/gmock.h>
+#include "gmock/gmock.h"
 
 #include "pstore/command_line/command_line.hpp"
 #include "pstore/command_line/option.hpp"
 
 using namespace pstore::command_line;
+using namespace std::string_view_literals;
 using testing::HasSubstr;
 using testing::Not;
 
 namespace {
 
-  enum class enumeration : int { a, b, c };
+  enum class enumeration { a, b, c };
 
 #if defined(_WIN32) && defined(_UNICODE)
   using string_stream = std::wostringstream;
@@ -40,93 +41,115 @@ namespace {
 
   class Modifiers : public testing::Test {
   public:
-    ~Modifiers () override { option::reset_container (); }
+    ~Modifiers () override = default;
   };
 
 } // end anonymous namespace
 
-TEST_F (Modifiers, DefaultConstruction) {
-  opt<enumeration> opt;
-  EXPECT_EQ (opt.get (), enumeration::a);
+TEST_F (Modifiers, InitStringOpt) {
+  // init() allows the initial (default) value of the option to be set.
+  EXPECT_EQ (string_opt{}.get (), "");
+  EXPECT_EQ (string_opt{init ("string"sv)}.get (), "string");
 }
 
-TEST_F (Modifiers, Init) {
-  // init() allows the initial (default) value of the option to be described.
-  opt<enumeration> opt_a{init (enumeration::a)};
-
-  EXPECT_EQ (opt_a.get (), enumeration::a);
-
-  opt<enumeration> opt_b{init (enumeration::b)};
-  EXPECT_EQ (opt_b.get (), enumeration::b);
+TEST_F (Modifiers, InitIntOpt) {
+  EXPECT_EQ (int_opt{}.get (), int{});
+  EXPECT_EQ (int_opt{init (42)}.get (), 42);
 }
 
+TEST_F (Modifiers, InitBoolOpt) {
+  EXPECT_EQ (bool_opt{}.get (), bool{});
+  EXPECT_TRUE (bool_opt{init (true)}.get ());
+}
+
+TEST_F (Modifiers, InitEnumOpt) {
+  EXPECT_EQ (opt<enumeration>{}.get (), enumeration{});
+  EXPECT_EQ (opt<enumeration>{init (enumeration::a)}.get (), enumeration::a);
+  EXPECT_EQ (opt<enumeration>{init (enumeration::b)}.get (), enumeration::b);
+}
+
+TEST_F (Modifiers, InitListOpt) {
+  EXPECT_THAT (list<int>{}, testing::IsEmpty ());
+  EXPECT_THAT ((list<int>{init{std::array{1, 2, 3}}}), testing::ElementsAre (1, 2, 3));
+  EXPECT_THAT ((list<int>{init{std::vector{4, 5, 6}}}), testing::ElementsAre (4, 5, 6));
+  EXPECT_THAT ((list<int>{init{pstore::small_vector{7, 8, 9}}}), testing::ElementsAre (7, 8, 9));
+}
+
+TEST_F (Modifiers, Description) {
+  EXPECT_EQ (opt<enumeration>{}.description (), "");
+  EXPECT_EQ (opt<enumeration>{desc ("description")}.description (), "description");
+}
+
+TEST_F (Modifiers, Usage) {
+  EXPECT_EQ (opt<int>{}.usage (), "");
+  EXPECT_EQ (opt<int>{usage ("usage")}.usage (), "usage");
+}
 
 namespace {
 
   class EnumerationParse : public testing::Test {
   public:
-    EnumerationParse () = default;
-    ~EnumerationParse () override { option::reset_container (); }
+    ~EnumerationParse () override = default;
   };
 
 } // end anonymous namespace
 
 TEST_F (EnumerationParse, SetA) {
-  opt<enumeration> enum_opt{
-    "enumeration", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                           literal{"b", static_cast<int> (enumeration::b), "b description"},
-                           literal{"c", static_cast<int> (enumeration::c), "c description"})};
+  argument_parser args;
+  auto & enum_opt = args.add<opt<enumeration>> (
+    "enumeration"sv, values (literal{"a", enumeration::a, "a description"},
+                             literal{"b", enumeration::b, "b description"},
+                             literal{"c", enumeration::c, "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=a"};
   string_stream output;
   string_stream errors;
-  bool ok = details::parse_command_line_options (std::begin (argv), std::end (argv), "overview",
-                                                 output, errors);
+  bool ok = args.parse_args (std::begin (argv), std::end (argv), "overview", output, errors);
   ASSERT_TRUE (ok);
   ASSERT_EQ (enum_opt.get (), enumeration::a);
 }
 
 TEST_F (EnumerationParse, SetC) {
-  opt<enumeration> enum_opt{
-    "enumeration", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                           literal{"b", static_cast<int> (enumeration::b), "b description"},
-                           literal{"c", static_cast<int> (enumeration::c), "c description"})};
+  argument_parser args;
+  auto & enum_opt = args.add<opt<enumeration>> (
+    "enumeration"sv, values (literal{"a", enumeration::a, "a description"},
+                             literal{"b", enumeration::b, "b description"},
+                             literal{"c", enumeration::c, "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=c"};
   string_stream output;
   string_stream errors;
-  bool ok = details::parse_command_line_options (std::begin (argv), std::end (argv), "overview",
-                                                 output, errors);
+  bool ok = args.parse_args (std::begin (argv), std::end (argv), "overview", output, errors);
   ASSERT_TRUE (ok);
   ASSERT_EQ (enum_opt.get (), enumeration::c);
 }
 
 TEST_F (EnumerationParse, ErrorBadValue) {
-  opt<enumeration> enum_opt{
-    "enumeration", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                           literal{"b", static_cast<int> (enumeration::b), "b description"},
-                           literal{"c", static_cast<int> (enumeration::c), "c description"})};
+  argument_parser args;
+  args.add<opt<enumeration>> ("enumeration"sv,
+                              values (literal{"a", enumeration::a, "a description"},
+                                      literal{"b", enumeration::b, "b description"},
+                                      literal{"c", enumeration::c, "c description"}));
 
   std::vector<std::string> argv{"progname", "--enumeration=bad"};
   string_stream output;
   string_stream errors;
-  bool ok = details::parse_command_line_options (std::begin (argv), std::end (argv), "overview",
-                                                 output, errors);
+  bool ok = args.parse_args (std::begin (argv), std::end (argv), "overview", output, errors);
   ASSERT_FALSE (ok);
   EXPECT_THAT (errors.str (), HasSubstr (PSTORE_NATIVE_TEXT ("'bad'")));
 }
 
 TEST_F (EnumerationParse, GoodValueAfterError) {
-  opt<enumeration> enum_opt{
-    "enumeration", values (literal{"a", static_cast<int> (enumeration::a), "a description"},
-                           literal{"b", static_cast<int> (enumeration::b), "b description"},
-                           literal{"c", static_cast<int> (enumeration::c), "c description"})};
+  argument_parser args;
+  args.add<opt<enumeration>> ("enumeration"sv,
+                              values (literal{"a", enumeration::a, "a description"},
+                                      literal{"b", enumeration::b, "b description"},
+                                      literal{"c", enumeration::c, "c description"}));
 
   std::vector<std::string> argv{"progname", "--unknown", "--enumeration=a"};
   string_stream output;
   string_stream errors;
-  bool ok = details::parse_command_line_options (std::begin (argv), std::end (argv), "overview",
-                                                 output, errors);
+  bool ok = args.parse_args (std::begin (argv), std::end (argv), "overview", output, errors);
   ASSERT_FALSE (ok);
   EXPECT_THAT (errors.str (), Not (HasSubstr (PSTORE_NATIVE_TEXT ("'a'"))));
 }

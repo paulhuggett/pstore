@@ -37,15 +37,7 @@
 extern pstore::romfs::romfs fs;
 
 using namespace pstore::command_line;
-
-namespace {
-
-  opt<in_port_t> http_port ("port", desc ("The port number on which the server will listen"),
-                            init (in_port_t{8080}));
-
-  alias http_port2 ("p", desc ("Alias for --port"), aliasopt (http_port));
-
-} // end anonymous namespace
+using namespace std::string_view_literals;
 
 #ifdef _WIN32
 int _tmain (int argc, TCHAR * argv[]) {
@@ -65,8 +57,13 @@ int main (int argc, char * argv[]) {
 #endif // _WIN32
 
   PSTORE_TRY {
-    parse_command_line_options (
-      argc, argv, "pstore httpd: A basic HTTP/WS server for testing the pstore-http library.\n");
+    argument_parser args;
+    auto & http_port = args.add<opt<in_port_t>> (
+      "port"sv, desc ("The port number on which the server will listen"), init (in_port_t{8080}));
+    args.add<alias> ("p"sv, aliasopt (http_port));
+
+    args.parse_args (argc, argv,
+                     "pstore httpd: A basic HTTP/WS server for testing the pstore-http library.\n");
 
     static constexpr auto ident = "main";
     pstore::threads::set_name (ident);
