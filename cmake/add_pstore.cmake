@@ -55,8 +55,16 @@ function (pstore_standalone_compiler_setup)
   # clang
   # ~~~
   set (clang_options)
-  # Optimization flags.
-  list (APPEND clang_options -mpopcnt)
+  if (CMAKE_CXX_COMPILER_ID MATCHES "Clang$")
+    check_cxx_compiler_flag (-mpopcnt PSTORE_CLANG_M_POPCNT)
+    list (APPEND clang_options $<$<BOOL:${PSTORE_CLANG_M_POPCNT}>:-mpopcnt>)
+  endif ()
+
+  if (LINUX)
+    check_cxx_compiler_flag (-fno-semantic-interposition PSTORE_CLANG_F_NO_SEMANTIC_INTERPOSITION)
+    list (APPEND clang_options $<$<BOOL:${PSTORE_CLANG_F_NO_SEMANTIC_INTERPOSITION}>:-fno-semantic-interposition>)
+  endif ()
+
   # FIXME: This option is not supported with AppleClang. list (APPEND
   # clang_options -fno-semantic-interposition)
 
