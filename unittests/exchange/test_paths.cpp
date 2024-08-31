@@ -102,7 +102,8 @@ TEST_F (ExchangePaths, ImportEmpty) {
   pstore::exchange::import_ns::string_mapping imported_paths;
   {
     auto name_parser = import_strings_parser (&transaction, &imported_paths);
-    name_parser.input (exported_paths).eof ();
+    auto first = reinterpret_cast<std::byte const *> (exported_paths.data ());
+    name_parser.input (first, first + exported_paths.length ()).eof ();
     ASSERT_FALSE (name_parser.has_error ()) << json_error (name_parser) << exported_paths;
   }
 
@@ -143,7 +144,8 @@ TEST_F (ExchangePaths, RoundTripForTwoPaths) {
     auto transaction = begin (import_db_, transaction_lock{mutex});
     {
       auto name_parser = import_strings_parser (&transaction, &imported_names);
-      name_parser.input (exported_names_stream.str ()).eof ();
+      auto first = reinterpret_cast<std::byte const *> (exported_names_stream.str ().data ());
+      name_parser.input (first, first + exported_names_stream.str ().length ()).eof ();
       ASSERT_FALSE (name_parser.has_error ())
         << json_error (name_parser) << exported_names_stream.str ();
     }

@@ -43,6 +43,13 @@ namespace {
 
   protected:
     pstore::database db_;
+
+    template <typename Parser>
+    Parser & parse (Parser & parser, std::string_view sv) {
+      auto first = reinterpret_cast<std::byte const *> (sv.data ());
+      parser.input (first, first + sv.length ()).eof ();
+      return parser;
+    }
   };
 
   class ImportBool : public RuleTest {
@@ -59,7 +66,7 @@ namespace {
 TEST_F (ImportBool, True) {
   bool v = false;
   auto parser = make_json_bool_parser (&v);
-  parser.input ("true"sv);
+  this->parse (parser, "true"sv);
   parser.eof ();
 
   // Check the result.
@@ -70,7 +77,7 @@ TEST_F (ImportBool, True) {
 TEST_F (ImportBool, False) {
   bool v = true;
   auto parser = make_json_bool_parser (&v);
-  parser.input ("false"sv);
+  this->parse (parser, "false"sv);
   parser.eof ();
 
   // Check the result.
@@ -93,7 +100,7 @@ namespace {
 TEST_F (ImportInt64, Zero) {
   auto v = std::int64_t{0};
   auto parser = make_json_int64_parser (&v);
-  parser.input ("0"sv);
+  this->parse (parser, "0"sv);
   parser.eof ();
 
   // Check the result.
@@ -104,7 +111,7 @@ TEST_F (ImportInt64, Zero) {
 TEST_F (ImportInt64, One) {
   auto v = std::int64_t{0};
   auto parser = make_json_int64_parser (&v);
-  parser.input ("1"sv);
+  this->parse (parser, "1"sv);
   parser.eof ();
 
   // Check the result.
@@ -115,7 +122,7 @@ TEST_F (ImportInt64, One) {
 TEST_F (ImportInt64, NegativeOne) {
   auto v = std::int64_t{0};
   auto parser = make_json_int64_parser (&v);
-  parser.input ("-1"sv);
+  this->parse (parser, "-1"sv);
   parser.eof ();
 
   // Check the result.
@@ -127,7 +134,7 @@ TEST_F (ImportInt64, Min) {
   auto v = std::int64_t{0};
   auto parser = make_json_int64_parser (&v);
   auto const expected = std::numeric_limits<std::int64_t>::min ();
-  parser.input (std::to_string (expected));
+  this->parse (parser, std::to_string (expected));
   parser.eof ();
 
   // Check the result.
@@ -139,7 +146,7 @@ TEST_F (ImportInt64, Max) {
   auto v = std::int64_t{0};
   auto parser = make_json_int64_parser (&v);
   auto const expected = std::numeric_limits<std::int64_t>::max ();
-  parser.input (std::to_string (expected));
+  this->parse (parser, std::to_string (expected));
   parser.eof ();
 
   // Check the result.

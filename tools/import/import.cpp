@@ -85,7 +85,7 @@ int main (int argc, char * argv[]) {
     buffer.resize (65535);
 
     for (;;) {
-      auto * const ptr = reinterpret_cast<char *> (buffer.data ());
+      auto * const ptr = reinterpret_cast<std::byte *> (buffer.data ());
       std::size_t const nread =
         std::fread (ptr, sizeof (std::uint8_t), buffer.size (), infile.get ());
       if (nread < buffer.size ()) {

@@ -172,7 +172,9 @@ TEST_F (LinkedDefinitionsSection, RoundTripForPopulated) {
       exchange::import_ns::string_mapping imported_names;
       auto parser = make_json_object_parser<exchange::import_ns::fragment_sections> (
         &import_db_, &transaction, &imported_names, &imported_digest);
-      parser.input (exported_json).eof ();
+
+      auto first = reinterpret_cast<std::byte const *> (exported_json.data ());
+      parser.input (first, first + exported_json.length ()).eof ();
       ASSERT_FALSE (parser.has_error ()) << json_error (parser) << exported_json;
 
       std::shared_ptr<exchange::import_ns::context> const & ctxt = parser.backend ().get_context ();

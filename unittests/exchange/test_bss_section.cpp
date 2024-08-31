@@ -48,6 +48,13 @@ namespace {
       import_db_.set_vacuum_mode (pstore::database::vacuum_mode::disabled);
     }
 
+    template <typename Parser>
+    Parser & parse (Parser & parser, std::string_view input) {
+      auto first = reinterpret_cast<std::byte const *> (input.begin ());
+      parser.input (first, first + input.length ()).eof ();
+      return parser;
+    }
+
     using transaction_lock = std::unique_lock<mock_mutex>;
 
     in_memory_store export_store_;
@@ -92,7 +99,7 @@ TEST_F (BssSection, RoundTripForAnEmptySection) {
     pstore::exchange::import_ns::section_to_importer_t<section_type, decltype (inserter)>;
   auto parser = make_json_object_parser<section_importer> (&import_db_, kind, &imported_names,
                                                            &imported_content, &inserter);
-  parser.input (exported_json).eof ();
+  this->parse (parser, exported_json).eof ();
   ASSERT_FALSE (parser.has_error ()) << json_error{parser} << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
@@ -139,7 +146,7 @@ TEST_F (BssSection, RoundTripForPopulated) {
     pstore::exchange::import_ns::section_to_importer_t<section_type, decltype (inserter)>;
   auto parser = make_json_object_parser<section_importer> (&import_db_, kind, &imported_names,
                                                            &imported_content, &inserter);
-  parser.input (exported_json).eof ();
+  this->parse (parser, exported_json).eof ();
   ASSERT_FALSE (parser.has_error ()) << json_error{parser} << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
@@ -175,7 +182,8 @@ namespace {
     // Create a JSON parser which understands this section object.
     auto parser = make_json_object_parser<section_importer> (db, Kind, &names, content, inserter);
     // Parse the string.
-    parser.input (src).eof ();
+    auto first = reinterpret_cast<std::byte const *> (src.data ());
+    parser.input (first, first + src.length ()).eof ();
     return parser;
   }
 

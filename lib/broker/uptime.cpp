@@ -32,7 +32,8 @@ namespace {
 #ifndef NDEBUG
   bool is_valid_json (std::string_view str) {
     peejay::parser<peejay::null> parser{};
-    parser.input (str).eof ();
+    auto first = reinterpret_cast<std::byte const *> (str.data ());
+    parser.input (first, first + str.length ()).eof ();
     return !parser.has_error ();
   }
 #endif
