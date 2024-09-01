@@ -51,7 +51,8 @@ TEST_F (ExchangeRoot, ImportId) {
     R"({ "version":1, "id":"7a73d64e-5873-439c-ac8f-2b3a68aebe53", "transactions":[] })"sv;
 
   peejay::parser<import_ns::callbacks> parser = import_ns::create_parser (import_db_);
-  parser.input (json).eof ();
+  auto first = reinterpret_cast<std::byte const *> (json.data ());
+  parser.input (first, first + json.length ()).eof ();
   ASSERT_FALSE (parser.has_error ()) << json_error (parser) << json;
 
   EXPECT_EQ (import_db_.get_header ().id (), pstore::uuid{"7a73d64e-5873-439c-ac8f-2b3a68aebe53"})

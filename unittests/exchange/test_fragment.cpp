@@ -25,7 +25,7 @@
 // local includes
 #include "empty_store.hpp"
 
-using namespace std::literals::string_literals;
+using namespace std::literals::string_view_literals;
 
 namespace {
 
@@ -69,7 +69,7 @@ TEST_F (ImportFragment, BadInternalFixupTargetSection) {
             "data":"",
             "ifixups":[ { "section":"data", "type":1, "offset":0, "addend":0 } ]
         }
-    })"s;
+    })"sv;
 
   mock_mutex mutex;
   auto transaction = begin (import_db_, transaction_lock{mutex});
@@ -78,7 +78,8 @@ TEST_F (ImportFragment, BadInternalFixupTargetSection) {
   string_mapping imported_names;
 
   auto parser = import_fragment_parser (&transaction, &imported_names, &fragment_digest);
-  parser.input (input).eof ();
+  auto first = reinterpret_cast<std::byte const *> (input.data ());
+  parser.input (first, first + input.length ()).eof ();
   EXPECT_TRUE (parser.has_error ());
   EXPECT_EQ (parser.last_error (), make_error_code (error::internal_fixup_target_not_found));
 }

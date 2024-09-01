@@ -24,7 +24,7 @@
 
 #include "empty_store.hpp"
 
-using namespace std::string_literals;
+using namespace std::string_view_literals;
 
 namespace {
 
@@ -46,19 +46,25 @@ namespace {
       using namespace pstore::exchange::import_ns;
       return peejay::make_parser (callbacks::make<uuid_rule> (&db_, v));
     }
+
+    template <typename Parser>
+    void parse (Parser & parser, std::string_view input) {
+      auto first = reinterpret_cast<std::byte const *> (input.data ());
+      parser.input (first, first + input.length ()).eof ();
+    }
   };
 
 } // end anonymous namespace
 
 TEST_F (Uuid, Good) {
-  auto const input = R"("84949cc5-4701-4a84-895b-354c584a981b")"s;
+  auto const input = R"("84949cc5-4701-4a84-895b-354c584a981b")"sv;
   constexpr auto expected =
     pstore::uuid{pstore::uuid::container_type{{0x84, 0x94, 0x9c, 0xc5, 0x47, 0x01, 0x4a, 0x84, 0x89,
                                                0x5b, 0x35, 0x4c, 0x58, 0x4a, 0x98, 0x1b}}};
 
   pstore::uuid id;
   auto parser = make_json_uuid_parser (&id);
-  parser.input (input).eof ();
+  parse (parser, input);
 
   ASSERT_FALSE (parser.has_error ())
     << "Expected the JSON parse to succeed (" << parser.last_error ().message () << ')';
@@ -68,7 +74,8 @@ TEST_F (Uuid, Good) {
 TEST_F (Uuid, Bad) {
   pstore::uuid id;
   auto parser = make_json_uuid_parser (&id);
-  parser.input (R"("bad")"s).eof ();
+  parse (parser, R"("bad")"sv);
+  parser.eof ();
   EXPECT_TRUE (parser.has_error ());
   EXPECT_EQ (parser.last_error (), make_error_code (pstore::exchange::import_ns::error::bad_uuid));
 }

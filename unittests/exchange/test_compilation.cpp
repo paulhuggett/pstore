@@ -93,6 +93,13 @@ namespace {
       import_db_.set_vacuum_mode (pstore::database::vacuum_mode::disabled);
     }
 
+    template <typename Parser>
+    Parser & parse (Parser & parser, std::string_view sv) {
+      auto first = reinterpret_cast<std::byte const *> (sv.data ());
+      parser.input (first, first + sv.length ()).eof ();
+      return parser;
+    }
+
     in_memory_store export_store_;
     pstore::database export_db_;
 
@@ -166,7 +173,7 @@ TEST_F (ExchangeCompilation, Empty) {
     mock_mutex mutex;
     auto transaction = begin (import_db_, transaction_lock{mutex});
     auto name_parser = import_strings_parser (&transaction, &imported_names);
-    name_parser.input (exported_names_stream.str ()).eof ();
+    this->parse (name_parser, exported_names_stream.str ());
     ASSERT_FALSE (name_parser.has_error ())
       << json_error (name_parser) << exported_names_stream.str ();
 
@@ -174,7 +181,7 @@ TEST_F (ExchangeCompilation, Empty) {
       pstore::index::get_index<pstore::trailer::indices::fragment> (import_db_);
     auto compilation_parser =
       import_compilation_parser (&transaction, &imported_names, fragment_index, compilation_digest);
-    compilation_parser.input (exported_compilation_stream.str ()).eof ();
+    this->parse (compilation_parser, exported_compilation_stream.str ());
     ASSERT_FALSE (compilation_parser.has_error ())
       << json_error (compilation_parser) << exported_compilation_stream.str ();
 
@@ -253,13 +260,13 @@ TEST_F (ExchangeCompilation, TwoDefinitions) {
   import_ns::string_mapping imported_names;
   {
     auto name_parser = import_strings_parser (&transaction, &imported_names);
-    name_parser.input (exported_names_stream.str ()).eof ();
+    this->parse (name_parser, exported_names_stream.str ());
     ASSERT_FALSE (name_parser.has_error ())
       << json_error (name_parser) << exported_names_stream.str ();
   }
   {
     auto fragment_parser = import_fragment_parser (&transaction, &imported_names, &fragment_digest);
-    fragment_parser.input (exported_fragment_stream.str ()).eof ();
+    this->parse (fragment_parser, exported_fragment_stream.str ());
     ASSERT_FALSE (fragment_parser.has_error ())
       << json_error (fragment_parser) << exported_fragment_stream.str ();
   }
@@ -268,7 +275,7 @@ TEST_F (ExchangeCompilation, TwoDefinitions) {
       pstore::index::get_index<pstore::trailer::indices::fragment> (import_db_);
     auto compilation_parser =
       import_compilation_parser (&transaction, &imported_names, fragment_index, compilation_digest);
-    compilation_parser.input (exported_compilation_stream.str ()).eof ();
+    this->parse (compilation_parser, exported_compilation_stream.str ());
     ASSERT_FALSE (compilation_parser.has_error ())
       << json_error (compilation_parser) << exported_compilation_stream.str ();
   }
@@ -314,7 +321,7 @@ TEST_F (ExchangeCompilation, MissingTriple) {
     pstore::index::get_index<pstore::trailer::indices::fragment> (import_db_);
   auto compilation_parser =
     import_compilation_parser (&transaction, &imported_names, fragment_index, compilation_digest);
-  compilation_parser.input (compilation).eof ();
+  this->parse (compilation_parser, compilation);
   EXPECT_EQ (compilation_parser.last_error (),
              make_error_code (pstore::exchange::import_ns::error::incomplete_compilation_object));
 
@@ -331,14 +338,14 @@ TEST_F (ExchangeCompilation, MissingDefinitions) {
   mock_mutex mutex;
   auto transaction = begin (import_db_, transaction_lock{mutex});
   auto name_parser = import_strings_parser (&transaction, &imported_names);
-  name_parser.input (names).eof ();
+  this->parse (name_parser, names);
   ASSERT_FALSE (name_parser.has_error ()) << json_error (name_parser) << names;
 
   auto const fragment_index =
     pstore::index::get_index<pstore::trailer::indices::fragment> (import_db_);
   auto compilation_parser =
     import_compilation_parser (&transaction, &imported_names, fragment_index, compilation_digest);
-  compilation_parser.input (compilation).eof ();
+  this->parse (compilation_parser, compilation);
   EXPECT_EQ (compilation_parser.last_error (),
              make_error_code (pstore::exchange::import_ns::error::incomplete_compilation_object));
 

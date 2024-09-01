@@ -91,7 +91,8 @@ TEST_F (GenericSection, RoundTripForAnEmptySection) {
   using section_importer = import_ns::section_to_importer_t<section_type, decltype (inserter)>;
   auto parser = make_json_object_parser<section_importer> (&import_db_, kind, &imported_names,
                                                            &imported_content, &inserter);
-  parser.input (exported_json).eof ();
+  auto first = reinterpret_cast<std::byte const *> (exported_json.data ());
+  parser.input (first, first + exported_json.length ()).eof ();
   ASSERT_FALSE (parser.has_error ()) << json_error (parser) << exported_json;
 
   ASSERT_EQ (dispatchers.size (), 1U)
@@ -171,7 +172,10 @@ TEST_F (GenericSection, RoundTripForPopulated) {
       import_ns::callbacks::make<import_ns::array_rule<
         import_ns::strings_array_members, decltype (&transaction), decltype (&imported_names)>> (
         &import_db_, &transaction, &imported_names));
-    parser.input (exported_names_stream.str ()).eof ();
+
+    auto first = reinterpret_cast<std::byte const *> (exported_names_stream.str ().data ());
+    parser.input (first, first + exported_names_stream.str ().length ()).eof ();
+
     ASSERT_FALSE (parser.has_error ()) << json_error (parser);
 
     transaction.commit ();
@@ -189,7 +193,8 @@ TEST_F (GenericSection, RoundTripForPopulated) {
   using section_importer = import_ns::section_to_importer_t<section_type, decltype (inserter)>;
   auto parser = make_json_object_parser<section_importer> (&import_db_, kind, &imported_names,
                                                            &imported_content, &inserter);
-  parser.input (exported_json).eof ();
+  auto first = reinterpret_cast<std::byte const *> (exported_json.data ());
+  parser.input (first, first + exported_json.length ()).eof ();
   ASSERT_FALSE (parser.has_error ()) << json_error (parser);
 
   ASSERT_EQ (dispatchers.size (), 1U)
@@ -226,7 +231,8 @@ namespace {
     // Create a JSON parser which understands this section object.
     auto parser = make_json_object_parser<section_importer> (db, Kind, &names, content, inserter);
     // Parse the string.
-    parser.input (src).eof ();
+    auto first = reinterpret_cast<std::byte const *> (src.data ());
+    parser.input (first, first + src.length ()).eof ();
     return parser;
   }
 

@@ -78,7 +78,8 @@ TEST_F (ExchangeSectionFixups, RoundTripInternalEmpty) {
       &db_, &names, &imported_ifixups));
 
   // Import the data that we just exported.
-  parser.input (os.str ());
+  auto first = reinterpret_cast<std::byte const *> (os.str ().data ());
+  parser.input (first, first + os.str ().length ());
   parser.eof ();
 
   // Check the result.
@@ -110,7 +111,8 @@ TEST_F (ExchangeSectionFixups, RoundTripInternalCollection) {
       &db_, &imported_names, &imported_ifixups));
 
   // Import the data that we just exported.
-  parser.input (os.str ());
+  auto first = reinterpret_cast<std::byte const *> (os.str ().data ());
+  parser.input (first, first + os.str ().length ());
   parser.eof ();
 
   // Check that we got back what we started with.
@@ -140,7 +142,8 @@ namespace {
       using namespace pstore::exchange::import_ns;
       string_mapping names;
       auto parser = peejay::make_parser (callbacks::make<ifixups_object> (&db_, &names, fixups));
-      parser.input (src).eof ();
+      auto first = reinterpret_cast<std::byte const *> (src.data ());
+      parser.input (first, first + src.length ()).eof ();
       return parser;
     }
 
@@ -335,7 +338,8 @@ TEST_F (ExchangeExternalFixups, ExternalEmpty) {
     &import_db_, &imported_names, &imported_xfixups));
 
   // Import the data that we just exported.
-  parser.input (os.str ());
+  auto first = reinterpret_cast<std::byte const *> (os.str ().data ());
+  parser.input (first, first + os.str ().length ());
   parser.eof ();
 
   // Check the result.
@@ -395,7 +399,8 @@ TEST_F (ExchangeExternalFixups, RoundTripForTwoFixups) {
       callbacks::make<
         array_rule<strings_array_members, decltype (&transaction), decltype (&imported_names)>> (
         &import_db_, &transaction, &imported_names));
-    parser.input (exported_names_stream.str ()).eof ();
+    auto first = reinterpret_cast<std::byte const *> (exported_names_stream.str ().data ());
+    parser.input (first, first + exported_names_stream.str ().length ()).eof ();
     ASSERT_FALSE (parser.has_error ())
       << "Expected the JSON parse to succeed (" << parser.last_error ().message () << ')';
   }
@@ -407,7 +412,9 @@ TEST_F (ExchangeExternalFixups, RoundTripForTwoFixups) {
 
     auto parser = peejay::make_parser (import_ns::callbacks::make<xfixup_array_root> (
       &import_db_, &imported_names, &imported_xfixups));
-    parser.input (exported_fixups.str ()).eof ();
+
+    auto first = reinterpret_cast<std::byte const *> (exported_fixups.str ().data ());
+    parser.input (first, first + exported_fixups.str ().length ()).eof ();
 
     // Check the result.
     ASSERT_FALSE (parser.has_error ())
@@ -438,7 +445,8 @@ namespace {
                                   not_null<external_fixup_collection *> const fixups) {
       using namespace pstore::exchange::import_ns;
       auto parser = peejay::make_parser (callbacks::make<xfixups_object> (db, &names, fixups));
-      parser.input (src);
+      auto first = reinterpret_cast<std::byte const *> (src.data ());
+      parser.input (first, first + src.length ());
       parser.eof ();
       return parser;
     }
