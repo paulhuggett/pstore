@@ -50,7 +50,7 @@ namespace {
 
     template <typename Parser>
     Parser & parse (Parser & parser, std::string_view input) {
-      auto first = reinterpret_cast<std::byte const *> (input.begin ());
+      auto first = reinterpret_cast<std::byte const *> (input.data ());
       parser.input (first, first + input.length ()).eof ();
       return parser;
     }
