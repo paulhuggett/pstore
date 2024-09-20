@@ -55,9 +55,9 @@ namespace pstore::http {
     std::array<std::uint32_t, hash_size / 4> intermediate_hash_ =
       initial_intermediate; ///< Message Digest.
 
-    std::uint64_t length_ = 0U;                  ///< Message length in bits.
-    unsigned index_ = 0U;                        ///< Index into message block array.
-    std::array<std::uint8_t, 64> message_block_; ///< 512-bit message blocks.
+    std::uint64_t length_ = 0U;                    ///< Message length in bits.
+    unsigned index_ = 0U;                          ///< Index into message block array.
+    std::array<std::uint8_t, 64> message_block_{}; ///< 512-bit message blocks.
 
     bool computed_ = false;  // Is the digest computed?
     bool corrupted_ = false; // Is the message digest corrupted?
