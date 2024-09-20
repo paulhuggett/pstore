@@ -30,8 +30,8 @@ enum class endian {
 
 struct user_options {
   std::string output;
-  endian endianness;
-  unsigned long maximum;
+  endian endianness = endian::native;
+  unsigned long maximum = 0;
 
   static user_options get (int argc, pstore::command_line::tchar * argv[]);
 };
