@@ -202,7 +202,7 @@ namespace pstore {
     }
 
     bool valid_ = false;
-    typename std::aligned_storage_t<sizeof (T), alignof (T)> storage_;
+    typename std::aligned_storage_t<sizeof (T), alignof (T)> storage_{};
   };
 
 
