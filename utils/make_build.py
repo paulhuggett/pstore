@@ -287,6 +287,7 @@ def create_build_directory(options):
 def build_cmake_command_line(cmake_path, options):
     cmd = [cmake_path]
     cmd.extend(options.generator if options.generator else [])
+    options.define.append ('CMAKE_EXPORT_COMPILE_COMMANDS=Yes')
 
     # Add the user variable definitions.
     cmd.extend('-D' + d for d in options.define)
