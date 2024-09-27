@@ -29,10 +29,10 @@ namespace pstore {
     random_generator ()
             : generator_ (device_ ()) {}
 
-    Ty get (Ty max) { return distribution_ (generator_) % max; }
-    Ty get () {
-      auto const max = std::numeric_limits<Ty>::max ();
-      static_assert (max > Ty (0), "max must be > 0");
+    constexpr Ty get (Ty max) { return distribution_ (generator_) % max; }
+    constexpr Ty get () {
+      constexpr auto max = std::numeric_limits<Ty>::max ();
+      static_assert (max > Ty{0}, "max must be > 0");
       return get (max);
     }
 
