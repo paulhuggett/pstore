@@ -159,7 +159,7 @@ namespace pstore {
     -> sat_iterator {
 
     (void) segment_end; // silence unused argument warning in release build.
-    std::shared_ptr<void> const data = region->data ();
+    std::shared_ptr<void> const & data = region->data ();
 
     auto ptr = std::static_pointer_cast<std::uint8_t> (data).get ();
     auto const end = ptr + region->size ();
