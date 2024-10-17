@@ -108,10 +108,11 @@ namespace pstore::http {
     std::array<std::uint32_t, 80> w; // Word sequence.
 
     for (auto t = 0U; t < 16U; ++t) {
-      w[t] =  static_cast<std::uint32_t>(message_block_[t * 4U])      << 24U;
-      w[t] |= static_cast<std::uint32_t>(message_block_[t * 4U + 1U]) << 16U;
-      w[t] |= static_cast<std::uint32_t>(message_block_[t * 4U + 2U]) << 8U;
-      w[t] |= static_cast<std::uint32_t>(message_block_[t * 4U + 3U]);
+      auto const index = t * 4U;
+      w[t] = (static_cast<std::uint32_t> (message_block_[index]) << 24U) |
+             (static_cast<std::uint32_t> (message_block_[index + 1U]) << 16U) |
+             (static_cast<std::uint32_t> (message_block_[index + 2U]) << 8U) |
+             static_cast<std::uint32_t> (message_block_[index + 3U]);
     }
     for (auto t = 16U; t < 80U; ++t) {
       w[t] = circular_shift (1, w[t - 3] ^ w[t - 8] ^ w[t - 14] ^ w[t - 16]);
