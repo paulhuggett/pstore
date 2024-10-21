@@ -128,7 +128,7 @@ namespace pstore::index::details {
     // Now access the data block for this linear node. We need to use the "raw address"
     // version of getro() because in_store_size is a number of bytes, not a number of
     // instances of linear_node.
-    auto const ln =
+    auto ln =
       std::static_pointer_cast<linear_node const> (db.getro (addr.to_address (), in_store_size));
 #if PSTORE_SIGNATURE_CHECKS_ENABLED
     if (ln->signature_ != node_signature_) {
