@@ -121,7 +121,9 @@ int main (int argc, char * argv[]) {
 
     std::unique_lock<pstore::file::range_lock> * file_lock = src_db->upgrade_to_write_lock ();
     if (file_lock == nullptr) {
-      PSTORE_ASSERT (0);
+      error_stream << PSTORE_NATIVE_TEXT ("vacuumd: Could get write access to: ")
+                   << pstore::utf::to_native_string (src_path) << std::endl;
+      return exit_code;
     }
 
     if (file_lock->try_lock ()) {
