@@ -26,8 +26,8 @@
 
 namespace pstore::broker {
 
-  extern gsl::czstring const read_loop_quit_command;
-  extern gsl::czstring const command_loop_quit_command;
+  constexpr inline gsl::czstring read_loop_quit_command = "_QUIT";
+  constexpr inline gsl::czstring command_loop_quit_command = "_CQUIT";
 
 } // end namespace pstore::broker
 

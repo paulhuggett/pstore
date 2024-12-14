@@ -46,7 +46,6 @@ else ()
     gc_posix.cpp
     gc_win32.cpp
     globals.cpp
-    internal_commands.cpp
     message_pool.cpp
     parser.cpp
     quit.cpp

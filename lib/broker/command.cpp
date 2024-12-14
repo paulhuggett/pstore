@@ -183,16 +183,15 @@ namespace pstore::broker {
     command_processor::command_entry ("ECHO", &command_processor::echo),
     command_processor::command_entry ("GC", &command_processor::gc),
     command_processor::command_entry ("NOP", &command_processor::nop),
-    command_processor::command_entry ("SUICIDE",
-                                      &command_processor::suicide), // initiate the broker shutdown.
+    // initiate the broker shutdown.
+    command_processor::command_entry ("SUICIDE", &command_processor::suicide),
 
     // Internal commands.
-    command_processor::command_entry (
-      command_loop_quit_command,
-      &command_processor::cquit), // exit this command processor thread.
-    command_processor::command_entry (
-      read_loop_quit_command,
-      &command_processor::quit), //  shut down a single pipe-reader thread.
+
+    // exit this command processor thread.
+    command_processor::command_entry (command_loop_quit_command, &command_processor::cquit),
+    // shut down a single pipe-reader thread.
+    command_processor::command_entry (read_loop_quit_command, &command_processor::quit),
   }};
 
   // process command
