@@ -42,6 +42,7 @@ function (run_pstore_unit_test prelink_target test_target)
       list (APPEND command_line "--loud")
     endif ()
 
+    add_dependencies(${prelink_target} ${test_target})
     if (PSTORE_VALGRIND)
       add_custom_command (
         TARGET ${prelink_target}
@@ -53,7 +54,7 @@ function (run_pstore_unit_test prelink_target test_target)
           --track-origins=no --child-silent-after-fork=no --trace-children=no
           --error-exitcode=13 ${command_line}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Valgrind Running ${test_target}" DEPENDS ${test_target}
+        COMMENT "Valgrind Running ${test_target}"
         BYPRODUCTS ${OUT_XML}
         VERBATIM
       )
@@ -66,7 +67,7 @@ function (run_pstore_unit_test prelink_target test_target)
           "LLVM_PROFILE_FILE=$<TARGET_FILE:${test_target}>.profraw"
           ${command_line}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Running ${test_target}" DEPENDS ${test_target}
+        COMMENT "Running ${test_target}"
         BYPRODUCTS ${OUT_XML}
         VERBATIM
       )
@@ -76,7 +77,7 @@ function (run_pstore_unit_test prelink_target test_target)
         PRE_LINK
         COMMAND ${command_line}
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        COMMENT "Running ${test_target}" DEPENDS ${test_target}
+        COMMENT "Running ${test_target}"
         BYPRODUCTS ${OUT_XML}
         VERBATIM
       )
