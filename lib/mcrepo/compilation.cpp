@@ -115,10 +115,6 @@ void compilation::operator delete (void * const p, nmembers const /*size*/) {
 
 void compilation::operator delete (void * const /*p*/, void * const /*ptr*/) {}
 
-void compilation::operator delete (void * const p) {
-  ::operator delete (p);
-}
-
 // load
 // ~~~~
 auto compilation::load (pstore::database const & db, pstore::extent<compilation> const & location)

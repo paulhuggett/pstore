@@ -133,8 +133,6 @@ namespace pstore {
       using const_iterator = definition const *;
       using size_type = std::uint32_t;
 
-      void operator delete (void * p);
-
       /// \name Construction
       ///@{
 
