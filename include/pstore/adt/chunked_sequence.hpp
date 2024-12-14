@@ -85,12 +85,12 @@ namespace pstore {
 
     chunked_sequence ();
     chunked_sequence (chunked_sequence const &) = delete;
-    chunked_sequence (chunked_sequence && other) noexcept;
+    chunked_sequence (chunked_sequence && other) noexcept = default;
 
     ~chunked_sequence () noexcept = default;
 
     chunked_sequence & operator= (chunked_sequence const & other) noexcept = delete;
-    chunked_sequence & operator= (chunked_sequence && other) noexcept;
+    chunked_sequence & operator= (chunked_sequence && other) noexcept = default;
 
     /// Checks whether the container is empty.
     constexpr bool empty () const noexcept { return size_ == 0; }
@@ -261,29 +261,6 @@ namespace pstore {
     // Create an initial, empty chunk. This avoids checking whether the chunk list is empty
     // in the (performance sensitive) append function.
     chunks_.emplace_back ();
-  }
-
-  template <typename T, std::size_t ElementsPerChunk, std::size_t ActualSize,
-            std::size_t ActualAlign>
-  chunked_sequence<T, ElementsPerChunk, ActualSize, ActualAlign>::chunked_sequence (
-    chunked_sequence && other) noexcept
-          : chunks_{std::move (other.chunks_)}
-          , size_{other.size_} {
-    other.size_ = 0;
-  }
-
-  // operator=
-  // ~~~~~~~~~
-  template <typename T, std::size_t ElementsPerChunk, std::size_t ActualSize,
-            std::size_t ActualAlign>
-  auto chunked_sequence<T, ElementsPerChunk, ActualSize, ActualAlign>::operator= (
-    chunked_sequence && other) noexcept -> chunked_sequence & {
-    if (this != &other) {
-      chunks_ = std::move (other.chunks_);
-      size_ = other.size_;
-      other.size_ = 0;
-    }
-    return *this;
   }
 
   // emplace back
