@@ -159,17 +159,16 @@ namespace pstore {
     -> sat_iterator {
 
     (void) segment_end; // silence unused argument warning in release build.
-    std::shared_ptr<void> const & data = region->data ();
-
-    auto ptr = std::static_pointer_cast<std::uint8_t> (data).get ();
-    auto const end = ptr + region->size ();
-    for (; ptr < end; ptr += address::segment_size) {
+    auto const & data = region->data ();
+    auto data8 = std::static_pointer_cast<std::uint8_t> (data);
+    for (auto *ptr = data8.get (), *end = ptr + region->size (); ptr < end;
+         ptr += address::segment_size) {
       PSTORE_ASSERT (segment_it != segment_end);
       sat_entry & segment = *segment_it;
       PSTORE_ASSERT (segment.value == nullptr && segment.region == nullptr);
 
       // The segment's memory (at 'ptr') is managed by the 'data' shared_ptr.
-      segment.value = std::shared_ptr<void> (data, ptr);
+      segment.value = std::shared_ptr<void>{data, ptr};
       segment.region = region;
 
       ++segment_it;
