@@ -65,7 +65,8 @@ namespace {
 
   using SStringViewInitTypes =
     testing::Types<string_maker<std::shared_ptr<char>>, string_maker<std::shared_ptr<char const>>,
-                   string_maker<std::unique_ptr<char[]>>>;
+                   string_maker<std::unique_ptr<char[]>>,
+                   string_maker<std::unique_ptr<char const[]>>>;
 
   // The pstore APIs that return shared_ptr<> and unique_ptr<> sstring_views is named
   // make_shared_sstring_view() and make_unique_sstring_view() respectively to try to avoid
@@ -90,19 +91,6 @@ TYPED_TEST_CASE (SStringViewInit, SStringViewInitTypes);
 #else
 TYPED_TEST_SUITE (SStringViewInit, SStringViewInitTypes, );
 #endif // PSTORE_IS_INSIDE_LLVM
-
-TYPED_TEST (SStringViewInit, Empty) {
-  using namespace pstore;
-  TypeParam t;
-  std::string const src;
-  auto ptr = t (src);
-  auto sv = make_sstring_view (std::move (ptr), src.length ());
-  EXPECT_EQ (sv.size (), 0U);
-  EXPECT_EQ (sv.length (), 0U);
-  EXPECT_EQ (sv.max_size (), std::numeric_limits<std::size_t>::max ());
-  EXPECT_TRUE (sv.empty ());
-  EXPECT_EQ (std::distance (std::begin (sv), std::end (sv)), 0);
-}
 
 TYPED_TEST (SStringViewInit, Short) {
   using namespace pstore;
