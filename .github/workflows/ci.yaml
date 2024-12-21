@@ -25,17 +25,17 @@ jobs:
 
                     # Ubuntu builds
                     # ~~~~~~~~~~~~~
-                    - name: Ubuntu-latest/gcc-11/Debug
+                    - name: Ubuntu-latest/gcc-13/Debug
                       apt_install: ninja-build
                       build_type: Debug
-                      cxx_compiler: -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11
+                      cxx_compiler: -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_C_COMPILER=gcc-13
                       generator: Ninja
                       options: -DPSTORE_ALWAYS_SPANNING=Yes
                       os: ubuntu-latest
 
-                    - name: Ubuntu-latest/gcc-11/Release
+                    - name: Ubuntu-latest/gcc-13/Release
                       build_type: Release
-                      cxx_compiler: -DCMAKE_CXX_COMPILER=g++-11 -DCMAKE_C_COMPILER=gcc-11
+                      cxx_compiler: -DCMAKE_CXX_COMPILER=g++-13 -DCMAKE_C_COMPILER=gcc-13
                       generator: Unix Makefiles
                       os: ubuntu-latest
 
