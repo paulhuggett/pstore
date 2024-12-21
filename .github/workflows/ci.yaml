@@ -40,20 +40,20 @@ jobs:
                       os: ubuntu-latest
 
 
-                    - name: Ubuntu-latest/clang-14/Debug
+                    - name: Ubuntu-latest/clang-18/Debug
                       apt_install: valgrind ninja-build
                       build_type: Debug
-                      cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-14 -DCMAKE_C_COMPILER=clang-14
+                      cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_C_COMPILER=clang-18
                       generator: Ninja
                       # Temporarily disable valgrind.
                       # -DPSTORE_VALGRIND=Yes
                       options: -DPSTORE_ALWAYS_SPANNING=Yes -DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=gold
                       os: ubuntu-latest
 
-                    - name: Ubuntu-latest/clang-14/Release
+                    - name: Ubuntu-latest/clang-18/Release
                       apt_install: ninja-build
                       build_type: Release
-                      cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-14 -DCMAKE_C_COMPILER=clang-14
+                      cxx_compiler: -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_C_COMPILER=clang-18
                       generator: Ninja
                       options: '-DCMAKE_EXE_LINKER_FLAGS=-fuse-ld=gold'
                       os: ubuntu-latest
