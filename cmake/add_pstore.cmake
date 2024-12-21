@@ -72,10 +72,16 @@ function (pstore_standalone_compiler_setup)
     -Wno-c++98-compat
     -Wno-c++98-compat-pedantic
     -Wno-c99-extensions
+    -Wno-covered-switch-default
+    -Wno-ctad-maybe-unsupported
     -Wno-disabled-macro-expansion
+    -Wno-documentation-unknown-command
     -Wno-exit-time-destructors
     -Wno-global-constructors
+    -Wno-packed
     -Wno-padded
+    -Wno-switch-default
+    -Wno-switch-enum
     -Wno-weak-vtables
   )
   if (${arg_IS_UNIT_TEST})
