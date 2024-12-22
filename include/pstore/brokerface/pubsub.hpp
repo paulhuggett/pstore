@@ -46,15 +46,15 @@ namespace pstore::brokerface {
     friend class channel<ConditionVariable>;
 
   public:
-    ~subscriber () noexcept;
+    ~subscriber () noexcept { owner_->remove (this); }
 
     // No copying or assignment.
     subscriber (subscriber const &) = delete;
-    subscriber (subscriber &&) = delete;
+    subscriber (subscriber &&) noexcept = delete;
     subscriber & operator= (subscriber const &) = delete;
-    subscriber & operator= (subscriber &&) = delete;
+    subscriber & operator= (subscriber &&) noexcept = delete;
 
-    /// Blocks waiting for a message to be published on the owning channel of for the
+    /// Blocks waiting for a message to be published on the owning channel or for the
     /// subscription to be cancelled.
     ///
     /// \returns An optional holding a message published to the owning channel or with no value
@@ -67,15 +67,15 @@ namespace pstore::brokerface {
     void cancel ();
 
     /// \returns A reference to the owning channel.
-    channel<ConditionVariable> & owner () noexcept { return *owner_; }
+    [[nodiscard]] channel<ConditionVariable> & owner () noexcept { return *owner_; }
     /// \returns A reference to the owning channel.
-    channel<ConditionVariable> const & owner () const noexcept { return *owner_; }
+    [[nodiscard]] channel<ConditionVariable> const & owner () const noexcept { return *owner_; }
 
     /// Removes a single message from the subscription queue if available.
     std::optional<std::string> pop ();
 
   private:
-    explicit subscriber (gsl::not_null<channel<ConditionVariable> *> c) noexcept
+    explicit constexpr subscriber (gsl::not_null<channel<ConditionVariable> *> c) noexcept
             : owner_{c} {}
 
     /// The queue of published messages waiting to be delivered to a listening subscriber.
@@ -106,16 +106,17 @@ namespace pstore::brokerface {
 
   public:
     using subscriber_type = subscriber<ConditionVariable>;
-    using subscriber_pointer = std::unique_ptr<subscriber_type>;
 
-    explicit channel (gsl::not_null<ConditionVariable *> cv);
+    explicit constexpr channel (gsl::not_null<ConditionVariable *> cv)
+            : cv_{cv} {}
+
     channel (channel const &) = delete;
-    channel (channel &&) = delete;
+    channel (channel &&) noexcept = delete;
 
     ~channel () noexcept;
 
     channel & operator= (channel const &) = delete;
-    channel & operator= (channel &&) = delete;
+    channel & operator= (channel &&) noexcept = delete;
 
     /// Broadcasts a message to all subscribers.
     ///
@@ -139,7 +140,7 @@ namespace pstore::brokerface {
     void publish (MessageFunction f, Args &&... args);
 
     /// Creates a new subscriber instance and attaches it to this channel.
-    subscriber_pointer new_subscriber ();
+    std::unique_ptr<subscriber_type> new_subscriber ();
 
   private:
     std::optional<std::string> listen (subscriber_type & sub);
@@ -153,7 +154,7 @@ namespace pstore::brokerface {
     void remove (subscriber_type * sub) noexcept;
 
     /// Is anyone subscribed to this channel?
-    bool have_listeners () const;
+    [[nodiscard]] bool have_listeners () const;
 
     mutable std::mutex mut_;
     mutable gsl::not_null<ConditionVariable *> cv_;
@@ -168,13 +169,6 @@ namespace pstore::brokerface {
   //* (_-< || | '_ (_-</ _| '_| | '_ \/ -_) '_| *
   //* /__/\_,_|_.__/__/\__|_| |_|_.__/\___|_|   *
   //*                                           *
-
-  // (dtor)
-  // ~~~~~~
-  template <typename ConditionVariable>
-  subscriber<ConditionVariable>::~subscriber () noexcept {
-    owner_->remove (this);
-  }
 
   // cancel
   // ~~~~~~
@@ -208,12 +202,6 @@ namespace pstore::brokerface {
   //* / _| ' \/ _` | ' \| ' \/ -_) | *
   //* \__|_||_\__,_|_||_|_||_\___|_| *
   //*                                *
-
-  // (ctor)
-  // ~~~~~~
-  template <typename ConditionVariable>
-  channel<ConditionVariable>::channel (gsl::not_null<ConditionVariable *> cv)
-          : cv_{cv} {}
 
   // (dtor)
   // ~~~~~~
@@ -288,9 +276,9 @@ namespace pstore::brokerface {
   // new subscriber
   // ~~~~~~~~~~~~~~
   template <typename ConditionVariable>
-  auto channel<ConditionVariable>::new_subscriber () -> subscriber_pointer {
+  auto channel<ConditionVariable>::new_subscriber () -> std::unique_ptr<subscriber_type> {
     std::scoped_lock<std::mutex> const lock{mut_};
-    auto resl = subscriber_pointer{new subscriber_type (this)};
+    auto resl = std::unique_ptr<subscriber_type>{new subscriber_type (this)};
     subscribers_.insert (resl.get ());
     return resl;
   }

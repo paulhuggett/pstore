@@ -596,7 +596,7 @@ namespace pstore::http {
                        channel_container const & channels) {
 
     ws_command command;
-    brokerface::channel<descriptor_condition_variable>::subscriber_pointer subscription;
+    std::unique_ptr<brokerface::subscriber<descriptor_condition_variable>> subscription;
     descriptor_condition_variable * cv = nullptr;
 
     if (uri.length () > 0 && uri[0] == '/') {
