@@ -16,6 +16,7 @@
 #include "pstore/broker/uptime.hpp"
 
 // standard library
+#include <chrono>
 #include <sstream>
 #include <thread>
 
