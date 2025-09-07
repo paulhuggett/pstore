@@ -78,6 +78,7 @@ function (pstore_standalone_compiler_setup)
     -Wno-documentation-unknown-command
     -Wno-exit-time-destructors
     -Wno-global-constructors
+    -Wno-missing-include-dirs
     -Wno-packed
     -Wno-padded
     -Wno-switch-default
