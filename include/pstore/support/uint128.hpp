@@ -67,6 +67,7 @@ namespace pstore {
     constexpr uint128 () noexcept = default;
     constexpr uint128 (std::nullptr_t) noexcept = delete;
 #ifdef PSTORE_HAVE_UINT128_T
+    constexpr uint128 (unsigned __int128 const v) noexcept : v_{v} {}
     constexpr uint128 (std::uint64_t const high, std::uint64_t const low) noexcept
             : v_{__uint128_t{high} << 64U | __uint128_t{low}} {}
 
