@@ -256,7 +256,7 @@ namespace pstore {
   // ~~~~~~~~~~~
   inline uint128 uint128::operator- () const noexcept {
 #ifdef PSTORE_HAVE_UINT128_T
-    return {-v_};
+    return static_cast<uint128>(-v_);
 #else
     auto r = ~(*this);
     return ++r;
@@ -277,7 +277,7 @@ namespace pstore {
   // ~~~~~~~~~
   inline uint128 uint128::operator~() const noexcept {
 #ifdef PSTORE_HAVE_UINT128_T
-    return {~v_};
+    return static_cast<uint128>(~v_);
 #else
     auto t = *this;
     t.low_ = ~t.low_;
@@ -291,7 +291,7 @@ namespace pstore {
   template <typename T>
   constexpr uint128 uint128::operator& (T const rhs) const noexcept {
 #ifdef PSTORE_HAVE_UINT128_T
-    return {v_ & rhs};
+    return static_cast<uint128>(v_ & rhs);
 #else
     return {0U, low () & rhs};
 #endif
@@ -300,7 +300,7 @@ namespace pstore {
   template <>
   constexpr uint128 uint128::operator&<uint128> (uint128 const rhs) const noexcept {
 #ifdef PSTORE_HAVE_UINT128_T
-    return {v_ & rhs.v_};
+    return static_cast<uint128>(v_ & rhs.v_);
 #else
     return {high () & rhs.high (), low () & rhs.low ()};
 #endif
@@ -311,7 +311,7 @@ namespace pstore {
   template <typename T>
   constexpr uint128 uint128::operator| (T const rhs) const noexcept {
 #ifdef PSTORE_HAVE_UINT128_T
-    return {v_ | rhs};
+    return static_cast<uint128>(v_ | rhs);
 #else
     return {0U, low () | rhs};
 #endif
@@ -320,7 +320,7 @@ namespace pstore {
   template <>
   constexpr uint128 uint128::operator|<uint128> (uint128 const rhs) const noexcept {
 #ifdef PSTORE_HAVE_UINT128_T
-    return {v_ | rhs.v_};
+    return static_cast<uint128>(v_ | rhs.v_);
 #else
     return {high () | rhs.high (), low () | rhs.low ()};
 #endif
@@ -332,7 +332,7 @@ namespace pstore {
   uint128 uint128::operator<< (Other const n) const noexcept {
     PSTORE_ASSERT (n <= 128);
 #ifdef PSTORE_HAVE_UINT128_T
-    return {v_ << n};
+    return static_cast<uint128>(v_ << n);
 #else
     if (n >= 64U) {
       return {low () << (n - 64U), 0U};
