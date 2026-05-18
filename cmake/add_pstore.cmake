@@ -97,7 +97,7 @@ function (pstore_standalone_compiler_setup)
   # Optimization flags.
   list (APPEND gcc_options -fno-semantic-interposition -mpopcnt)
   # Lots of warnings.
-  list (APPEND gcc_options -Wall -Wextra -pedantic)
+  list (APPEND gcc_options -Wall -Wextra)
 
   # Visual Studio
   # ~~~
