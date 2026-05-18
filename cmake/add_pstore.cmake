@@ -179,7 +179,7 @@ function (pstore_add_additional_compiler_flags target)
       target_compile_options (${target} PRIVATE -fno-exceptions -fno-rtti)
     endif ()
 
-    target_compile_options (${target} PRIVATE -Wall -Wextra -pedantic)
+    target_compile_options (${target} PRIVATE -Wall -Wextra)
 
     # A warning telling us that the signature will change in C++17 isn't
     # important right now.
