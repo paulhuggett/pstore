@@ -41,9 +41,6 @@ namespace pstore {
       /// branch can carry.
       constexpr auto const hash_size = sizeof (hash_type) * 8;
 
-      // Visual Studio won't allow pop_count to be constexpr. This forces us to have a second
-      // implementation that doesn't use the intrinsic.
-
       /// A function to compute the number of set bits in a value. An alternative to the
       /// bit_count::pop_count() function that is normally used because some versions of that
       /// implementation may not be constexpr.
@@ -56,13 +53,7 @@ namespace pstore {
         return x == 0U ? 0U : (x & 1U) + cx_pop_count (x >> 1U);
       }
 
-#ifdef _MSC_VER
       constexpr unsigned hash_index_bits = cx_pop_count (hash_size - 1);
-#else
-      constexpr unsigned hash_index_bits = bit_count::pop_count (hash_size - 1);
-      PSTORE_STATIC_ASSERT (bit_count::pop_count (hash_size - 1) == cx_pop_count (hash_size - 1));
-#endif
-
       constexpr unsigned max_hash_bits = (hash_size + 7) / hash_index_bits * hash_index_bits;
       constexpr unsigned hash_index_mask = (1U << hash_index_bits) - 1U;
       constexpr unsigned max_branch_depth = max_hash_bits / hash_index_bits;
@@ -134,9 +125,7 @@ namespace pstore {
       /// The type information (whether the record points to either a branch or linear
       /// node) is carried externally.
       union index_pointer {
-        constexpr index_pointer () noexcept
-                : branch_{nullptr} {
-
+        constexpr index_pointer () noexcept {
           // A belt-and-braces runtime check for cases where pop_count() can't be
           // constexpr.
           PSTORE_ASSERT (hash_index_bits == bit_count::pop_count (hash_size - 1));
@@ -159,6 +148,7 @@ namespace pstore {
                 : branch_{tag (p)} {}
         explicit index_pointer (linear_node * const p) noexcept
                 : linear_{tag (p)} {}
+
         index_pointer (index_pointer const &) noexcept = default;
         index_pointer (index_pointer &&) noexcept = default;
 
@@ -198,7 +188,7 @@ namespace pstore {
 
         /// Returns true if the index_pointer is pointing to a branch, false otherwise.
         /// \sa is_leaf
-        bool is_branch () const noexcept {
+        [[nodiscard]] bool is_branch () const noexcept {
           return (reinterpret_cast<std::uintptr_t> (branch_) & branch_bit) != 0;
         }
 
@@ -206,41 +196,41 @@ namespace pstore {
         /// \sa is_leaf
         /// \note A linear node is always found at max_branch_depth. This function will
         /// return true for branches at lower tree levels.
-        bool is_linear () const noexcept { return is_branch (); }
+        [[nodiscard]] bool is_linear () const noexcept { return is_branch (); }
 
         /// Returns true if the index_pointer contains the address of a value in the store,
         /// false otherwise.
         /// \sa is_internal
-        bool is_leaf () const noexcept { return !is_branch (); }
+        [[nodiscard]] bool is_leaf () const noexcept { return !is_branch (); }
 
         /// Returns true if the index_pointer is pointing to a heap node, false otherwise.
         /// \sa is_address
-        bool is_heap () const noexcept {
+        [[nodiscard]] bool is_heap () const noexcept {
           return (reinterpret_cast<std::uintptr_t> (branch_) & heap_bit) != 0U;
         }
 
         /// Returns true if the index_pointer is pointing to a store node, false otherwise.
         /// \sa is_heap
-        bool is_address () const noexcept { return !is_heap (); }
+        [[nodiscard]] bool is_address () const noexcept { return !is_heap (); }
 
         /// Returns true if the pointer is equivalent to "null".
-        constexpr bool is_empty () const noexcept { return branch_ == nullptr; }
+        [[nodiscard]] constexpr bool is_empty () const noexcept { return branch_ == nullptr; }
 
-        address to_address () const noexcept {
+        [[nodiscard]] address to_address () const noexcept {
           PSTORE_ASSERT (is_address ());
           return addr_;
         }
 
         template <typename T,
                   typename = typename std::enable_if_t<is_any_of<T, branch, linear_node>::value>>
-        typed_address<T> untag_address () const noexcept {
+        [[nodiscard]] typed_address<T> untag_address () const noexcept {
           return typed_address<T>::make (to_address ().absolute () & ~branch_bit);
         }
 
         template <typename Ptr,
                   typename = typename std::enable_if_t<is_any_of<
                     typename std::pointer_traits<Ptr>::element_type, branch, linear_node>::value>>
-        Ptr untag () const noexcept {
+        [[nodiscard]] Ptr untag () const noexcept {
           return reinterpret_cast<Ptr> (reinterpret_cast<std::uintptr_t> (branch_) & ~branch_bit &
                                         ~heap_bit);
         }
@@ -249,12 +239,12 @@ namespace pstore {
         template <typename Ptr,
                   typename = typename std::enable_if_t<is_any_of<
                     typename std::pointer_traits<Ptr>::element_type, branch, linear_node>::value>>
-        static Ptr tag (Ptr t) noexcept {
+        [[nodiscard]] static Ptr tag (Ptr t) noexcept {
           return reinterpret_cast<Ptr> (reinterpret_cast<std::uintptr_t> (t) | branch_bit |
                                         heap_bit);
         }
         address addr_;
-        branch * branch_;
+        branch * branch_ = nullptr;
         linear_node * linear_;
       };
 
@@ -518,12 +508,12 @@ namespace pstore {
                 hash_type existing_hash, hash_type new_hash);
 
         branch (branch const & rhs);
-        branch (branch && rhs) = delete;
+        branch (branch && rhs) noexcept = delete;
 
         ~branch () noexcept = default;
 
         branch & operator= (branch const & rhs) = delete;
-        branch & operator= (branch && rhs) = delete;
+        branch & operator= (branch && rhs) noexcept = delete;
 
         /// Construct a branch node from existing branch instance. This may be
         /// used, for example, when copying an in-store node into memory in preparation for
@@ -538,7 +528,8 @@ namespace pstore {
         /// \returns A new instance of branch which is owned by *container.
         template <typename SequenceContainer, typename = typename std::enable_if_t<std::is_same_v<
                                                 typename SequenceContainer::value_type, branch>>>
-        static branch * allocate (SequenceContainer * const container, branch const & other) {
+        [[nodiscard]] static branch * allocate (SequenceContainer * const container,
+                                                branch const & other) {
           return &container->emplace_back (other);
         }
 
@@ -552,8 +543,8 @@ namespace pstore {
         /// \returns A new instance of branch which is owned by *container.
         template <typename SequenceContainer, typename = typename std::enable_if_t<std::is_same_v<
                                                 typename SequenceContainer::value_type, branch>>>
-        static branch * allocate (SequenceContainer * container, index_pointer const & leaf,
-                                  hash_type const hash) {
+        [[nodiscard]] static branch * allocate (SequenceContainer * container,
+                                                index_pointer const & leaf, hash_type const hash) {
           return &container->emplace_back (leaf, hash);
         }
 
@@ -569,10 +560,10 @@ namespace pstore {
         /// \returns A new instance of branch which is owned by *container.
         template <typename SequenceContainer, typename = typename std::enable_if_t<std::is_same_v<
                                                 typename SequenceContainer::value_type, branch>>>
-        static branch * allocate (SequenceContainer * container,
-                                  index_pointer const & existing_leaf,
-                                  index_pointer const & new_leaf, hash_type const existing_hash,
-                                  hash_type const new_hash) {
+        [[nodiscard]] static branch *
+        allocate (SequenceContainer * container, index_pointer const & existing_leaf,
+                  index_pointer const & new_leaf, hash_type const existing_hash,
+                  hash_type const new_hash) {
           return &container->emplace_back (existing_leaf, new_leaf, existing_hash, new_hash);
         }
 
@@ -630,14 +621,15 @@ namespace pstore {
         ///   computing the number of bytes occupied.
         /// \return The number of bytes occupied by an in-store internal node with the given
         ///   number of child nodes.
-        static constexpr std::size_t size_bytes (std::size_t const num_children) noexcept {
+        [[nodiscard]] static constexpr std::size_t
+        size_bytes (std::size_t const num_children) noexcept {
           PSTORE_ASSERT (num_children > 0 && num_children <= hash_size);
           return sizeof (branch) - sizeof (branch::children_) +
                  sizeof (decltype (branch::children_[0])) * num_children;
         }
 
         /// Returns the number of children contained by this node.
-        unsigned size () const noexcept {
+        [[nodiscard]] unsigned size () const noexcept {
           PSTORE_ASSERT (this->bitmap_ != hash_type{0});
           return bit_count::pop_count (this->bitmap_);
         }
@@ -668,7 +660,7 @@ namespace pstore {
           return children_[i];
         }
 
-        hash_type get_bitmap () const noexcept { return bitmap_; }
+        [[nodiscard]] hash_type get_bitmap () const noexcept { return bitmap_; }
         /// A function for deliberately creating illegal internal nodes in the unit test. DO
         /// NOT USE except for that purpose!
         void set_bitmap (hash_type const bm) noexcept { bitmap_ = bm; }
