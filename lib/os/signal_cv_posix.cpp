@@ -46,7 +46,7 @@ namespace pstore {
   descriptor_condition_variable::descriptor_condition_variable () {
     enum { read_index, write_index, last_index };
     int fds_[last_index] = {0};
-    if (::pipe (&fds_[0]) == -1) {
+    if (::pipe (&fds_[read_index]) == -1) {
       raise (errno_erc{errno}, "pipe");
     }
 
