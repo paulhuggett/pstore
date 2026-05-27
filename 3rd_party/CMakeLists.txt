@@ -33,6 +33,4 @@ else ()
   endif ()
 endif (PSTORE_IS_INSIDE_LLVM OR PSTORE_FUZZTEST)
 
-add_subdirectory (peejay)
-
 # eof 3rd_party/CMakeLists.txt

@@ -18,6 +18,7 @@ cmake_minimum_required (VERSION 3.13)
 
 include (CheckCSourceCompiles)
 include (CMakeDependentOption)
+include (FetchContent)
 
 list (APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -117,7 +118,6 @@ option (PSTORE_FUZZTEST "Enable FuzzTest")
 
 if (PSTORE_FUZZTEST)
   set (FUZZTEST_FUZZING_MODE On)
-  include (FetchContent)
   set (FUZZTEST_REPO_BRANCH "1635d42" CACHE STRING "FuzzTest repository branch.")
   message ("Building fuzztest at branch " ${FUZZTEST_REPO_BRANCH})
   FetchContent_Declare (
@@ -129,7 +129,21 @@ if (PSTORE_FUZZTEST)
   enable_testing ()
   include (GoogleTest)
   fuzztest_setup_fuzzing_flags ()
+else()
+  FetchContent_Declare(
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG HEAD
+  )
+  FetchContent_MakeAvailable(googletest)
 endif (PSTORE_FUZZTEST)
+
+FetchContent_Declare(
+  peejay
+  GIT_REPOSITORY https://github.com/paulhuggett/peejay.git
+  GIT_TAG HEAD
+)
+FetchContent_MakeAvailable(peejay)
 
 # The name of the vacuum (GC) executable.
 set (PSTORE_VACUUM_TOOL_NAME "pstore-vacuumd")
@@ -193,7 +207,6 @@ add_custom_target (
 
 
 cmake_policy (SET CMP0077 NEW)
-set (PEEJAY_CXX17 ON)
 add_subdirectory (3rd_party)
 
 # Some tests, as well as broker-ui use Node.js/npm so let's check they are
